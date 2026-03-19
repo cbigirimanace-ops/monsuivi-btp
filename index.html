@@ -357,7 +357,7 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 .lock-blocked p{color:rgba(255,255,255,.45);font-size:12px;line-height:1.6}
 
 /* ── ADMIN ─────────────────────────────────────────── */
-#adminPanel{position:fixed;inset:0;z-index:99998;background:rgba(12,18,34,.92);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px}
+#adminPanel{position:fixed;inset:0;z-index:999999;background:rgba(12,18,34,.92);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:20px}
 #adminPanel.open{display:flex}
 .admin-card{background:#1A2742;border-radius:var(--r-xl);padding:32px;max-width:560px;width:100%;border:1px solid rgba(255,255,255,.06);position:relative}
 .admin-card h2{color:#fff;font-size:18px;font-weight:800;margin-bottom:4px}
@@ -1168,10 +1168,17 @@ function cpOpenAdmin(){
   // SECURITY: Use timing-safe comparison concept
   const expected='CIVILPLUS-ADMIN-2024';
   if(!pw||pw.trim()!==expected){if(pw!==null)alert('❌ Mot de passe incorrect');return;}
+  // Masquer lockScreen pour que le panel soit visible
+  var ls = document.getElementById('lockScreen');
+  if(ls) ls.style.zIndex = '1';
   document.getElementById('adminPanel').classList.add('open');
   cpRenderLicenses();
 }
-function closeAdmin(){document.getElementById('adminPanel').classList.remove('open');}
+function closeAdmin(){
+  document.getElementById('adminPanel').classList.remove('open');
+  var ls = document.getElementById('lockScreen');
+  if(ls) ls.style.zIndex = '99999';
+}
 
 function generateLicense(){
   const name=_sanitize((document.getElementById('adminClientName').value||'').trim());

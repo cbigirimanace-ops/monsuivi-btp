@@ -260,6 +260,8 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
 .kpi-card.teal{background:linear-gradient(135deg,#0D9488 0%,#1098AD 100%)}
 .kpi-card::before{content:'';position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.12);pointer-events:none}
 .kpi-card::after{content:'';position:absolute;bottom:-20px;left:-20px;width:70px;height:70px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}
+.kpi-card *{color:#fff!important}
+.kpi-card .kpi-icon{color:inherit!important}
 .kpi-card::after{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;opacity:.04;pointer-events:none}
 .kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
 .kpi-card.blue::before{background:linear-gradient(90deg,#4263EB,#7C3AED)}
@@ -811,18 +813,18 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 <div class="page" id="page-dashboard">
 
   <!-- Filtres Dashboard -->
-  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
-    <div style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px">
-      <span style="font-size:11px;font-weight:600;color:var(--text3)">DE</span>
-      <input type="date" id="dashDateFrom" onchange="renderDashboard()" style="font-size:12px;padding:4px 6px;border:none;background:transparent;color:var(--text);outline:none">
+  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;background:rgba(255,255,255,.55);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.6);border-radius:var(--r-md);padding:10px 14px">
+    <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.5);border-radius:var(--r-sm);padding:5px 10px">
+      <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.3px">De</span>
+      <input type="date" id="dashDateFrom" onchange="renderDashboard()" style="font-size:12px;padding:2px 4px;border:none;background:transparent;color:var(--text);outline:none">
     </div>
-    <div style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px">
-      <span style="font-size:11px;font-weight:600;color:var(--text3)">AU</span>
-      <input type="date" id="dashDateTo" onchange="renderDashboard()" style="font-size:12px;padding:4px 6px;border:none;background:transparent;color:var(--text);outline:none">
+    <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.5);border-radius:var(--r-sm);padding:5px 10px">
+      <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.3px">Au</span>
+      <input type="date" id="dashDateTo" onchange="renderDashboard()" style="font-size:12px;padding:2px 4px;border:none;background:transparent;color:var(--text);outline:none">
     </div>
-    <select id="dashLot" onchange="renderDashboard()" style="font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text)"><option value="">Tous les lots</option></select>
-    <button class="btn btn-ghost btn-sm" onclick="resetDashFilters()">↺ Reset</button>
-    <span style="font-size:11px;color:var(--text3)" id="dashFilterInfo"></span>
+    <select id="dashLot" onchange="renderDashboard()" style="font-size:12px;padding:6px 10px;border:1px solid rgba(255,255,255,.5);border-radius:var(--r-sm);background:rgba(255,255,255,.5);color:var(--text)"><option value="">Tous les lots</option></select>
+    <button class="btn btn-ghost btn-sm" onclick="resetDashFilters()" style="background:rgba(255,255,255,.5)">↺ Reset</button>
+    <span style="font-size:12px;color:var(--text);font-weight:600;margin-left:4px" id="dashFilterInfo">Toutes les transactions</span>
   </div>
 
   <div id="kpiGrid" class="kpi-grid"></div>
@@ -2419,8 +2421,13 @@ function renderDashboard(){
     if(pieLegendEl){
       pieLegendEl.innerHTML=pieLabels.map((label,i)=>{
         if(pieData[i]<=0)return'';
-        const pctv=((pieData[i]/pieTotal)*100).toFixed(0);
-        return`<div style="display:flex;align-items:center;gap:7px;font-size:12px;font-weight:600;color:var(--text2)"><span style="width:10px;height:10px;border-radius:3px;background:${pieColors[i]};flex-shrink:0"></span>${label} <span style="color:var(--text3);font-weight:500">${pctv}%</span></div>`;
+        const pctv=((pieData[i]/pieTotal)*100).toFixed(1);
+        return`<div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text2);background:rgba(255,255,255,.5);padding:5px 12px;border-radius:var(--r-full);border:1px solid rgba(255,255,255,.6)">
+          <span style="width:10px;height:10px;border-radius:3px;background:${pieColors[i]};flex-shrink:0"></span>
+          <span>${label}</span>
+          <span style="color:var(--text);font-weight:700">${pctv}%</span>
+          <span style="color:var(--text3);font-size:11px">${fmt(pieData[i])}</span>
+        </div>`;
       }).join('');
     }
 
@@ -3092,14 +3099,40 @@ function renderRapport(){
     const pieColors=isDark?['#818CF8','#34D399','#FBBF24','#FB7185']:['#4F46E5','#059669','#D97706','#DC2626'];
     const pieTotal=pieData.reduce((a,b)=>a+b,0);
     const rptPieLegendEl=document.getElementById('rptPieLegend');
-    rptCharts.pie=new Chart(pieCanvas,{type:'doughnut',data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors,borderWidth:0,hoverOffset:6,borderRadius:4}]},options:{responsive:true,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return' '+ctx.label+': '+fmt(ctx.raw)+' ('+((ctx.raw/pieTotal)*100).toFixed(0)+'%)';}}}}}});
-    if(rptPieLegendEl){
-      rptPieLegendEl.innerHTML=pieLabels.map((label,i)=>{
-        if(pieData[i]<=0)return'';
-        const pctv=((pieData[i]/pieTotal)*100).toFixed(0);
-        return`<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2)"><span style="width:10px;height:10px;border-radius:3px;background:${pieColors[i]};flex-shrink:0"></span>${label} <span style="color:var(--text3);font-weight:500">${pctv}%</span></div>`;
-      }).join('');
+    // Pie chart avec étiquettes inline sur les segments
+  rptCharts.pie=new Chart(pieCanvas,{
+    type:'doughnut',
+    data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors,borderWidth:2,borderColor:'rgba(255,255,255,.6)',hoverOffset:8,borderRadius:4}]},
+    options:{
+      responsive:true,
+      cutout:'60%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:isDark?'rgba(20,28,47,.9)':'rgba(255,255,255,.95)',
+          titleColor:isDark?'#F2F4F8':'#1C1C1E',
+          bodyColor:isDark?'#B8C4D6':'#636366',
+          borderColor:isDark?'rgba(108,138,255,.2)':'rgba(200,210,255,.4)',
+          borderWidth:1,
+          padding:10,
+          callbacks:{label:function(ctx){return' '+ctx.label+': '+fmt(ctx.raw)+' ('+((ctx.raw/pieTotal)*100).toFixed(0)+'%)';}}
+        }
+      }
     }
+  });
+  // Légende HTML enrichie avec montants
+  if(rptPieLegendEl){
+    rptPieLegendEl.innerHTML=pieLabels.map((label,i)=>{
+      if(pieData[i]<=0)return'';
+      const pctv=((pieData[i]/pieTotal)*100).toFixed(1);
+      return`<div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text2);background:rgba(255,255,255,.5);padding:6px 12px;border-radius:var(--r-full);border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(4px)">
+        <span style="width:12px;height:12px;border-radius:4px;background:${pieColors[i]};flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15)"></span>
+        <span>${label}</span>
+        <span style="color:var(--text);font-weight:700">${pctv}%</span>
+        <span style="color:var(--text3);font-size:11px">${fmt(pieData[i])}</span>
+      </div>`;
+    }).join('');
+  }
   }
 
   // Bar chart par LOT

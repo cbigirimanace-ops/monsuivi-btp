@@ -1100,8 +1100,8 @@ function submitLockCode(){
   if(val.length<5){
     cpShake();
     const sub=document.getElementById('lockSub');
-    if(sub) sub.innerHTML='<span style="color:#FFA8A8">⚠️ Entrez votre code d'activation (7 caractères)</span>';
-    setTimeout(()=>{ if(sub) sub.innerHTML='Saisissez votre code d'activation<br>pour accéder à votre espace de travail'; },2500);
+    if(sub) sub.innerHTML='<span style="color:#FFA8A8">&#9888;&#65039; Entrez votre code (7 caract&egrave;res)</span>';
+    setTimeout(()=>{ if(sub) sub.innerHTML='Saisissez votre code d&#39;activation<br>pour acc&eacute;der &agrave; votre espace de travail'; },2500);
     return;
   }
 
@@ -1164,8 +1164,7 @@ function copyFp(){
 }
 
 function cpOpenAdmin(){
-  const pw=prompt('Mot de passe administrateur
-MonSuivi BTP — CIVIL+:');
+  const pw=prompt('Mot de passe admin (CIVIL+):');
   // SECURITY: Use timing-safe comparison concept
   const expected='CIVILPLUS-ADMIN-2024';
   if(!pw||pw.trim()!==expected){if(pw!==null)alert('❌ Mot de passe incorrect');return;}
@@ -2546,7 +2545,7 @@ function saveSbConfig() {
 }
 
 async function syncToCloud() {
-  if (!_sbClient) { _sbStatus('⚠️ Non connecté — configurez Supabase d'abord', 'err'); return; }
+  if (!_sbClient) { _sbStatus('&#9888; Non connecté — configurez Supabase en premier', 'err'); return; }
   if (!project) { _sbStatus('⚠️ Aucun projet actif à sauvegarder', 'err'); return; }
   const fp = cpFingerprint();
   const payload = { project, tasks, transactions, txId, synced: new Date().toISOString(), version: '4.0' };
@@ -2564,14 +2563,14 @@ async function syncToCloud() {
 }
 
 async function syncFromCloud() {
-  if (!_sbClient) { _sbStatus('⚠️ Non connecté — configurez Supabase d'abord', 'err'); return; }
+  if (!_sbClient) { _sbStatus('&#9888; Non connecté — configurez Supabase en premier', 'err'); return; }
   const fp = cpFingerprint();
   try {
     _sbStatus('🔄 Chargement depuis le cloud...', 'info');
     const { data, error } = await _sbClient.from('btp_data').select('project_data, updated_at').eq('id', fp).maybeSingle();
     if (error) throw error;
     if (!data || !data.project_data) {
-      _sbStatus('ℹ️ Aucune donnée trouvée pour cet appareil — utilisez ↑ Sauvegarder d'abord', 'info');
+      _sbStatus('ℹ️ Aucune donnée trouvée pour cet appareil — utilisez ↑ Sauvegarder en premier', 'info');
       return;
     }
     const d = data.project_data;

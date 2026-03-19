@@ -76,8 +76,20 @@
 
 /* Smooth theme transition */
 html.theme-transition,html.theme-transition *,html.theme-transition *::before,html.theme-transition *::after{
-  transition:background-color .35s ease,color .25s ease,border-color .3s ease,box-shadow .3s ease!important;
+  transition:background-color .4s ease,color .3s ease,border-color .35s ease,box-shadow .3s ease,backdrop-filter .3s ease!important;
 }
+/* Lisibilité universelle en dark mode */
+[data-theme="dark"] .tbl-scroll table td{color:var(--text)!important}
+[data-theme="dark"] .tbl-scroll table td span:not(.badge){color:inherit}
+[data-theme="dark"] .badge{opacity:.95}
+[data-theme="dark"] .filter-count{background:rgba(108,138,255,.2);color:var(--accent)}
+[data-theme="dark"] .cat-pill{background:rgba(27,37,64,.8);border-color:rgba(108,138,255,.2);color:var(--text2)}
+[data-theme="dark"] .type-opt{background:rgba(27,37,64,.8);color:var(--text2)}
+[data-theme="dark"] .modal-pill{color:var(--text2)}
+[data-theme="dark"] .modal-pill.active{background:rgba(20,28,47,.9);color:var(--accent)}
+[data-theme="dark"] .currency-card{background:rgba(27,37,64,.7);border-color:rgba(108,138,255,.15)}
+[data-theme="dark"] .nav-pill.active{background:rgba(20,28,47,.9)!important}
+[data-theme="dark"] details summary{background:rgba(27,37,64,.7)}
 
 /* ── Modal tab pills (slide style) ── */
 .modal-pills{display:flex;background:var(--surface2);border-radius:var(--r-full);padding:3px;gap:2px;margin-bottom:18px;overflow-x:auto}
@@ -151,6 +163,14 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;
 [data-theme="dark"] .modal{background:rgba(15,22,40,.85);border:1px solid rgba(108,138,255,.15)}
 [data-theme="dark"] .setup-card{background:rgba(15,22,40,.8);border:1px solid rgba(108,138,255,.15)}
 [data-theme="dark"] .progress-wrap{background:rgba(15,22,40,.65);border:1px solid rgba(108,138,255,.12)}
+[data-theme="dark"] input,[data-theme="dark"] select,[data-theme="dark"] textarea{background:rgba(27,37,64,.8)!important;border-color:rgba(108,138,255,.25)!important;color:var(--text)!important}
+[data-theme="dark"] input::placeholder,[data-theme="dark"] textarea::placeholder{color:rgba(184,196,214,.5)!important}
+[data-theme="dark"] select option{background:#1B2540;color:#F2F4F8}
+[data-theme="dark"] .topbar{background:rgba(11,17,32,.8)!important}
+[data-theme="dark"] .project-banner{background:linear-gradient(135deg,rgba(20,28,47,.9),rgba(27,37,64,.8))}
+[data-theme="dark"] thead tr th{background:rgba(20,28,47,.9)!important;color:var(--text)!important}
+[data-theme="dark"] .card-header{background:rgba(20,28,47,.6)!important}
+[data-theme="dark"] .lock-card{background:rgba(15,22,40,.85);border:1px solid rgba(108,138,255,.2)}
 .topbar-inner{max-width:1720px;margin:0 auto;padding:0 20px;display:flex;align-items:center;height:56px;gap:12px}
 .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:16px;color:var(--text);text-decoration:none;letter-spacing:-.3px;flex-shrink:0}
 .logo-mark{width:32px;height:32px;background:linear-gradient(135deg,var(--accent),#7C3AED);border-radius:var(--r-sm);display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:800;font-family:var(--mono);box-shadow:0 3px 10px rgba(var(--accent-rgb),.3)}
@@ -201,7 +221,7 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;
 /* ── FORMS ─────────────────────────────────────────── */
 .field{margin-bottom:14px}
 .field label{display:block;font-size:11.5px;font-weight:600;color:var(--text2);margin-bottom:5px;letter-spacing:.3px}
-input,select,textarea{width:100%;border:1.5px solid rgba(255,255,255,.5);border-radius:var(--r-sm);padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--text);background:rgba(255,255,255,.6);outline:none;transition:.2s;backdrop-filter:blur(8px)}
+input,select,textarea{width:100%;border:1.5px solid rgba(200,210,255,.4);border-radius:var(--r-sm);padding:10px 12px;font-family:var(--font);font-size:14px;color:var(--text);background:rgba(255,255,255,.65);outline:none;transition:.2s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:var(--shadow-focus)}
 input::placeholder,textarea::placeholder{color:var(--text3)}
 textarea{resize:vertical;min-height:60px;line-height:1.5}
@@ -843,15 +863,21 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 <!-- ══ PAGE RAPPORTS ══ -->
 <div class="page" id="page-rapports">
 
-  <!-- En-tête -->
-  <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:16px">
-    <div>
-      <h2 style="font-size:17px;font-weight:800">📊 Rapports du projet</h2>
-      <div style="font-size:12px;color:var(--text3);margin-top:2px" id="rptProjectName">—</div>
-    </div>
-    <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn btn-primary btn-sm" onclick="exportRapportPDF()">📄 Exporter PDF</button>
-      <button class="btn btn-success btn-sm" onclick="exportRapportCSV()">📊 Exporter CSV</button>
+  <!-- Banner Rapport — style identique à Saisie -->
+  <div id="rptBanner" style="margin-bottom:18px">
+    <div class="project-banner" style="background:linear-gradient(135deg,var(--accent) 0%,var(--purple) 100%);color:#fff;border:none;box-shadow:0 4px 20px rgba(var(--accent-rgb),.3)">
+      <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0">
+        <div style="width:46px;height:46px;border-radius:var(--r-md);background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;backdrop-filter:blur(8px)">📊</div>
+        <div style="min-width:0">
+          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">RAPPORT FINANCIER</div>
+          <div style="font-size:16px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="rptProjectName">—</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:2px" id="rptPeriodLabel">Toutes les dates</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0">
+        <button onclick="exportRapportPDF()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(4px);font-family:var(--font);transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.2)'">📄 PDF</button>
+        <button onclick="exportRapportCSV()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(4px);font-family:var(--font);transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">📊 CSV</button>
+      </div>
     </div>
   </div>
 
@@ -3009,6 +3035,22 @@ function renderRapport(){
   // Nom projet
   const pn=document.getElementById('rptProjectName');
   if(pn) pn.textContent=project.nom+(project.lieu?' — '+project.lieu:'');
+  // Mettre à jour le label de période
+  const fdf=(document.getElementById('rptDateFrom')||{}).value||'';
+  const fdt=(document.getElementById('rptDateTo')||{}).value||'';
+  const pl=document.getElementById('rptPeriodLabel');
+  if(pl){
+    if(fdf||fdt){
+      const debut=fdf||'debut';
+      const fin=fdt||'fin';
+      pl.textContent='Periode : '+debut+' -> '+fin;
+    } else if(transactions.length){
+      const dates=transactions.map(t=>t.date).sort();
+      pl.textContent='Du '+dates[0]+' au '+dates[dates.length-1];
+    } else {
+      pl.textContent='Aucune transaction';
+    }
+  }
 
   // KPI
   const kpiEl=document.getElementById('rptKpi');

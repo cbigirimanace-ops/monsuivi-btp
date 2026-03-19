@@ -423,11 +423,46 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
       <p>Cette application est liée à un autre appareil.<br>Contactez <b>Mon Suivi Financier BTP</b> pour un accès.</p>
     </div>
     <div class="lock-fp-badge" id="lockFpBadge" onclick="copyFp()" title="Cliquer pour copier" style="cursor:pointer">
-      Empreinte : <b id="lockFpShort">chargement…</b> 📋
+      Empreinte : <b id="lockFpShort">—</b> 📋
     </div>
-    
   </div>
 </div>
+<script>
+// ═══ FINGERPRINT INLINE — S'exécute IMMÉDIATEMENT, sans attendre quoi que ce soit ═══
+(function immediateFingerprint(){
+  try{
+    var w=screen.width||1920, h=screen.height||1080, d=screen.colorDepth||24;
+    var lang=navigator.language||'fr';
+    var cpu=navigator.hardwareConcurrency||2;
+    var tz='UTC';
+    try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(e){}
+    var plat=navigator.platform||'Web';
+    var raw=[w,h,d,lang,cpu,tz,plat].join('|');
+    var hash=0x811c9dc5>>>0;
+    for(var i=0;i<raw.length;i++){hash^=raw.charCodeAt(i);hash=Math.imul(hash,0x01000193)>>>0;}
+    var chars='ABCDEFGHJKMNPQRSTVWXYZ23456789';
+    var fp='', n=hash;
+    for(var j=0;j<7;j++){fp=chars[n%30]+fp;n=Math.floor(n/30);}
+    // Afficher immédiatement
+    var el=document.getElementById('lockFpShort');
+    if(el) el.innerText=fp;
+    // Stocker globalement pour cpCheck
+    window._cachedFp=fp;
+    // Retry toutes les 200ms au cas où
+    var retries=0;
+    var iv=setInterval(function(){
+      retries++;
+      var el2=document.getElementById('lockFpShort');
+      if(el2) el2.innerText=fp;
+      if(retries>=10) clearInterval(iv);
+    },200);
+  }catch(err){
+    var el=document.getElementById('lockFpShort');
+    if(el) el.innerText='FP-ERR';
+    window._cachedFp='BTPDEF1';
+  }
+})();
+</script>
 
 <!-- ══ ADMIN PANEL ══ -->
 <div id="adminPanel">
@@ -1073,6 +1108,8 @@ function _cpDeriveSecret(){
 }
 
 function cpFingerprint(){
+  // Utiliser le cache calculé inline si disponible
+  if(window._cachedFp) return window._cachedFp;
   try{
     const parts=[
       (screen.width||1920),
@@ -1111,20 +1148,18 @@ const MAX_ATTEMPTS = 10;
 const LOCKOUT_MS = 5 * 60 * 1000; // 5 min lockout
 
 function cpCheck(){
-  let fp='CALCUL...';
-  try{ fp=cpFingerprint(); }catch(e){ fp='FP-ERR'; }
+  // Utiliser le fingerprint déjà calculé inline
+  let fp = window._cachedFp || cpFingerprint();
+  window._cachedFp = fp;
 
-  // Update fingerprint display immediately and with retries
-  function _showFp(){
-    try{
-      const el=document.getElementById('lockFpShort');
-      if(el) el.innerText=fp;
-    }catch(e){}
-  }
+  // Afficher (déjà fait inline mais on confirme)
+  const _showFp=()=>{
+    const el=document.getElementById('lockFpShort');
+    if(el && el.innerText!==fp) el.innerText=fp;
+  };
   _showFp();
-  setTimeout(_showFp,200);
-  setTimeout(_showFp,600);
-  setTimeout(_showFp,1200);
+  setTimeout(_showFp,100);
+  setTimeout(_showFp,500);
 
   // Check lockout
   const lockoutUntil=parseInt(localStorage.getItem('cp_lockout')||'0');
@@ -2952,8 +2987,7 @@ function exportRapportCSV(){
     ['TOTAL ENTRÉES',tx.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0)],
     ['SOLDE',tx.reduce((s,t)=>s+(t.type==='entree'?t.montant:-t.montant),0)],
   ];
-  const csv='﻿'+info.map(r=>Array.isArray(r)?r.join(sep):r).join('
-');
+  const csv='\uFEFF'+info.map(r=>Array.isArray(r)?r.join(sep):r).join('\n');
   const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
   const a=document.createElement('a');a.href=URL.createObjectURL(blob);
   a.download='rapport_'+project.nom.replace(/\s/g,'_')+'_'+today()+'.csv';
@@ -2978,7 +3012,7 @@ function exportRapportPDF(){
 
   const fDateFrom=(document.getElementById('rptDateFrom')||{}).value||'';
   const fDateTo=(document.getElementById('rptDateTo')||{}).value||'';
-  const periodeTxt=fDateFrom||fDateTo?`Période : ${fDateFrom||'début'} → ${fDateTo||'aujourd'hui'}`:'Toutes les dates';
+  const periodeTxt=fDateFrom||fDateTo?`Période : ${fDateFrom||'début'} → ${fDateTo||'aujourd\'hui'}`:'Toutes les dates';
 
   const printWin=window.open('','_blank','width=900,height=700');
   printWin.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">

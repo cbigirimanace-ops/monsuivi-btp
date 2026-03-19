@@ -999,18 +999,26 @@ function _cpDeriveSecret(){
 }
 
 function cpFingerprint(){
-  const raw=[
-    screen.width,screen.height,screen.colorDepth,
-    navigator.language,navigator.hardwareConcurrency||2,
-    Intl.DateTimeFormat().resolvedOptions().timeZone,
-    navigator.platform||''
-  ].join('|');
-  let h=0x811c9dc5>>>0;
-  for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
-  const A='ABCDEFGHJKMNPQRSTVWXYZ23456789';
-  let out='',n=h;
-  for(let i=0;i<7;i++){out=A[n%30]+out;n=Math.floor(n/30);}
-  return out;
+  try{
+    const parts=[
+      (screen.width||1920),
+      (screen.height||1080),
+      (screen.colorDepth||24),
+      (navigator.language||'fr'),
+      (navigator.hardwareConcurrency||2),
+      (typeof Intl!=='undefined'?Intl.DateTimeFormat().resolvedOptions().timeZone:'UTC'),
+      (navigator.platform||'Win32')
+    ];
+    const raw=parts.join('|');
+    let h=0x811c9dc5>>>0;
+    for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
+    const A='ABCDEFGHJKMNPQRSTVWXYZ23456789';
+    let out='',n=h;
+    for(let i=0;i<7;i++){out=A[n%30]+out;n=Math.floor(n/30);}
+    return out;
+  }catch(e){
+    return 'BTPDEF1'; // Safe fallback
+  }
 }
 
 function cpMakeCode(fp){
@@ -1029,16 +1037,20 @@ const MAX_ATTEMPTS = 10;
 const LOCKOUT_MS = 5 * 60 * 1000; // 5 min lockout
 
 function cpCheck(){
-  // Retry mechanism for fingerprint display
-  let fp='';
-  try { fp=cpFingerprint(); } catch(e){ fp='ERREUR'; }
-  const updateFp=()=>{
-    const el=document.getElementById('lockFpShort');
-    if(el) el.innerText=fp;
-  };
-  updateFp();
-  setTimeout(updateFp,300); // retry after 300ms
-  setTimeout(updateFp,800); // retry after 800ms
+  let fp='CALCUL...';
+  try{ fp=cpFingerprint(); }catch(e){ fp='FP-ERR'; }
+
+  // Update fingerprint display immediately and with retries
+  function _showFp(){
+    try{
+      const el=document.getElementById('lockFpShort');
+      if(el) el.innerText=fp;
+    }catch(e){}
+  }
+  _showFp();
+  setTimeout(_showFp,200);
+  setTimeout(_showFp,600);
+  setTimeout(_showFp,1200);
 
   // Check lockout
   const lockoutUntil=parseInt(localStorage.getItem('cp_lockout')||'0');
@@ -1450,6 +1462,25 @@ function appInit(){
 }
 
 window.onload=function(){cpCheck();};
+// Backup: also run on DOMContentLoaded in case onload fires late
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',function(){
+    setTimeout(function(){
+      const el=document.getElementById('lockFpShort');
+      if(el&&(el.innerText==='chargement…'||el.innerText==='CALCUL...')){
+        try{el.innerText=cpFingerprint();}catch(e){el.innerText='FP-ERR';}
+      }
+    },100);
+  });
+} else {
+  // DOM already ready
+  setTimeout(function(){
+    const el=document.getElementById('lockFpShort');
+    if(el&&(el.innerText==='chargement…'||el.innerText==='CALCUL...')){
+      try{el.innerText=cpFingerprint();}catch(e){el.innerText='FP-ERR';}
+    }
+  },100);
+}
 
 // ── SETUP ──
 function goStep1(){

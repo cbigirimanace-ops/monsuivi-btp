@@ -573,6 +573,10 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
           <div class="field"><label>Budget global <span class="cur-label">FCFA</span> *</label><input id="sBudget" type="number" min="0" placeholder="50 000 000"></div>
           <div class="field"><label>Date de début</label><input id="sDate" type="date"></div>
         </div>
+        <div class="grid2">
+          <div class="field"><label>% Imprévus <span style="color:var(--text3);font-weight:400">(sur le budget)</span></label><input id="sImpPct" type="number" min="0" max="30" step="0.5" placeholder="Ex: 5" oninput="updateImpPreview('s')"></div>
+          <div class="field"><label>Montant max imprévus</label><input id="sImpMontant" type="text" readonly style="background:var(--surface2);color:var(--warning);font-weight:700" placeholder="Calculé auto"></div>
+        </div>
         <button class="btn btn-primary btn-full btn-lg" onclick="goStep2()">Suivant →</button>
       </div>
       <!-- STEP 2 -->
@@ -828,7 +832,7 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
   <!-- GRAPHIQUES -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" id="rptChartsGrid">
-    <div class="card"><div class="card-header"><div class="card-title">Répartition dépenses</div></div><div class="card-body" style="display:flex;justify-content:center"><canvas id="rptChartPie" height="200"></canvas></div></div>
+    <div class="card" style="display:flex;flex-direction:column"><div class="card-header"><div class="card-title">Répartition des dépenses</div></div><div class="card-body" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px"><div style="width:100%;max-width:280px;margin:0 auto"><canvas id="rptChartPie"></canvas></div><div id="rptPieLegend" style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px 16px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"></div></div></div>
     <div class="card"><div class="card-header"><div class="card-title">Budget vs Dépenses par LOT</div></div><div class="card-body"><canvas id="rptChartBar" height="200"></canvas></div></div>
   </div>
 
@@ -888,7 +892,11 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
       <div id="ptabContent1">
         <div class="field"><label>Nom *</label><input id="rnNom"></div>
         <div class="grid2"><div class="field"><label>MO</label><input id="rnMO"></div><div class="field"><label>Lieu</label><input id="rnLieu"></div></div>
-        <div class="field"><label>Budget <span class="cur-label">FCFA</span> *</label><input id="rnBudget" type="number" min="0"></div>
+        <div class="field"><label>Budget <span class="cur-label">FCFA</span> *</label><input id="rnBudget" type="number" min="0" oninput="updateImpPreview('rn')"></div>
+        <div class="grid2">
+          <div class="field"><label>% Imprévus <span style="color:var(--text3);font-weight:400">(sur budget)</span></label><input id="rnImpPct" type="number" min="0" max="30" step="0.5" placeholder="Ex: 5" oninput="updateImpPreview('rn')"></div>
+          <div class="field"><label>Montant max imprévus</label><input id="rnImpMontant" type="text" readonly style="background:var(--surface2);color:var(--warning);font-weight:700" placeholder="Calculé auto"></div>
+        </div>
         <div style="background:var(--surface2);border-radius:var(--r-sm);padding:12px;margin-bottom:12px">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
             <span style="font-size:12px;font-weight:700">Tâches N°Prix <span class="filter-count" id="rnTaskCount">0</span></span>
@@ -1650,7 +1658,8 @@ function goStep2(){
   const budg=parseFloat(document.getElementById('sBudget').value);
   if(!nom){toast('Nom du projet requis','err');return;}
   if(!budg||budg<=0){toast('Budget valide requis','err');return;}
-  project={nom,mo:document.getElementById('sMO').value.trim(),lieu:document.getElementById('sLieu').value.trim(),budget:budg,date:document.getElementById('sDate').value};
+  const impPctVal=parseFloat(document.getElementById('sImpPct').value)||0;
+  project={nom,mo:document.getElementById('sMO').value.trim(),lieu:document.getElementById('sLieu').value.trim(),budget:budg,date:document.getElementById('sDate').value,impPct:impPctVal};
   document.getElementById('step1').style.display='none';
   document.getElementById('step2').style.display='block';
   document.getElementById('stepDot1').classList.remove('active');
@@ -2530,6 +2539,8 @@ function openSetup(){
     document.getElementById('rnMO').value=project.mo||'';
     document.getElementById('rnLieu').value=project.lieu||'';
     document.getElementById('rnBudget').value=project.budget||'';
+    document.getElementById('rnImpPct').value=project.impPct||'';
+    updateImpPreview('rn');
     renderRnTasks();switchPTab(1);
     const prev=document.getElementById('csvImportPreview');
     if(prev){prev.style.display='none';prev.innerHTML='';}
@@ -2576,7 +2587,8 @@ function saveSetupModal(){
   const nom=document.getElementById('rnNom').value.trim();
   const budg=parseFloat(document.getElementById('rnBudget').value);
   if(!nom||!budg){toast('Nom et budget requis','err');return;}
-  project={...project,nom,mo:document.getElementById('rnMO').value,lieu:document.getElementById('rnLieu').value,budget:budg};
+  const impPctRn=parseFloat(document.getElementById('rnImpPct').value)||0;
+  project={...project,nom,mo:document.getElementById('rnMO').value,lieu:document.getElementById('rnLieu').value,budget:budg,impPct:impPctRn};
   saveState();buildNprixSelects();buildLotFilters();renderBanner();renderMiniKpi();
   closeModal('setupModal');toast('Projet mis à jour ✓');
 }
@@ -2854,20 +2866,60 @@ function renderRapport(){
   const bb=document.getElementById('rptBudgetBody');
   if(bb){
     const colCss=pct>90?'var(--danger)':pct>60?'var(--amber)':'var(--success)';
-    bb.innerHTML=`
-      <div style="display:flex;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:6px">
-        <span style="font-size:13px;font-weight:600">Budget total : <b style="color:var(--accent)">${fmt(project.budget)}</b></span>
-        <span style="font-size:13px;font-weight:600">Consommé : <b style="color:${colCss}">${pct.toFixed(1)}%</b></span>
-        <span style="font-size:13px;font-weight:600">Restant : <b style="color:var(--success)">${fmt(project.budget-dep)}</b></span>
+    // Calcul montant imprévus max
+  const impPct = project.impPct||0;
+  const impMax = impPct>0 ? (project.budget*impPct/100) : 0;
+  const impDep = tx.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+  const impPctUsed = impMax>0?(impDep/impMax)*100:0;
+  const impCol = impPctUsed>100?'var(--danger)':impPctUsed>80?'var(--warning)':'var(--amber)';
+
+  bb.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px">
+        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">BUDGET TOTAL</div>
+          <div style="font-size:15px;font-weight:800;color:var(--accent);margin-top:2px">${fmt(project.budget)}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">CONSOMMÉ</div>
+          <div style="font-size:15px;font-weight:800;color:${colCss};margin-top:2px">${fmt(dep)}</div>
+          <div style="font-size:10px;color:${colCss};font-weight:700">${pct.toFixed(1)}% du budget</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">RESTANT</div>
+          <div style="font-size:15px;font-weight:800;color:var(--success);margin-top:2px">${fmt(project.budget-dep)}</div>
+        </div>
+        ${impMax>0?`<div style="background:var(--warning-l);border-radius:var(--r-sm);padding:10px;text-align:center;border:1px solid rgba(var(--accent-rgb),.1)">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">IMPRÉVUS (${impPct}%)</div>
+          <div style="font-size:15px;font-weight:800;color:${impCol};margin-top:2px">${fmt(impDep)}</div>
+          <div style="font-size:10px;color:${impCol};font-weight:700">${impPctUsed.toFixed(0)}% / max ${fmt(impMax)}</div>
+        </div>`:''}
       </div>
-      <div style="height:20px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:8px">
-        <div style="height:100%;width:${Math.min(pct,100)}%;background:${colCss};border-radius:var(--r-full);transition:width .8s;display:flex;align-items:center;justify-content:center">
-          <span style="font-size:10px;font-weight:700;color:#fff">${pct>5?pct.toFixed(1)+'%':''}</span>
+      <div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:700;color:var(--text2)">Consommation budget</span>
+          <span style="font-size:12px;font-weight:800;color:${colCss}">${pct.toFixed(1)}% — ${fmt(dep)} / ${fmt(project.budget)}</span>
+        </div>
+        <div style="height:20px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
+          <div style="height:100%;width:${Math.min(pct,100)}%;background:${colCss};border-radius:var(--r-full);transition:width .8s;display:flex;align-items:center;justify-content:center">
+            <span style="font-size:10px;font-weight:700;color:#fff">${pct>8?pct.toFixed(1)+'%':''}</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
+          <span>${fmt(0)}</span><span>Restant : ${fmt(project.budget-dep)}</span><span>${fmt(project.budget)}</span>
         </div>
       </div>
-      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--text3)">
-        <span>🟢 0% — 60% : Dans les limites</span>
-        <span>🟡 60% — 90% : Surveiller</span>
+      ${impMax>0?`<div style="margin-top:10px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:700;color:var(--text2)">Imprévus (${impPct}% = ${fmt(impMax)} max)</span>
+          <span style="font-size:12px;font-weight:800;color:${impCol}">${impPctUsed.toFixed(1)}% — ${fmt(impDep)} / ${fmt(impMax)}</span>
+        </div>
+        <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden">
+          <div style="height:100%;width:${Math.min(impPctUsed,100)}%;background:${impCol};border-radius:var(--r-full)"></div>
+        </div>
+      </div>`:''}
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--text3);margin-top:10px">
+        <span>🟢 0—60% : Dans les limites</span>
+        <span>🟡 60—90% : Surveiller</span>
         <span>🔴 90%+ : Dépassement imminent</span>
       </div>`;
   }
@@ -2884,7 +2936,16 @@ function renderRapport(){
     const pieData=[mo,mat,mtr,imp].filter(v=>v>0);
     const pieLabels=["MO","Matériaux","Matériels","Imprévus"].filter((_,i)=>[mo,mat,mtr,imp][i]>0);
     const pieColors=isDark?['#818CF8','#34D399','#FBBF24','#FB7185']:['#4F46E5','#059669','#D97706','#DC2626'];
-    rptCharts.pie=new Chart(pieCanvas,{type:'doughnut',data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors,borderWidth:0,hoverOffset:6}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{color:chartTextColor,font:{size:11},padding:12}}}}});
+    const pieTotal=pieData.reduce((a,b)=>a+b,0);
+    const rptPieLegendEl=document.getElementById('rptPieLegend');
+    rptCharts.pie=new Chart(pieCanvas,{type:'doughnut',data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors,borderWidth:0,hoverOffset:6,borderRadius:4}]},options:{responsive:true,cutout:'68%',plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return' '+ctx.label+': '+fmt(ctx.raw)+' ('+((ctx.raw/pieTotal)*100).toFixed(0)+'%)';}}}}}});
+    if(rptPieLegendEl){
+      rptPieLegendEl.innerHTML=pieLabels.map((label,i)=>{
+        if(pieData[i]<=0)return'';
+        const pctv=((pieData[i]/pieTotal)*100).toFixed(0);
+        return`<div style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--text2)"><span style="width:10px;height:10px;border-radius:3px;background:${pieColors[i]};flex-shrink:0"></span>${label} <span style="color:var(--text3);font-weight:500">${pctv}%</span></div>`;
+      }).join('');
+    }
   }
 
   // Bar chart par LOT
@@ -3099,9 +3160,26 @@ goPage = function(page, btn){
   _origGoPage(page, btn);
   if(page==='rapports'){
     buildRptFilters();
+    // Auto-remplir les dates avec 1ère et dernière transaction
+    if(transactions.length){
+      const dates = transactions.map(t=>t.date).sort();
+      const fromEl = document.getElementById('rptDateFrom');
+      const toEl   = document.getElementById('rptDateTo');
+      if(fromEl && !fromEl.value) fromEl.value = dates[0];
+      if(toEl   && !toEl.value)   toEl.value   = dates[dates.length-1];
+    }
     renderRapport();
   }
 };
+
+// ── IMPRÉVUS — Calcul prévisualisation ──
+function updateImpPreview(prefix){
+  const budget = parseFloat(document.getElementById(prefix+'Budget').value)||0;
+  const pct    = parseFloat(document.getElementById(prefix+'ImpPct').value)||0;
+  const montant= budget*pct/100;
+  const el     = document.getElementById(prefix+'ImpMontant');
+  if(el) el.value = pct>0&&budget>0 ? fmt(montant)+' max' : '';
+}
 
 // ── Keyboard shortcuts ──
 document.addEventListener('keydown',e=>{

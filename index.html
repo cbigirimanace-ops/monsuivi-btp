@@ -832,19 +832,21 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 <!-- ══ PAGE DASHBOARD ══ -->
 <div class="page" id="page-dashboard">
 
-  <!-- Filtres Dashboard -->
-  <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:16px;background:rgba(255,255,255,.55);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.6);border-radius:var(--r-md);padding:10px 14px">
-    <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.5);border-radius:var(--r-sm);padding:5px 10px">
-      <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.3px">De</span>
-      <input type="date" id="dashDateFrom" onchange="renderDashboard()" style="font-size:12px;padding:2px 4px;border:none;background:transparent;color:var(--text);outline:none">
+  <!-- Filtres Dashboard — s'adapte au thème -->
+  <div class="card" style="margin-bottom:16px;padding:10px 14px">
+    <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+      <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 10px">
+        <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.3px">De</span>
+        <input type="date" id="dashDateFrom" onchange="renderDashboard()" style="font-size:12px;padding:2px 4px;border:none;background:transparent;color:var(--text);outline:none;width:auto">
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:5px 10px">
+        <span style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.3px">Au</span>
+        <input type="date" id="dashDateTo" onchange="renderDashboard()" style="font-size:12px;padding:2px 4px;border:none;background:transparent;color:var(--text);outline:none;width:auto">
+      </div>
+      <select id="dashLot" onchange="renderDashboard()" style="font-size:12px;padding:6px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface2);color:var(--text);flex:1;max-width:200px"><option value="">Tous les lots</option></select>
+      <button class="btn btn-ghost btn-sm" onclick="resetDashFilters()">↺ Reset</button>
+      <span style="font-size:12px;color:var(--text2);font-weight:600;margin-left:4px" id="dashFilterInfo">Toutes les transactions</span>
     </div>
-    <div style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.5);border:1px solid rgba(255,255,255,.5);border-radius:var(--r-sm);padding:5px 10px">
-      <span style="font-size:10px;font-weight:700;color:var(--text2);text-transform:uppercase;letter-spacing:.3px">Au</span>
-      <input type="date" id="dashDateTo" onchange="renderDashboard()" style="font-size:12px;padding:2px 4px;border:none;background:transparent;color:var(--text);outline:none">
-    </div>
-    <select id="dashLot" onchange="renderDashboard()" style="font-size:12px;padding:6px 10px;border:1px solid rgba(255,255,255,.5);border-radius:var(--r-sm);background:rgba(255,255,255,.5);color:var(--text)"><option value="">Tous les lots</option></select>
-    <button class="btn btn-ghost btn-sm" onclick="resetDashFilters()" style="background:rgba(255,255,255,.5)">↺ Reset</button>
-    <span style="font-size:12px;color:var(--text);font-weight:600;margin-left:4px" id="dashFilterInfo">Toutes les transactions</span>
   </div>
 
   <div id="kpiGrid" class="kpi-grid"></div>
@@ -863,20 +865,20 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 <!-- ══ PAGE RAPPORTS ══ -->
 <div class="page" id="page-rapports">
 
-  <!-- Banner Rapport — style identique à Saisie -->
+  <!-- Banner Rapport — neutre, style Saisie -->
   <div id="rptBanner" style="margin-bottom:18px">
-    <div class="project-banner" style="background:linear-gradient(135deg,var(--accent) 0%,var(--purple) 100%);color:#fff;border:none;box-shadow:0 4px 20px rgba(var(--accent-rgb),.3)">
+    <div class="project-banner">
       <div style="display:flex;align-items:center;gap:14px;flex:1;min-width:0">
-        <div style="width:46px;height:46px;border-radius:var(--r-md);background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;backdrop-filter:blur(8px)">📊</div>
+        <div style="width:42px;height:42px;border-radius:var(--r-sm);background:var(--accent-l);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">📊</div>
         <div style="min-width:0">
-          <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.8);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">RAPPORT FINANCIER</div>
-          <div style="font-size:16px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="rptProjectName">—</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.75);margin-top:2px" id="rptPeriodLabel">Toutes les dates</div>
+          <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px">RAPPORT FINANCIER</div>
+          <div style="font-size:15px;font-weight:800;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis" id="rptProjectName">—</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:2px" id="rptPeriodLabel">Toutes les dates</div>
         </div>
       </div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;flex-shrink:0">
-        <button onclick="exportRapportPDF()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(4px);font-family:var(--font);transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.2)'">📄 PDF</button>
-        <button onclick="exportRapportCSV()" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);color:#fff;padding:8px 16px;border-radius:var(--r-sm);font-size:12px;font-weight:700;cursor:pointer;backdrop-filter:blur(4px);font-family:var(--font);transition:.2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">📊 CSV</button>
+        <button class="btn btn-primary btn-sm" onclick="exportRapportPDF()">📄 PDF</button>
+        <button class="btn btn-success btn-sm" onclick="exportRapportCSV()">📊 CSV</button>
       </div>
     </div>
   </div>

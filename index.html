@@ -905,23 +905,18 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
             <div class="currency-check">✓</div>
           </div>
         </div>
-        <!-- ☁️ SUPABASE CLOUD SYNC -->
+        <!-- ☁️ SUPABASE CLOUD SYNC — Préconfigurée -->
         <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
-          <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:4px">☁️ Sync Cloud <span style="font-size:10px;font-weight:600;background:var(--accent-l);color:var(--accent);padding:2px 8px;border-radius:var(--r-full)">SUPABASE</span></div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Sauvegardez et synchronisez vos données sur le cloud via Supabase</div>
-          <div class="field"><label>URL du projet Supabase</label><input id="sbUrl" type="url" placeholder="https://xxxxxxxxxx.supabase.co" style="font-size:13px"></div>
-          <div class="field"><label>Clé Anon (Public Key)</label><input id="sbKey" type="text" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." style="font-size:11px;font-family:var(--mono)"></div>
+          <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:8px">☁️ Sync Cloud <span style="font-size:10px;font-weight:600;background:var(--success-l);color:var(--success);padding:2px 8px;border-radius:var(--r-full)">ACTIF</span></div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Synchronisation cloud activée — données sauvegardées en sécurité</div>
+          <input id="sbUrl" type="hidden" value="https://xlkckemorgpjybqshits.supabase.co">
+          <input id="sbKey" type="hidden" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI">
           <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-primary btn-sm" onclick="saveSbConfig()">🔌 Connecter</button>
-            <button class="btn btn-ghost btn-sm" onclick="syncToCloud()">☁️ ↑ Sauvegarder</button>
+            <button class="btn btn-success btn-sm" onclick="syncToCloud()">☁️ ↑ Sauvegarder</button>
             <button class="btn btn-ghost btn-sm" onclick="syncFromCloud()">☁️ ↓ Charger</button>
-            <button class="btn btn-danger btn-sm" onclick="disconnectSb()">Déconnecter</button>
           </div>
           <div id="sbStatus" style="margin-top:10px;font-size:12px;padding:8px 12px;border-radius:var(--r-sm);background:var(--surface2);display:none"></div>
-          <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6">
-            💡 <b>Setup :</b> Créez un projet sur <a href="https://supabase.com" target="_blank" style="color:var(--accent)">supabase.com</a>, exécutez <code style="background:var(--surface);padding:1px 5px;border-radius:4px">supabase-schema.sql</code>, puis entrez vos credentials.
-          </div>
-        </div>
+        </div>        </div>
       </div>
     </div>
   </div>
@@ -1440,11 +1435,50 @@ function saveState(){
       return;
     }
     localStorage.setItem('bc_data',data);
+    // AUTO-SYNC CLOUD: déclenché après chaque sauvegarde locale
+    _autoSyncDebounced();
   }catch(e){
     if(e.name==='QuotaExceededError'){
       toast('Stockage plein — exportez vos données','err');
     }
   }
+}
+
+// ── AUTO-SYNC SUPABASE (silencieux, 3s après la dernière action) ──
+let _autoSyncTimer=null;
+function _autoSyncDebounced(){
+  clearTimeout(_autoSyncTimer);
+  _autoSyncTimer=setTimeout(async function(){
+    if(!_sbClient||!project) return; // Pas connecté ou pas de projet
+    try{
+      const fp=cpFingerprint();
+      const payload={project,tasks,transactions,txId,synced:new Date().toISOString(),version:'4.0'};
+      const {error}=await _sbClient.from('btp_data')
+        .upsert({id:fp,project_data:payload,updated_at:new Date().toISOString()},{onConflict:'id'});
+      if(!error){
+        // Afficher un petit indicateur discret
+        _showSyncIndicator();
+      }
+    }catch(e){
+      // Silencieux — ne pas déranger l'utilisateur pour un échec de sync en arrière-plan
+      console.warn('[AutoSync] Erreur silencieuse:',e.message);
+    }
+  },3000); // 3 secondes de délai pour regrouper les actions rapides
+}
+
+// Petit indicateur de sync discret (coin supérieur droit)
+function _showSyncIndicator(){
+  let ind=document.getElementById('syncIndicator');
+  if(!ind){
+    ind=document.createElement('div');
+    ind.id='syncIndicator';
+    ind.style.cssText='position:fixed;bottom:20px;right:20px;background:var(--success);color:#fff;padding:6px 14px;border-radius:var(--r-full);font-size:11px;font-weight:700;z-index:9000;opacity:0;transition:opacity .3s;pointer-events:none;box-shadow:0 2px 10px rgba(0,0,0,.2)';
+    ind.textContent='☁️ Sync ✓';
+    document.body.appendChild(ind);
+  }
+  ind.style.opacity='1';
+  clearTimeout(ind._timer);
+  ind._timer=setTimeout(()=>ind.style.opacity='0',2000);
 }
 
 // ── INIT ──
@@ -1553,6 +1587,15 @@ function finishSetup(){
 }
 
 function startApp(){
+  // Auto-connect Supabase au démarrage
+  if(!_sbClient){
+    _loadSbSDK(()=>{
+      try{
+        _sbClient=window.supabase.createClient(_SB_URL,_SB_KEY);
+        console.log('[MonSuivi BTP] Cloud sync actif');
+      }catch(e){}
+    });
+  }
   const ls=document.getElementById('lockScreen');if(ls)ls.style.display='none';
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
@@ -2548,7 +2591,11 @@ function saveSbConfig() {
 }
 
 async function syncToCloud() {
-  if (!_sbClient) { _sbStatus('&#9888; Non connecté — configurez Supabase en premier', 'err'); return; }
+  if (!_sbClient) { 
+    // Auto-reconnect with preconfigured credentials
+    await new Promise(resolve => { _loadSbSDK(() => { try { _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY); } catch(e){} resolve(); }); });
+    if (!_sbClient) { _sbStatus('Connexion impossible', 'err'); return; }
+  }
   if (!project) { _sbStatus('⚠️ Aucun projet actif à sauvegarder', 'err'); return; }
   const fp = cpFingerprint();
   const payload = { project, tasks, transactions, txId, synced: new Date().toISOString(), version: '4.0' };
@@ -2566,7 +2613,10 @@ async function syncToCloud() {
 }
 
 async function syncFromCloud() {
-  if (!_sbClient) { _sbStatus('&#9888; Non connecté — configurez Supabase en premier', 'err'); return; }
+  if (!_sbClient) {
+    await new Promise(resolve => { _loadSbSDK(() => { try { _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY); } catch(e){} resolve(); }); });
+    if (!_sbClient) { _sbStatus('Connexion impossible', 'err'); return; }
+  }
   const fp = cpFingerprint();
   try {
     _sbStatus('🔄 Chargement depuis le cloud...', 'info');
@@ -2595,34 +2645,21 @@ async function syncFromCloud() {
 }
 
 function disconnectSb() {
-  if (!confirm('Déconnecter Supabase ? Les données locales sont conservées.')) return;
-  _sbClient = null;
-  localStorage.removeItem('cp_sb_url');
-  localStorage.removeItem('cp_sb_key');
-  const urlEl = document.getElementById('sbUrl');
-  const keyEl = document.getElementById('sbKey');
-  if (urlEl) urlEl.value = '';
-  if (keyEl) keyEl.value = '';
-  _sbStatus('Déconnecté de Supabase', 'info');
-  toast('Supabase déconnecté');
+  // Fonction réservée admin — non exposée aux clients
+  toast('Action non disponible', 'warn');
 }
 
-// Init Supabase on startup if previously configured
+// ── SUPABASE CONFIG (préconfigurée) ──
+const _SB_URL = "https://xlkckemorgpjybqshits.supabase.co";
+const _SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI";
+
 function initSbOnStartup() {
-  const url = localStorage.getItem('cp_sb_url');
-  const key = localStorage.getItem('cp_sb_key');
-  if (!url || !key) return;
-  // Pre-fill the form fields
-  const urlEl = document.getElementById('sbUrl');
-  const keyEl = document.getElementById('sbKey');
-  if (urlEl) urlEl.value = url;
-  if (keyEl) keyEl.value = key;
-  // Auto-connect silently
+  // Connexion automatique avec les credentials préconfigurés
   _loadSbSDK(() => {
     try {
-      _sbClient = window.supabase.createClient(url, key);
-      console.log('[MonSuivi BTP] Supabase auto-reconnected');
-    } catch(e) { console.error('[Supabase] Auto-reconnect failed:', e); }
+      _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY);
+      console.log('[MonSuivi BTP] Supabase connecté automatiquement');
+    } catch(e) { console.error('[Supabase] Connexion échouée:', e); }
   });
 }
 

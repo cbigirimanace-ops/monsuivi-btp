@@ -2141,6 +2141,11 @@ function renderJournal(){
     });
   }
 
+  // Animer les barres du rapport
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    const rptImp=document.getElementById('rptImpFill');
+    if(rptImp){rptImp.classList.add('animate');}
+  });});
   document.getElementById('txCount').innerText=transactions.length;
   const body=document.getElementById('journalBody');
   const empty=document.getElementById('journalEmpty');
@@ -2220,7 +2225,8 @@ function getLotColor(lot){
 function getSyn(){
   const map={};
   tasks.forEach(t=>{map[t.num]={num:t.num,desig:t.desig,lot:t.lot,budget:t.budget,rec:0,dep:0,mo:0,mat:0,mtr:0,imp:0};});
-  map['IMPREVUS']={num:'IMPREVUS',desig:'Imprévus de chantier',lot:'IMPREVUS',budget:0,rec:0,dep:0,mo:0,mat:0,mtr:0,imp:0};
+  const _impBudget=project&&project.impPct>0?(project.budget*project.impPct/100):0;
+  map['IMPREVUS']={num:'IMPREVUS',desig:'Imprévus de chantier ('+((project&&project.impPct)||0)+'%)',lot:'IMPREVUS',budget:_impBudget,rec:0,dep:0,mo:0,mat:0,mtr:0,imp:0};
   map['PROJET']={num:'PROJET',desig:'Entrée globale projet',lot:'PROJET',budget:0,rec:0,dep:0,mo:0,mat:0,mtr:0,imp:0};
   transactions.forEach(t=>{
     const k=t.nprix;
@@ -3113,14 +3119,24 @@ function renderRapport(){
           <span style="color:${colCss};font-weight:600">${fmt(dep)} consommé</span><span>Restant : ${fmt(project.budget-dep)}</span><span>${fmt(project.budget)}</span>
         </div>
       </div>
-      ${impMax>0?`<div style="margin-top:10px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:11px;font-weight:700;color:var(--text2)">Imprévus (${impPct}% = ${fmt(impMax)} max)</span>
-          <span style="font-size:12px;font-weight:800;color:${impCol}">${impPctUsed.toFixed(1)}% — ${fmt(impDep)} / ${fmt(impMax)}</span>
+      ${(impMax>0||impDep>0)?`<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+          <span style="font-size:12px;font-weight:700;color:var(--text2)">⚠️ Imprévus${impPct>0?' ('+impPct+'% du budget)':''}</span>
+          ${impMax>0
+            ?`<span style="font-size:12px;font-weight:800;color:${impCol}">${impPctUsed.toFixed(1)}% — ${fmt(impDep)} / ${fmt(impMax)}</span>`
+            :`<span style="font-size:12px;font-weight:700;color:var(--warning)">${fmt(impDep)} — aucun plafond défini</span>`}
         </div>
-        <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden">
-          <div style="height:100%;width:${Math.min(impPctUsed,100)}%;background:${impCol};border-radius:var(--r-full)"></div>
+        ${impMax>0?`
+        <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
+          <div class="progress-fill amber" id="rptImpFill2" style="background:${impCol};width:${Math.min(impPctUsed,100)}%"></div>
         </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
+          <span style="color:${impCol};font-weight:600">${fmt(impDep)} consommé</span>
+          <span>Disponible : ${fmt(Math.max(0,impMax-impDep))}</span>
+          <span>Plafond : ${fmt(impMax)}</span>
+        </div>
+        ${impPctUsed>100?`<div style="margin-top:6px;background:var(--danger-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--danger);font-weight:600">🔴 Dépassement du plafond imprévus : +${fmt(impDep-impMax)}</div>`:''}`:''}
+        ${impPct===0?`<div style="margin-top:6px;background:var(--amber-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--amber);font-weight:600">💡 Définissez un % d'imprévus dans Paramètres pour activer le suivi</div>`:''}
       </div>`:''}
       <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--text3);margin-top:10px">
         <span>🟢 0—60% : Dans les limites</span>
@@ -3302,6 +3318,11 @@ function exportRapportPDF(){
   tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!synMap[lot])synMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')synMap[lot].rec+=t.montant; else synMap[lot].dep+=t.montant; });
   const synRows=Object.values(synMap).filter(r=>r.budget>0||r.dep>0);
 
+  const _impPctPdf=project?project.impPct||0:0;
+  const _impMaxPdf=_impPctPdf>0?(project.budget*_impPctPdf/100):0;
+  const _impDepPdf=tx.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+  const _impPctUsedPdf=_impMaxPdf>0?(_impDepPdf/_impMaxPdf)*100:0;
+  const _impColPdf=_impPctUsedPdf>100?'#E03131':_impPctUsedPdf>80?'#E8590C':'#F59F00';
   const fDateFrom=(document.getElementById('rptDateFrom')||{}).value||'';
   const fDateTo=(document.getElementById('rptDateTo')||{}).value||'';
   const periodeTxt=fDateFrom||fDateTo?`Période : ${fDateFrom||'début'} → ${fDateTo||'aujourd\'hui'}`:'Toutes les dates';
@@ -3353,9 +3374,10 @@ function exportRapportPDF(){
 
 <div class="section-title">🎯 Avancement du budget</div>
 <div style="background:#F5F5F7;border-radius:8px;padding:14px;margin-bottom:16px">
-  <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-    <span>Consommation : <b style="color:${col}">${pct.toFixed(1)}%</b></span>
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+    <span>Consommation : <b style="color:${col}">${pct.toFixed(1)}% — ${fmt(dep)}</b></span>
     <span>Restant : <b style="color:#0D9488">${fmt(project.budget-dep)}</b></span>
+    ${_impMaxPdf>0?`<span>Imprévus : <b style="color:${_impColPdf}">${fmt(_impDepPdf)} / ${fmt(_impMaxPdf)} (${_impPctPdf.toFixed(0)}%)</b></span>`:''}
   </div>
   <div class="progress-bg"><div class="progress-fill" style="width:${Math.min(pct,100)}%;background:${col}">${pct.toFixed(1)}%</div></div>
 </div>

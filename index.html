@@ -24,7 +24,7 @@
   --mono:'JetBrains Mono',monospace;
 
   /* Light Mode — Glassmorphism */
-  --bg:#EEF2FF;--surface:rgba(255,255,255,.72);--surface2:rgba(255,255,255,.45);--surface3:rgba(255,255,255,.3);
+  --bg:#F0F4FF;--surface:rgba(255,255,255,.65);--surface2:rgba(255,255,255,.4);--surface3:rgba(255,255,255,.25);
   --border:rgba(255,255,255,.6);--border2:rgba(200,210,255,.4);
   --glass-bg:rgba(255,255,255,.6);--glass-border:rgba(255,255,255,.7);
 
@@ -115,9 +115,19 @@ html.theme-transition,html.theme-transition *,html.theme-transition *::before,ht
 
 html{scroll-behavior:smooth;font-size:14px}
 body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;line-height:1.5;-webkit-font-smoothing:antialiased}
-body::before{content:'';position:fixed;inset:0;z-index:-1;background:linear-gradient(135deg,#EEF2FF 0%,#E0E7FF 25%,#F3E8FF 50%,#EEF2FF 75%,#DBEAFE 100%);background-size:400% 400%;animation:bgShift 20s ease infinite}
-[data-theme="dark"] body::before{background:linear-gradient(135deg,#0B1120 0%,#0D1B3E 30%,#15103A 60%,#0B1120 100%);animation:none}
-@keyframes bgShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
+body::before{content:'';position:fixed;inset:0;z-index:-1;
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(167,139,250,.35) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 80% at 90% 80%, rgba(110,231,183,.3) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 70% at 50% 10%, rgba(147,197,253,.25) 0%, transparent 50%),
+    radial-gradient(ellipse 90% 50% at 80% 30%, rgba(196,181,253,.2) 0%, transparent 60%),
+    linear-gradient(160deg,#F0F4FF 0%,#F5F0FF 35%,#F0FBF5 65%,#EEF4FF 100%)}
+[data-theme="dark"] body::before{
+  background:
+    radial-gradient(ellipse 80% 60% at 10% 20%, rgba(108,138,255,.2) 0%, transparent 60%),
+    radial-gradient(ellipse 70% 80% at 90% 80%, rgba(52,211,153,.12) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 70% at 50% 10%, rgba(99,102,241,.15) 0%, transparent 50%),
+    linear-gradient(160deg,#080D1C 0%,#0B1120 40%,#080E1F 100%)}
 
 /* ── TOAST ─────────────────────────────────────────── */
 #toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-120%);z-index:9999;padding:10px 22px;border-radius:var(--r-full);font-weight:600;font-size:13px;box-shadow:var(--shadow-lg);white-space:nowrap;display:flex;align-items:center;gap:8px;transition:transform .35s cubic-bezier(.4,0,.2,1);pointer-events:none}
@@ -2360,7 +2370,7 @@ function renderDashboard(){
       </div>
       <div class="progress-bar"><div class="progress-fill ${colClass}" id="progressFill"></div></div>
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px">
-        <span>${fmt(0)}</span><span>Restant: ${fmt(budget-dep)}</span><span>${fmt(budget)}</span>
+        <span style="color:${colCss};font-weight:600">${fmt(dep)} consommé</span><span>Restant: ${fmt(budget-dep)}</span><span>${fmt(budget)}</span>
       </div>
     </div>
 
@@ -2373,7 +2383,7 @@ function renderDashboard(){
         <div class="progress-fill amber" id="impFill" style="background:${impCol2}"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px">
-        <span>${fmt(0)}</span><span>Prévu: ${fmt(impMax2)}</span>
+        <span style="color:${impCol2};font-weight:600">${fmt(imp)} consommé</span><span>Max prévu: ${fmt(impMax2)}</span>
       </div>
     </div>`:''}
 
@@ -3049,7 +3059,7 @@ function renderRapport(){
           </div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
-          <span>${fmt(0)}</span><span>Restant : ${fmt(project.budget-dep)}</span><span>${fmt(project.budget)}</span>
+          <span style="color:${colCss};font-weight:600">${fmt(dep)} consommé</span><span>Restant : ${fmt(project.budget-dep)}</span><span>${fmt(project.budget)}</span>
         </div>
       </div>
       ${impMax>0?`<div style="margin-top:10px">

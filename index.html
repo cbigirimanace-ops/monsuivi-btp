@@ -229,8 +229,20 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
 /* ── KPI GRID ──────────────────────────────────────── */
 .kpi-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:18px}
 @media(min-width:640px){.kpi-grid{grid-template-columns:repeat(4,1fr)}}
-.kpi-card{background:var(--surface);border-radius:var(--r-md);padding:18px;box-shadow:var(--shadow-sm);border:1px solid var(--border);transition:.25s;position:relative;overflow:hidden}
-.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--accent),var(--purple))}
+.kpi-card{border-radius:var(--r-md);padding:18px;box-shadow:var(--shadow-md);border:1px solid transparent;transition:.25s;position:relative;overflow:hidden}
+.kpi-card.blue{background:linear-gradient(135deg,#3B5BDB,#4263EB);color:#fff}
+.kpi-card.red{background:linear-gradient(135deg,#E03131,#F03E3E);color:#fff}
+.kpi-card.green{background:linear-gradient(135deg,#0D9488,#059669);color:#fff}
+.kpi-card.sky{background:linear-gradient(135deg,#1098AD,#0E7490);color:#fff}
+.kpi-card.yellow{background:linear-gradient(135deg,#E8590C,#F59F00);color:#fff}
+.kpi-card.orange{background:linear-gradient(135deg,#E8590C,#D97706);color:#fff}
+.kpi-card.purple{background:linear-gradient(135deg,#7048E8,#9C36B5);color:#fff}
+.kpi-card.teal{background:linear-gradient(135deg,#0D9488,#7048E8);color:#fff}
+[data-theme="dark"] .kpi-card.blue{background:linear-gradient(135deg,#2B4ACB,#3B5BDB)}
+[data-theme="dark"] .kpi-card.red{background:linear-gradient(135deg,#C92A2A,#E03131)}
+[data-theme="dark"] .kpi-card.green{background:linear-gradient(135deg,#087F5B,#0D9488)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,rgba(255,255,255,.12) 0%,rgba(255,255,255,0) 60%);pointer-events:none}
+.kpi-card::after{content:'';position:absolute;bottom:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.08)}
 .kpi-card::after{content:'';position:absolute;top:0;right:0;width:80px;height:80px;border-radius:50%;opacity:.04;pointer-events:none}
 .kpi-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
 .kpi-card.blue::before{background:linear-gradient(90deg,#4263EB,#7C3AED)}
@@ -264,8 +276,10 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
 .progress-title{font-weight:700;font-size:14px}
 .progress-pct{font-weight:800;font-size:20px}
 .progress-bar{height:16px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:8px;box-shadow:inset 0 2px 4px rgba(0,0,0,.08)}
-.progress-fill{height:100%;border-radius:var(--r-full);width:0%;transition:none;position:relative;background-size:200% 100%;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.progress-fill{height:100%;border-radius:var(--r-full);width:0%;transition:none;position:relative;background-size:200% 100%;box-shadow:0 2px 8px rgba(0,0,0,.15);overflow:hidden}
 .progress-fill.animate{transition:width 1.4s cubic-bezier(.4,0,.2,1)}
+.progress-fill::after{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.25) 50%,transparent 100%);animation:waveShine 2.2s ease-in-out infinite}
+@keyframes waveShine{0%{transform:translateX(-50%)}100%{transform:translateX(100%)}}
 .progress-fill.green{background:linear-gradient(90deg,#059669,#0D9488,#06B6D4,#0D9488);background-size:300% 100%;animation:gradientShift 3s ease infinite}
 .progress-fill.amber{background:linear-gradient(90deg,#D97706,#F59F00,#FBBF24,#F59F00);background-size:300% 100%;animation:gradientShift 3s ease infinite}
 .progress-fill.danger{background:linear-gradient(90deg,#DC2626,#E03131,#F87171,#E03131);background-size:300% 100%;animation:gradientShift 3s ease infinite}
@@ -778,6 +792,22 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
 <!-- ══ PAGE DASHBOARD ══ -->
 <div class="page" id="page-dashboard">
+
+  <!-- Filtres Dashboard -->
+  <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px">
+    <div style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px">
+      <span style="font-size:11px;font-weight:600;color:var(--text3)">DE</span>
+      <input type="date" id="dashDateFrom" onchange="renderDashboard()" style="font-size:12px;padding:4px 6px;border:none;background:transparent;color:var(--text);outline:none">
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-sm);padding:6px 10px">
+      <span style="font-size:11px;font-weight:600;color:var(--text3)">AU</span>
+      <input type="date" id="dashDateTo" onchange="renderDashboard()" style="font-size:12px;padding:4px 6px;border:none;background:transparent;color:var(--text);outline:none">
+    </div>
+    <select id="dashLot" onchange="renderDashboard()" style="font-size:12px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text)"><option value="">Tous les lots</option></select>
+    <button class="btn btn-ghost btn-sm" onclick="resetDashFilters()">↺ Reset</button>
+    <span style="font-size:11px;color:var(--text3)" id="dashFilterInfo"></span>
+  </div>
+
   <div id="kpiGrid" class="kpi-grid"></div>
   <div id="progressWrap"></div>
   <div class="charts-grid">
@@ -1723,6 +1753,17 @@ function startApp(){
       }catch(e){}
     });
   }
+  // Auto-remplir les filtres dashboard avec les dates des transactions
+  setTimeout(()=>{
+    if(transactions.length){
+      const dates=transactions.map(t=>t.date).sort();
+      const fromEl=document.getElementById('dashDateFrom');
+      const toEl=document.getElementById('dashDateTo');
+      if(fromEl&&!fromEl.value) fromEl.value=dates[0];
+      if(toEl&&!toEl.value) toEl.value=dates[dates.length-1];
+    }
+    buildDashLotFilter();
+  },100);
   const ls=document.getElementById('lockScreen');if(ls)ls.style.display='none';
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
@@ -2207,14 +2248,49 @@ function renderSynthese(){
 }
 
 // ── DASHBOARD ──
+function resetDashFilters(){
+  ['dashDateFrom','dashDateTo','dashLot'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  renderDashboard();
+}
+
+function buildDashLotFilter(){
+  const sel=document.getElementById('dashLot');
+  if(!sel)return;
+  const lots=[...new Set(tasks.map(t=>t.lot))];
+  const cur=sel.value;
+  sel.innerHTML='<option value="">Tous les lots</option>';
+  lots.forEach(l=>{const o=document.createElement('option');o.value=l;o.textContent=l;if(l===cur)o.selected=true;sel.appendChild(o);});
+}
+
 function renderDashboard(){
   if(!window._chartReady){setTimeout(renderDashboard,200);return;}
-  const dep=transactions.filter(t=>t.type==='depense').reduce((s,t)=>s+t.montant,0);
-  const rec=transactions.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
-  const mo=transactions.filter(t=>t.categorie==='MO').reduce((s,t)=>s+t.montant,0);
-  const mat=transactions.filter(t=>t.categorie==='MAT').reduce((s,t)=>s+t.montant,0);
-  const mtr=transactions.filter(t=>t.categorie==='MTR').reduce((s,t)=>s+t.montant,0);
-  const imp=transactions.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+
+  // ── Filtres ──
+  const fDateFrom=(document.getElementById('dashDateFrom')||{}).value||'';
+  const fDateTo  =(document.getElementById('dashDateTo')||{}).value||'';
+  const fLot     =(document.getElementById('dashLot')||{}).value||'';
+  buildDashLotFilter();
+
+  let txFiltered=[...transactions];
+  if(fDateFrom) txFiltered=txFiltered.filter(t=>t.date>=fDateFrom);
+  if(fDateTo)   txFiltered=txFiltered.filter(t=>t.date<=fDateTo);
+  if(fLot)      txFiltered=txFiltered.filter(t=>t.lot===fLot);
+
+  // Info filtre
+  const fi=document.getElementById('dashFilterInfo');
+  if(fi){
+    const parts=[];
+    if(fDateFrom||fDateTo) parts.push((fDateFrom||'début')+' → '+(fDateTo||"aujourd'hui"));
+    if(fLot) parts.push('LOT: '+fLot);
+    fi.textContent=parts.length?'Filtré: '+parts.join(' | '):'Toutes les transactions';
+  }
+
+  const dep=txFiltered.filter(t=>t.type==='depense').reduce((s,t)=>s+t.montant,0);
+  const rec=txFiltered.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
+  const mo=txFiltered.filter(t=>t.categorie==='MO').reduce((s,t)=>s+t.montant,0);
+  const mat=txFiltered.filter(t=>t.categorie==='MAT').reduce((s,t)=>s+t.montant,0);
+  const mtr=txFiltered.filter(t=>t.categorie==='MTR').reduce((s,t)=>s+t.montant,0);
+  const imp=txFiltered.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
   const sol=rec-dep;
   const budget=project?project.budget:0;
   const pct=budget>0?(dep/budget)*100:0;
@@ -2236,18 +2312,78 @@ function renderDashboard(){
     {i:'⚠️',l:'Imprévus',v:fmt(imp),c:'orange',s:'Total imprévus'},
   ].map(k=>`<div class="kpi-card ${k.c}"><div class="kpi-icon">${k.i}</div><div class="kpi-label">${k.l}</div><div class="kpi-val" style="color:var(--${k.c==='blue'?'accent':k.c==='red'?'danger':k.c==='green'?'success':k.c==='yellow'?'amber':k.c==='sky'?'cyan':k.c==='orange'?'warning':k.c})">${k.v}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
 
-  // Progress bar with animated gradient
+  // ── Section Avancement Budget (même style que Rapport) ──
   const pc=document.getElementById('progressWrap');
   const colClass=pct>90?'danger':pct>60?'amber':'green';
   const colCss=pct>90?'var(--danger)':pct>60?'var(--amber)':'var(--success)';
-  pc.innerHTML=`<div class="progress-wrap"><div class="progress-header"><div class="progress-title">Consommation du budget</div><div class="progress-pct" style="color:${colCss}">${pct.toFixed(1)}%</div></div><div class="progress-bar"><div class="progress-fill ${colClass}" id="progressFill"></div></div><div class="progress-labels"><span>${fmt(0)}</span><span>${fmt(budget)}</span></div></div>`;
-  // Animate fill on next frame
-  requestAnimationFrame(()=>{
-    requestAnimationFrame(()=>{
-      const fill=document.getElementById('progressFill');
-      if(fill){fill.classList.add('animate');fill.style.width=Math.min(pct,100)+'%';}
-    });
-  });
+
+  const impPct2=project?project.impPct||0:0;
+  const impMax2=impPct2>0?(budget*impPct2/100):0;
+  const impPctUsed2=impMax2>0?(imp/impMax2)*100:0;
+  const impCol2=impPctUsed2>100?'var(--danger)':impPctUsed2>80?'var(--warning)':'var(--amber)';
+
+  pc.innerHTML=`<div class="progress-wrap">
+    <div class="progress-header"><div class="progress-title">🎯 Avancement du budget</div></div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:16px">
+      <div style="background:var(--accent-l);border-radius:var(--r-sm);padding:12px;text-align:center;border:1px solid rgba(var(--accent-rgb),.15)">
+        <div style="font-size:10px;font-weight:600;color:var(--text3)">BUDGET TOTAL</div>
+        <div style="font-size:16px;font-weight:800;color:var(--accent);margin-top:2px">${fmt(budget)}</div>
+      </div>
+      <div style="background:var(--danger-l);border-radius:var(--r-sm);padding:12px;text-align:center;border:1px solid rgba(224,49,49,.12)">
+        <div style="font-size:10px;font-weight:600;color:var(--text3)">CONSOMMÉ</div>
+        <div style="font-size:16px;font-weight:800;color:${colCss};margin-top:2px">${fmt(dep)}</div>
+        <div style="font-size:10px;color:${colCss};font-weight:700">${pct.toFixed(1)}% du budget</div>
+      </div>
+      <div style="background:var(--success-l);border-radius:var(--r-sm);padding:12px;text-align:center;border:1px solid rgba(13,148,136,.12)">
+        <div style="font-size:10px;font-weight:600;color:var(--text3)">RESTANT</div>
+        <div style="font-size:16px;font-weight:800;color:var(--success);margin-top:2px">${fmt(budget-dep)}</div>
+      </div>
+      ${impMax2>0?`<div style="background:var(--warning-l);border-radius:var(--r-sm);padding:12px;text-align:center;border:1px solid rgba(232,89,12,.15)">
+        <div style="font-size:10px;font-weight:600;color:var(--text3)">IMPRÉVUS (${impPct2}%)</div>
+        <div style="font-size:16px;font-weight:800;color:${impCol2};margin-top:2px">${fmt(imp)}</div>
+        <div style="font-size:10px;color:${impCol2};font-weight:700">${impPctUsed2.toFixed(0)}% / max ${fmt(impMax2)}</div>
+      </div>`:''}
+    </div>
+
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:12px;font-weight:700;color:var(--text2)">Consommation budget</span>
+        <span style="font-size:13px;font-weight:800;color:${colCss}">${pct.toFixed(1)}% — ${fmt(dep)} / ${fmt(budget)}</span>
+      </div>
+      <div class="progress-bar"><div class="progress-fill ${colClass}" id="progressFill"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px">
+        <span>${fmt(0)}</span><span>Restant: ${fmt(budget-dep)}</span><span>${fmt(budget)}</span>
+      </div>
+    </div>
+
+    ${impMax2>0?`<div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+        <span style="font-size:12px;font-weight:700;color:var(--text2)">Imprévus (${impPct2}% = ${fmt(impMax2)} max)</span>
+        <span style="font-size:13px;font-weight:800;color:${impCol2}">${impPctUsed2.toFixed(1)}% — ${fmt(imp)} / ${fmt(impMax2)}</span>
+      </div>
+      <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden">
+        <div class="progress-fill amber" id="impFill" style="background:${impCol2}"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px">
+        <span>${fmt(0)}</span><span>Prévu: ${fmt(impMax2)}</span>
+      </div>
+    </div>`:''}
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--text3)">
+      <span>🟢 0—60%: Dans les limites</span>
+      <span>🟡 60—90%: Surveiller</span>
+      <span>🔴 90%+: Dépassement imminent</span>
+    </div>
+  </div>`;
+
+  // Animate fills
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{
+    const fill=document.getElementById('progressFill');
+    if(fill){fill.classList.add('animate');fill.style.width=Math.min(pct,100)+'%';}
+    const impF=document.getElementById('impFill');
+    if(impF){impF.classList.add('animate');impF.style.width=Math.min(impPctUsed2,100)+'%';}
+  });});
 
   // ── DOUGHNUT CHART ──
   if(charts.pie){try{charts.pie.destroy();}catch(e){}}
@@ -2259,7 +2395,7 @@ function renderDashboard(){
       ?['#818CF8','#34D399','#FBBF24','#FB7185']
       :['#4F46E5','#059669','#D97706','#DC2626'];
     const pieData=[mo,mat,mtr,imp];
-    const pieLabels=["Main d'œuvre","Matériaux","Matériels","Imprévus"];
+    const pieLabels=["Main d'oeuvre","Matériaux","Matériels","Imprévus"];
     const pieTotal=pieData.reduce((a,b)=>a+b,0);
 
     // Build HTML legend
@@ -2332,7 +2468,7 @@ function renderDashboard(){
   const lv=document.getElementById('chartLine');
   if(trend.length&&lv){
     lv.style.display='block';
-    charts.line=new Chart(lv,{type:'line',data:{labels:trend.map(t=>t.date),datasets:[{label:'Entrées cumulées',data:trend.map(t=>t.ce),borderColor:isDark?'#34D399':'#0D9488',backgroundColor:isDark?'rgba(52,211,153,.08)':'rgba(13,148,136,.06)',borderWidth:2,pointRadius:0,fill:true,tension:.4},{label:'Dépenses cumulées',data:trend.map(t=>t.cd),borderColor:isDark?'#FB7185':'#E03131',backgroundColor:isDark?'rgba(251,113,133,.08)':'rgba(224,49,49,.06)',borderWidth:2,pointRadius:0,fill:true,tension:.4}]},options:{responsive:true,plugins:{legend:{labels:{color:chartLegendColor,font:{size:11,family:'Inter'},usePointStyle:true,pointStyle:'line'}}},scales:{x:{ticks:{color:chartTextColor,font:{size:10}},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:10}},grid:{color:chartGridColor}}}}});
+    charts.line=new Chart(lv,{type:'line',data:{labels:trend.map(t=>t.date),datasets:[{label:'Entrées cumulées',data:trend.map(t=>t.ce),borderColor:isDark?'#34D399':'#0D9488',backgroundColor:isDark?'rgba(52,211,153,.08)':'rgba(13,148,136,.06)',borderWidth:2,pointRadius:0,fill:true,tension:.4},{label:'Dépenses cumulées',data:trend.map(t=>t.cd),borderColor:isDark?'#FB7185':'#E03131',backgroundColor:isDark?'rgba(251,113,133,.08)':'rgba(224,49,49,.06)',borderWidth:2,pointRadius:0,fill:true,tension:.4}]},options:{responsive:true,plugins:{legend:{labels:{color:chartLegendColor,font:{size:11,family:'Inter'},usePointStyle:true,pointStyle:'line'}}},scales:{x:{ticks:{color:chartTextColor,font:{size:10}},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:10}},grid:{display:false}}}}});
   }
 
   // ── BAR CHART (Budget vs Dépenses par LOT) ──
@@ -2344,7 +2480,7 @@ function renderDashboard(){
     if(!lotMap[t.lot])lotMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0};
     lotMap[t.lot].budget+=t.budget||0;
   });
-  transactions.forEach(t=>{
+  txFiltered.forEach(t=>{
     const lot=t.lot||'GENERAL';
     if(lot==='IMPREVUS'||lot==='PROJET')return;
     if(!lotMap[lot])lotMap[lot]={lot,budget:0,dep:0,rec:0};
@@ -2362,10 +2498,11 @@ function renderDashboard(){
         {label:'Dépenses',data:lotData.map(r=>r.dep),backgroundColor:isDark?'rgba(251,113,133,.65)':'rgba(224,49,49,.6)',borderRadius:3,barPercentage:.7},
         {label:'Entrées',data:lotData.map(r=>r.rec),backgroundColor:isDark?'rgba(52,211,153,.65)':'rgba(13,148,136,.6)',borderRadius:3,barPercentage:.7}
       ]
-    },options:{responsive:true,plugins:{legend:{labels:{color:chartLegendColor,font:{size:10,family:'Inter'},usePointStyle:true,pointStyle:'rect',padding:12}},tooltip:{backgroundColor:isDark?'#1A2438':'#fff',titleColor:isDark?'#F1F4F9':'#0C1222',bodyColor:isDark?'#B8C4D6':'#4A5568',borderColor:isDark?'#384868':'#E2E7F0',borderWidth:1,callbacks:{label:function(ctx){return' '+ctx.dataset.label+': '+fmt(ctx.raw);}}}},scales:{x:{ticks:{color:chartTextColor,font:{size:9,weight:'600'},maxRotation:45,minRotation:15},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:10}},grid:{color:chartGridColor}}}}});
+    },options:{responsive:true,plugins:{legend:{labels:{color:chartLegendColor,font:{size:10,family:'Inter'},usePointStyle:true,pointStyle:'rect',padding:12}},tooltip:{backgroundColor:isDark?'#1A2438':'#fff',titleColor:isDark?'#F1F4F9':'#0C1222',bodyColor:isDark?'#B8C4D6':'#4A5568',borderColor:isDark?'#384868':'#E2E7F0',borderWidth:1,callbacks:{label:function(ctx){return' '+ctx.dataset.label+': '+fmt(ctx.raw);}}}},scales:{x:{ticks:{color:chartTextColor,font:{size:9,weight:'600'},maxRotation:45,minRotation:15},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:10}},grid:{display:false}}}}});
   }
 
   // Alerts
+  // Alertes basées sur toutes les transactions (vue globale)
   const syn=getSyn().filter(r=>r.budget>0&&r.dep>0).sort((a,b)=>(b.dep/b.budget)-(a.dep/a.budget)).slice(0,10);
   const ac=document.getElementById('alertsContainer');
   if(!syn.length){ac.innerHTML='<div class="empty"><div class="icon">✅</div><p>Aucune alerte</p></div>';return;}
@@ -2956,7 +3093,7 @@ function renderRapport(){
   tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!lotMap[lot])lotMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')lotMap[lot].rec+=t.montant; else lotMap[lot].dep+=t.montant; });
   const lotData=Object.values(lotMap).filter(r=>r.budget>0||r.dep>0).sort((a,b)=>b.budget-a.budget);
   if(barCanvas&&lotData.length){
-    rptCharts.bar=new Chart(barCanvas,{type:'bar',data:{labels:lotData.map(r=>r.lot.length>15?r.lot.slice(0,15)+'…':r.lot),datasets:[{label:'Budget',data:lotData.map(r=>r.budget),backgroundColor:isDark?'rgba(108,138,255,.7)':'rgba(59,91,219,.7)',borderRadius:3},{label:'Dépenses',data:lotData.map(r=>r.dep),backgroundColor:isDark?'rgba(251,113,133,.7)':'rgba(224,49,49,.7)',borderRadius:3}]},options:{responsive:true,plugins:{legend:{labels:{color:chartTextColor,font:{size:10}}}},scales:{x:{ticks:{color:chartTextColor,font:{size:9}},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:9}},grid:{color:chartGridColor}}}}});
+    rptCharts.bar=new Chart(barCanvas,{type:'bar',data:{labels:lotData.map(r=>r.lot.length>15?r.lot.slice(0,15)+'…':r.lot),datasets:[{label:'Budget',data:lotData.map(r=>r.budget),backgroundColor:isDark?'rgba(108,138,255,.7)':'rgba(59,91,219,.7)',borderRadius:3},{label:'Dépenses',data:lotData.map(r=>r.dep),backgroundColor:isDark?'rgba(251,113,133,.7)':'rgba(224,49,49,.7)',borderRadius:3}]},options:{responsive:true,plugins:{legend:{labels:{color:chartTextColor,font:{size:10}}}},scales:{x:{ticks:{color:chartTextColor,font:{size:9}},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:9}},grid:{display:false}}}}});
   }
 
   // Synthèse par LOT

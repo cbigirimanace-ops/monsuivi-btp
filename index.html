@@ -189,6 +189,8 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;
 .pack-opt{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 8px;cursor:pointer;font-family:var(--font);color:#fff;text-align:center;transition:.2s}
 .pack-opt:hover{background:rgba(108,138,255,.2);border-color:rgba(108,138,255,.5)}
 .pack-opt.active{background:linear-gradient(135deg,rgba(59,91,219,.4),rgba(112,72,232,.4));border-color:#6C8AFF;box-shadow:0 0 12px rgba(108,138,255,.3)}
+.upgrade-opt{display:block;width:100%;background:none;border:none;text-align:left;padding:8px 10px;border-radius:var(--r-sm);font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font);color:var(--text);transition:.15s}
+.upgrade-opt:hover{background:var(--accent-l);color:var(--accent)}
 .topbar-social{width:34px;height:34px;border-radius:var(--r-full);display:flex;align-items:center;justify-content:center;color:var(--text3);transition:.2s;text-decoration:none}
 .topbar-social:hover{color:var(--accent);background:var(--accent-l);transform:scale(1.1)}
 .topbar-sep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0}
@@ -395,7 +397,6 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
 /* ── LOCK SCREEN ───────────────────────────────────── */
 #lockScreen{position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0C1222 0%,#1A2742 50%,#151030 100%);display:flex;align-items:center;justify-content:center;font-family:var(--font)}
-#lockScreen[style*="display:none"]{pointer-events:none!important}
 .lock-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-xl);padding:44px 40px;max-width:400px;width:100%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.5);backdrop-filter:blur(20px);animation:lockIn .5s cubic-bezier(.4,0,.2,1)}
 @keyframes lockIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 .lock-title{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:8px}
@@ -463,127 +464,129 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 <div id="toast"></div>
 
 <!-- ══ LOCK SCREEN ══ -->
-<!-- ══════════════════════════════════════════════════════════ -->
-<!-- ÉCRAN D'ACCUEIL UNIFIÉ — Nouvelle connexion / Déjà un compte -->
-<!-- ══════════════════════════════════════════════════════════ -->
+<!-- ══ ÉCRAN ACCUEIL UNIFIÉ ══ -->
 <div id="lockScreen">
-  <div class="lock-card" id="lockCard" style="max-width:460px;width:100%">
-
-    <!-- Logo & Titre -->
+  <div class="lock-card" id="lockCard">
     <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FscXVlXzEiIGRhdGEtbmFtZT0iQ2FscXVlIDEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZpZXdCb3g9IjAgMCA1NiA1NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogdXJsKCNEw6lncmFkw6lfc2Fuc19ub21fNik7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogIzFkMWQxYjsKICAgICAgfQoKICAgICAgLmNscy0zIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CgogICAgICAuY2xzLTQgewogICAgICAgIGZpbGw6IG5vbmU7CiAgICAgIH0KCiAgICAgIC5jbHMtNSB7CiAgICAgICAgZmlsbDogdXJsKCNEw6lncmFkw6lfc2Fuc19ub21fNC0yKTsKICAgICAgfQoKICAgICAgLmNscy02IHsKICAgICAgICBmaWxsOiB1cmwoI0TDqWdyYWTDqV9zYW5zX25vbV80KTsKICAgICAgfQogICAgPC9zdHlsZT4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzQiIGRhdGEtbmFtZT0iRMOpZ3JhZMOpIHNhbnMgbm9tIDQiIHgxPSIyMC45MSIgeTE9IjI1LjM4IiB4Mj0iMjcuMzYiIHkyPSIyNS4zOCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4xNSIgc3RvcC1jb2xvcj0iI2ZhZjJhNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4yMyIgc3RvcC1jb2xvcj0iI2Y5ZWQ5ZSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4zNiIgc3RvcC1jb2xvcj0iI2Y4ZTE4YiIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii41MSIgc3RvcC1jb2xvcj0iI2Y2Y2U2ZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii42NyIgc3RvcC1jb2xvcj0iI2YzYjM0MiIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NCIgc3RvcC1jb2xvcj0iI2VmOTAwYyIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44OCIgc3RvcC1jb2xvcj0iI2VmODkwMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzQtMiIgZGF0YS1uYW1lPSJEw6lncmFkw6kgc2FucyBub20gNCIgeDE9IjEwLjE0IiB5MT0iMzMuNTEiIHgyPSI0My4zNiIgeTI9IjIxLjA4IiB4bGluazpocmVmPSIjRMOpZ3JhZMOpX3NhbnNfbm9tXzQiLz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzYiIGRhdGEtbmFtZT0iRMOpZ3JhZMOpIHNhbnMgbm9tIDYiIHgxPSItMi4wNiIgeTE9IjM2Ljc4IiB4Mj0iNDMuMTQiIHkyPSIyMy4zOSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4xMiIgc3RvcC1jb2xvcj0iI2VmODkwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii40NyIgc3RvcC1jb2xvcj0iI2Y2YzE1OCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii42MSIgc3RvcC1jb2xvcj0iI2Y3ZDI3NCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NSIgc3RvcC1jb2xvcj0iI2ZhZjJhNSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgY2xhc3M9ImNscy0zIiB4PSIwIiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSIxNS43NyIgcnk9IjE1Ljc3Ii8+CiAgPGc+CiAgICA8cG9seWdvbiBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMjkuNTIgMzQuMzUgMjkuNTIgMzAuNDMgMzMuNzQgMzAuNDIgMzMuNzQgMjguMzcgMjcuMjkgMjguMzcgMjcuMjkgMzQuMzUgMjkuNTIgMzQuMzUiLz4KICAgIDxwb2x5Z29uIGNsYXNzPSJjbHMtNiIgcG9pbnRzPSIyNS4xMyAyMi4zOSAyNS4xMyAyNi4zMSAyMC45MSAyNi4zMiAyMC45MSAyOC4zNyAyNy4zNiAyOC4zNyAyNy4zNiAyMi4zOSAyNS4xMyAyMi4zOSIvPgogICAgPGc+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNSIgZD0iTTE4Ljk5LDI4YzAsNS4xLDMuNCw4LjQ5LDguNjcsOC40OSwzLjAyLDAsNS42MS0xLjMxLDYuODgtMy41MS0uNTYsMi40My0yLjM5LDQuMDMtMy41Niw0LjcyLTMuNTcsMi4xLTkuMTcuNTEtMTIuMjMtMi42Ny0zLjg1LTMuOTktMy43MS0xMC40OS0uNTctMTQuNzEsMy44NS01LjE3LDEwLjc0LTQuOTQsMTEuODUtNC45LDUuNjcuMTksOS40LDMuNDEsMTAuMzgsNC4zM2wtNS44NiwzLjI3Yy0xLjMxLTIuMjEtMy44Ni0zLjUxLTYuODgtMy41MS01LjI3LDAtOC42NywzLjM5LTguNjcsOC40OVoiLz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMzQuNTMsMzIuOTlsNS44NiwzLjI3Yy0yLjU0LDQuMDQtNy4zLDYuNjEtMTIuNzQsNi42MS04Ljk2LDAtMTUuNDUtNi40NS0xNS40NS0xNC44NnM2LjUtMTQuODcsMTUuNDUtMTQuODdjNS40LDAsMTAuMTUsMi41OCwxMi43NCw2LjYyLS45OC0uOTItNC43MS00LjE0LTEwLjM4LTQuMzMtMS4xMS0uMDQtOC4wMS0uMjctMTEuODUsNC45LTMuMTQsNC4yMi0zLjI3LDEwLjcyLjU3LDE0LjcxLDMuMDYsMy4xNyw4LjY2LDQuNzcsMTIuMjMsMi42NywxLjE4LS42OSwzLTIuMjksMy41Ni00LjcyWiIvPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik0zNC42MiwzMC4yNWMuMTEuNjQuMTksMS42LS4wOSwyLjczIi8+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTQzLjgsMzIuMDZjLTEuODgtLjQxLTMuNTctLjgzLTUuMDUtMS4yNCIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+" alt="Logo" style="width:56px;height:56px;margin:0 auto 14px;display:block;border-radius:14px;box-shadow:0 3px 10px rgba(239,137,0,.3)">
     <div class="lock-title">Mon Suivi Financier BTP</div>
 
-    <!-- ════ ÉTAPE 0 : CHOIX ════ -->
+    <!-- ÉTAPE 0 : CHOIX -->
     <div id="lockStep0" style="text-align:center">
-      <div class="lock-sub" style="margin-bottom:24px">Bienvenue ! Comment souhaitez-vous accéder ?</div>
+      <div class="lock-sub" style="margin-bottom:20px">Bienvenue ! Comment souhaitez-vous accéder ?</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
-
-        <!-- Bouton Déjà un compte -->
-        <button onclick="lockGoStep('existing')" style="background:linear-gradient(135deg,rgba(108,138,255,.2),rgba(124,58,237,.2));border:1.5px solid rgba(108,138,255,.4);border-radius:var(--r-md);padding:18px 12px;cursor:pointer;font-family:var(--font);text-align:center;transition:.2s;color:#fff" onmouseover="this.style.borderColor='rgba(108,138,255,.8)'" onmouseout="this.style.borderColor='rgba(108,138,255,.4)'">
-          <div style="font-size:28px;margin-bottom:6px">👤</div>
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">J'ai déjà un compte</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.55);line-height:1.4">Entrez votre email pour accéder</div>
+        <button onclick="lockGoStep('existing')" style="background:linear-gradient(135deg,rgba(108,138,255,.18),rgba(124,58,237,.18));border:1.5px solid rgba(108,138,255,.4);border-radius:var(--r-md);padding:18px 10px;cursor:pointer;font-family:var(--font);text-align:center;color:#fff;transition:.2s" onmouseover="this.style.borderColor='rgba(108,138,255,.9)'" onmouseout="this.style.borderColor='rgba(108,138,255,.4)'">
+          <div style="font-size:26px;margin-bottom:6px">👤</div>
+          <div style="font-size:12px;font-weight:700;margin-bottom:3px">J'ai déjà un compte</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);line-height:1.4">Entrez votre email</div>
         </button>
-
-        <!-- Bouton Nouvelle connexion -->
-        <button onclick="lockGoStep('new')" style="background:linear-gradient(135deg,rgba(59,91,219,.25),rgba(112,72,232,.25));border:1.5px solid rgba(59,91,219,.4);border-radius:var(--r-md);padding:18px 12px;cursor:pointer;font-family:var(--font);text-align:center;transition:.2s;color:#fff" onmouseover="this.style.borderColor='rgba(59,91,219,.8)'" onmouseout="this.style.borderColor='rgba(59,91,219,.4)'">
-          <div style="font-size:28px;margin-bottom:6px">🆕</div>
-          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">Première connexion</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.55);line-height:1.4">J'ai une clé d'activation</div>
+        <button onclick="lockGoStep('new')" style="background:linear-gradient(135deg,rgba(59,91,219,.22),rgba(112,72,232,.22));border:1.5px solid rgba(59,91,219,.4);border-radius:var(--r-md);padding:18px 10px;cursor:pointer;font-family:var(--font);text-align:center;color:#fff;transition:.2s" onmouseover="this.style.borderColor='rgba(59,91,219,.9)'" onmouseout="this.style.borderColor='rgba(59,91,219,.4)'">
+          <div style="font-size:26px;margin-bottom:6px">🆕</div>
+          <div style="font-size:12px;font-weight:700;margin-bottom:3px">Première connexion</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.55);line-height:1.4">J'ai une clé d'activation</div>
         </button>
-
       </div>
-      <div class="lock-fp-badge" id="lockFpBadge" onclick="copyFp()" title="Cliquer pour copier" style="cursor:pointer;margin-top:8px">
+      <div class="lock-fp-badge" id="lockFpBadge" onclick="copyFp()" title="Cliquer pour copier" style="cursor:pointer">
         Empreinte : <b id="lockFpShort">—</b> 📋
       </div>
     </div>
 
-    <!-- ════ ÉTAPE 1A : J'AI DÉJÀ UN COMPTE → EMAIL ════ -->
+    <!-- ÉTAPE 1A : J'AI DÉJÀ UN COMPTE -->
     <div id="lockStepExisting" style="display:none">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
         <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:none;border-radius:var(--r-sm);padding:6px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:12px;font-family:var(--font)">← Retour</button>
-        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9)">Connexion avec mon email</div>
-      </div>
-      <div class="lock-sub" style="margin-bottom:16px;font-size:12px">
-        Entrez l'adresse email liée à votre compte pour accéder depuis cet appareil.
+        <span style="font-size:13px;font-weight:700;color:#fff">Connexion avec mon email</span>
       </div>
       <input id="existingEmailInput" type="email" placeholder="votre@email.com"
-        style="width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r-md);padding:13px 18px;font-size:16px;color:#fff;text-align:center;outline:none;font-family:var(--font);margin-bottom:8px;letter-spacing:1px;transition:.2s"
-        oninput="existingEmailValidate()"
-        onkeydown="if(event.key==='Enter')submitExistingEmail()">
-      <div id="existingEmailMsg" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:12px;min-height:16px"></div>
-      <button class="lock-btn" id="existingEmailBtn" onclick="submitExistingEmail()" style="opacity:.5;cursor:not-allowed" disabled>
-        📧 Accéder à mon compte
-      </button>
-      <div style="margin-top:12px;padding:10px;background:rgba(255,255,255,.05);border-radius:var(--r-sm);font-size:11px;color:rgba(255,255,255,.45);text-align:center;line-height:1.5">
-        Max. <b style="color:rgba(255,255,255,.7)">2 appareils</b> par compte · Au-delà = <b style="color:#FB7185">blocage définitif</b>
+        style="width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r-md);padding:13px 18px;font-size:15px;color:#fff;text-align:center;outline:none;font-family:var(--font);margin-bottom:6px;transition:.2s"
+        oninput="existingEmailValidate()" onkeydown="if(event.key==='Enter')submitExistingEmail()">
+      <div id="existingEmailMsg" style="font-size:11px;text-align:center;margin-bottom:10px;min-height:16px;color:rgba(255,255,255,.4)"></div>
+      <!-- Carte pack -->
+      <div id="lockPackInfoCard" style="display:none;border-radius:var(--r-md);padding:14px;margin-bottom:10px;border:1.5px solid rgba(108,138,255,.4);background:rgba(108,138,255,.08)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+          <div id="lpiIcon" style="font-size:26px;flex-shrink:0">📱</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span id="lpiName" style="font-size:12px;font-weight:800;color:#fff">Pack Démarrage</span>
+              <span id="lpiStatusBadge" style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:var(--r-full);background:rgba(108,138,255,.3);color:#6C8AFF">ACTIF</span>
+            </div>
+            <div id="lpiEmail" style="font-size:10px;color:rgba(255,255,255,.5);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px">
+          <span style="color:rgba(255,255,255,.6)">Appareils connectés</span>
+          <span id="lpiDevCount" style="font-weight:700;color:#fff">0 / 1</span>
+        </div>
+        <div style="height:7px;background:rgba(255,255,255,.1);border-radius:var(--r-full);overflow:hidden;margin-bottom:6px">
+          <div id="lpiDevBar" style="height:100%;border-radius:var(--r-full);transition:width .5s;width:0%"></div>
+        </div>
+        <div id="lpiWarning" style="display:none;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-sm);padding:8px;font-size:11px;color:#FB7185;line-height:1.5;margin-bottom:8px">
+          ⚠️ <b>Limite atteinte !</b> Connecter cet appareil <b>bloquera votre compte définitivement</b>.
+        </div>
+        <button id="lpiDeconnBtn" onclick="disconnectCurrentDevice()" style="display:none;width:100%;background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-sm);padding:8px;color:#FB7185;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">
+          🔌 Me déconnecter pour libérer une place
+        </button>
       </div>
+      <button class="lock-btn" id="existingEmailBtn" onclick="submitExistingEmail()" style="opacity:.5;cursor:not-allowed" disabled>📧 Accéder à mon compte</button>
     </div>
 
-    <!-- ════ ÉTAPE 1B : PREMIÈRE CONNEXION → CLÉ DE LICENCE ════ -->
+    <!-- ÉTAPE 1B : PREMIÈRE CONNEXION → CLÉ -->
     <div id="lockStepNew" style="display:none">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
         <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:none;border-radius:var(--r-sm);padding:6px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:12px;font-family:var(--font)">← Retour</button>
-        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9)">Première connexion</div>
+        <span style="font-size:13px;font-weight:700;color:#fff">Première connexion</span>
       </div>
-      <div class="lock-sub" id="lockSub" style="margin-bottom:16px;font-size:12px">
-        Saisissez la clé d'activation reçue de l'administrateur.
-      </div>
+      <div class="lock-sub" id="lockSub" style="margin-bottom:14px;font-size:12px">Saisissez la clé d'activation reçue de l'administrateur.</div>
       <input class="lock-input" id="lockCodeInput" type="text" maxlength="8"
         placeholder="CLE" autocomplete="off" autocorrect="off" spellcheck="false"
         oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
         onkeydown="if(event.key==='Enter')submitLockCode()">
       <button class="lock-btn" onclick="submitLockCode()" id="lockSubmitBtn">Activer</button>
-      <div style="margin-top:12px;padding:8px;background:rgba(59,91,219,.1);border-radius:var(--r-sm);font-size:11px;color:rgba(108,138,255,.8);text-align:center">
-        📋 Votre empreinte : <b id="lockFpShort2">—</b> — Communiquez-la à l'administrateur
+      <div style="margin-top:10px;padding:8px 12px;background:rgba(59,91,219,.1);border-radius:var(--r-sm);font-size:11px;color:rgba(108,138,255,.8);text-align:center">
+        📋 Empreinte : <b id="lockFpShort2">—</b>
       </div>
     </div>
 
-    <!-- ════ ÉTAPE 2 : EMAIL APRÈS ACTIVATION ════ -->
+    <!-- ÉTAPE 2 : EMAIL APRÈS ACTIVATION -->
     <div id="lockStepEmail" style="display:none">
-      <div style="text-align:center;margin-bottom:16px">
-        <div style="font-size:32px;margin-bottom:8px">🎉</div>
-        <div style="font-size:14px;font-weight:700;color:#6C8AFF;margin-bottom:4px">Accès activé !</div>
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:30px;margin-bottom:6px">🎉</div>
+        <div style="font-size:13px;font-weight:700;color:#6C8AFF;margin-bottom:4px">Accès activé !</div>
         <div style="font-size:12px;color:rgba(255,255,255,.65)">Liez votre email pour accéder depuis n'importe quel appareil</div>
       </div>
       <input id="newEmailInput" type="email" placeholder="votre@email.com"
-        style="width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r-md);padding:13px 18px;font-size:16px;color:#fff;text-align:center;outline:none;font-family:var(--font);margin-bottom:8px;letter-spacing:1px;transition:.2s"
-        oninput="newEmailValidate()"
-        onkeydown="if(event.key==='Enter')submitNewEmail()">
-      <div id="newEmailMsg" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:12px;min-height:16px"></div>
-      <button class="lock-btn" id="newEmailBtn" onclick="submitNewEmail()" style="opacity:.5;cursor:not-allowed" disabled>
-        🔗 Lier mon email &amp; accéder
-      </button>
+        style="width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r-md);padding:13px 18px;font-size:15px;color:#fff;text-align:center;outline:none;font-family:var(--font);margin-bottom:6px;transition:.2s"
+        oninput="newEmailValidate()" onkeydown="if(event.key==='Enter')submitNewEmail()">
+      <div id="newEmailMsg" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:10px;min-height:16px"></div>
+      <button class="lock-btn" id="newEmailBtn" onclick="submitNewEmail()" style="opacity:.5;cursor:not-allowed" disabled>🔗 Lier mon email &amp; accéder</button>
     </div>
 
-    <!-- ════ ÉTAPE : BLOQUÉ ════ -->
-    <div id="lockStepBlocked" style="display:none" class="lock-blocked">
-      <div style="font-size:48px;text-align:center;margin-bottom:12px">🚫</div>
-      <h3 style="color:#FB7185;margin-bottom:8px">Compte bloqué</h3>
-      <p id="lockBlockedMsg">Votre compte a été bloqué suite à une tentative de connexion non autorisée. Contactez l'administrateur.</p>
-      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">📱 WhatsApp: +237 650 000 749</div>
+    <!-- ÉTAPE : BLOQUÉ -->
+    <div id="lockStepBlocked" style="display:none;text-align:center">
+      <div style="font-size:44px;margin-bottom:10px">🚫</div>
+      <h3 style="color:#FB7185;margin-bottom:8px;font-size:16px">Compte bloqué</h3>
+      <p id="lockBlockedMsg" style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:12px">Votre compte a été bloqué. Contactez l'administrateur.</p>
+      <div style="font-size:11px;color:rgba(255,255,255,.4)">📱 WhatsApp: +237 650 000 749</div>
     </div>
 
-    <!-- ════ ÉTAPE : AVERTISSEMENT 3e APPAREIL ════ -->
+    <!-- ÉTAPE : AVERTISSEMENT 3e APPAREIL -->
     <div id="lockStepWarning" style="display:none;text-align:center">
-      <div style="font-size:48px;margin-bottom:12px">⚠️</div>
-      <div style="font-size:16px;font-weight:800;color:#FBBF24;margin-bottom:10px">Limite d'appareils atteinte</div>
-      <div style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:16px">
-        Votre email est déjà utilisé sur <b style="color:#FBBF24">2 appareils</b>.<br>
-        Continuer sur cet appareil <b style="color:#FB7185">bloquera définitivement votre compte</b> et vous perdrez tout accès.
+      <div style="font-size:44px;margin-bottom:10px">⚠️</div>
+      <div style="font-size:15px;font-weight:800;color:#FBBF24;margin-bottom:10px">Limite d'appareils atteinte</div>
+      <div style="font-size:12px;color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:14px">
+        Votre email est déjà sur <b style="color:#FBBF24">le maximum d'appareils</b> autorisés par votre pack.<br>
+        Continuer <b style="color:#FB7185">bloquera définitivement votre compte</b>.
       </div>
-      <div style="background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-md);padding:12px;margin-bottom:14px;font-size:11px;color:#FB7185;line-height:1.5">
-        ⚠️ Cette action est <b>irréversible</b>. Seul l'administrateur pourra débloquer votre compte.
+      <div style="background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-md);padding:10px;margin-bottom:12px;font-size:11px;color:#FB7185">
+        ⚠️ Cette action est <b>irréversible</b>. Seul l'admin peut débloquer.
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-        <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-sm);padding:11px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">← Annuler</button>
-        <button onclick="lockForceAccess()" style="background:rgba(251,113,133,.15);border:1px solid rgba(251,113,133,.4);border-radius:var(--r-sm);padding:11px;color:#FB7185;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">⚠️ Forcer &amp; bloquer</button>
+        <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-sm);padding:10px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">← Annuler</button>
+        <button onclick="lockForceAccess()" style="background:rgba(251,113,133,.15);border:1px solid rgba(251,113,133,.4);border-radius:var(--r-sm);padding:10px;color:#FB7185;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">⚠️ Forcer &amp; bloquer</button>
       </div>
     </div>
 
   </div><!-- /lock-card -->
 </div>
-
 
 <!-- ══ ADMIN PANEL ══ -->
 <div id="adminPanel">
@@ -595,25 +598,12 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
       <div class="admin-label">Générer un code client</div>
       <input class="admin-input" id="adminClientName" placeholder="Nom du client">
       <input class="admin-input" id="adminFpInput" placeholder="Empreinte client (7 caractères)">
-      <!-- Sélecteur de pack -->
       <div style="margin:10px 0 12px">
-        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Pack / Nombre d'appareils</div>
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Choisir le pack</div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="packSelector">
-          <button class="pack-opt active" data-pack="1" data-max="1" onclick="selectPack(this)">
-            <div style="font-size:18px;margin-bottom:4px">📱</div>
-            <div style="font-size:12px;font-weight:800">Démarrage</div>
-            <div style="font-size:10px;opacity:.7;margin-top:2px">1 appareil</div>
-          </button>
-          <button class="pack-opt" data-pack="2" data-max="2" onclick="selectPack(this)">
-            <div style="font-size:18px;margin-bottom:4px">💼</div>
-            <div style="font-size:12px;font-weight:800">Pro</div>
-            <div style="font-size:10px;opacity:.7;margin-top:2px">2 appareils</div>
-          </button>
-          <button class="pack-opt" data-pack="5" data-max="5" onclick="selectPack(this)">
-            <div style="font-size:18px;margin-bottom:4px">🏢</div>
-            <div style="font-size:12px;font-weight:800">Entreprise</div>
-            <div style="font-size:10px;opacity:.7;margin-top:2px">5 appareils</div>
-          </button>
+          <button class="pack-opt active" data-max="1" onclick="selectPack(this)"><div style="font-size:18px;margin-bottom:4px">📱</div><div style="font-size:11px;font-weight:800">Démarrage</div><div style="font-size:10px;opacity:.7;margin-top:2px">1 appareil</div></button>
+          <button class="pack-opt" data-max="2" onclick="selectPack(this)"><div style="font-size:18px;margin-bottom:4px">💼</div><div style="font-size:11px;font-weight:800">Pro</div><div style="font-size:10px;opacity:.7;margin-top:2px">2 appareils</div></button>
+          <button class="pack-opt" data-max="5" onclick="selectPack(this)"><div style="font-size:18px;margin-bottom:4px">🏢</div><div style="font-size:11px;font-weight:800">Entreprise</div><div style="font-size:10px;opacity:.7;margin-top:2px">5 appareils</div></button>
         </div>
       </div>
       <button class="admin-btn admin-btn-blue" onclick="generateLicense()" style="width:100%">Générer le code</button>
@@ -663,8 +653,14 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
       </a>
       <div class="topbar-sep"></div>
       <button class="topbar-btn" id="btnTheme" onclick="toggleTheme()" title="Changer de thème">🌙</button>
-      <!-- Badge Pack -->
-      <div id="packBadge" style="display:none;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-full);font-size:11px;font-weight:700;border:1.5px solid;cursor:default" title="Votre abonnement"></div>
+      <div id="packBadge" style="display:none;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-full);font-size:11px;font-weight:700;border:1.5px solid;cursor:pointer;position:relative" onclick="toggleUpgradeMenu()" title="Votre pack — cliquez pour changer"></div>
+      <div id="upgradeMenuTopbar" style="display:none;position:absolute;top:56px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:8px;z-index:9999;min-width:210px;box-shadow:0 8px 24px rgba(0,0,0,.15)">
+        <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;margin-bottom:4px">Changer de pack — via WhatsApp</div>
+        <button onclick="requestUpgrade(1)" class="upgrade-opt">📱 Pack Démarrage — 1 appareil</button>
+        <button onclick="requestUpgrade(2)" class="upgrade-opt">💼 Pack Pro — 2 appareils</button>
+        <button onclick="requestUpgrade(5)" class="upgrade-opt">🏢 Pack Entreprise — 5 appareils</button>
+        <div style="font-size:10px;color:var(--text3);padding:6px 8px;border-top:1px solid var(--border);margin-top:4px;line-height:1.4">Vous serez redirigé vers WhatsApp pour finaliser.</div>
+      </div>
       <button class="topbar-btn" id="btnSetup" onclick="openSetup()" style="display:none" title="Paramètres">⚙️</button>
       <button class="topbar-btn topbar-btn-new" id="btnReset" onclick="confirmReset()" style="display:none">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -1199,45 +1195,71 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
             <div class="currency-check">✓</div>
           </div>
         </div>
-        <!-- ☁️ SYNC CLOUD — Via Email -->
+        <!-- ☁️ SYNC CLOUD & PACK -->
         <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
-          <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:8px">
-            ☁️ Sync Cloud
-            <span id="sbPinStatus" style="font-size:10px;font-weight:600;background:var(--surface3);color:var(--text3);padding:2px 8px;border-radius:var(--r-full)">Non lié</span>
-          </div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Vos données sont synchronisées via votre adresse email</div>
-
-          <!-- Champs cachés -->
           <input id="sbUrl" type="hidden" value="https://xlkckemorgpjybqshits.supabase.co">
           <input id="sbKey" type="hidden" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI">
 
           <!-- Zone connectée -->
           <div id="sbConnectedZone" style="display:none">
-            <div style="background:var(--success-l);border:1px solid rgba(13,148,136,.2);border-radius:var(--r-md);padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
-              <span style="font-size:18px">✅</span>
-              <div style="flex:1">
-                <div style="font-size:12px;font-weight:700;color:var(--success)">Cloud lié à votre email</div>
-                <div style="font-size:11px;color:var(--text3)" id="sbPinInfo">auto-connecté</div>
+            <!-- Carte pack préférences -->
+            <div id="prefPackCard" style="border-radius:var(--r-md);padding:16px;margin-bottom:14px;border:1.5px solid var(--border);background:var(--surface2)">
+              <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+                <div id="prefPackIcon" style="font-size:30px">📱</div>
+                <div style="flex:1">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px;flex-wrap:wrap">
+                    <span id="prefPackName" style="font-size:14px;font-weight:800;color:var(--text)">Pack Démarrage</span>
+                    <span id="prefPackBadge" style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:var(--r-full);background:var(--accent-l);color:var(--accent)">ACTIF</span>
+                  </div>
+                  <div id="prefPackEmail" style="font-size:11px;color:var(--text3)">—</div>
+                </div>
+                <!-- Bouton upgrade avec dropdown -->
+                <div style="position:relative;flex-shrink:0">
+                  <button onclick="toggleUpgradeMenu()" style="background:linear-gradient(135deg,var(--accent),#7C3AED);color:#fff;border:none;border-radius:var(--r-sm);padding:7px 10px;font-size:11px;font-weight:700;cursor:pointer;font-family:var(--font)">⬆️ Changer</button>
+                  <div id="upgradeMenuPref" style="display:none;position:absolute;right:0;top:110%;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:8px;z-index:999;min-width:210px;box-shadow:0 8px 24px rgba(0,0,0,.15)">
+                    <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;padding:4px 8px;margin-bottom:4px">Upgrade via WhatsApp</div>
+                    <button onclick="requestUpgrade(1)" class="upgrade-opt">📱 Pack Démarrage — 1 appareil</button>
+                    <button onclick="requestUpgrade(2)" class="upgrade-opt">💼 Pack Pro — 2 appareils</button>
+                    <button onclick="requestUpgrade(5)" class="upgrade-opt">🏢 Pack Entreprise — 5 appareils</button>
+                    <div style="font-size:10px;color:var(--text3);padding:6px 8px;border-top:1px solid var(--border);margin-top:4px">Redirigé vers WhatsApp pour finaliser.</div>
+                  </div>
+                </div>
               </div>
-              <button onclick="sbDisconnectPin()" style="background:none;border:1px solid var(--border);border-radius:var(--r-sm);padding:4px 10px;font-size:11px;cursor:pointer;color:var(--text2)">Délier</button>
+              <!-- Barre appareils -->
+              <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+                <span style="color:var(--text2);font-weight:600">Appareils connectés</span>
+                <span id="prefDevCount" style="font-weight:700;color:var(--text)">— / —</span>
+              </div>
+              <div style="height:8px;background:var(--surface3);border-radius:var(--r-full);overflow:hidden;margin-bottom:6px">
+                <div id="prefDevBar" style="height:100%;border-radius:var(--r-full);transition:width .6s;background:var(--accent)"></div>
+              </div>
+              <div id="prefDevList" style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.7"></div>
+              <div id="prefPackWarning" style="display:none;background:var(--amber-l);border:1px solid rgba(245,159,0,.3);border-radius:var(--r-sm);padding:8px 12px;font-size:11px;color:var(--amber);margin-bottom:10px">
+                ⚠️ Tous vos slots sont occupés. Déconnectez un appareil ou upgradez.
+              </div>
+              <!-- Bouton DÉCONNECTER CET APPAREIL -->
+              <button onclick="disconnectCurrentDevice()" style="width:100%;background:rgba(224,49,49,.06);border:1.5px solid rgba(224,49,49,.2);border-radius:var(--r-sm);padding:10px;color:var(--danger);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font);display:flex;align-items:center;justify-content:center;gap:8px;transition:.2s" onmouseover="this.style.background='rgba(224,49,49,.12)'" onmouseout="this.style.background='rgba(224,49,49,.06)'">
+                🔌 Déconnecter cet appareil <span style="font-size:10px;font-weight:400;opacity:.7">(libère une place pour un autre)</span>
+              </button>
             </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <!-- Sync buttons -->
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">☁️ Synchronisation</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
               <button class="btn btn-success btn-sm" onclick="syncToCloud()">☁️ ↑ Sauvegarder</button>
               <button class="btn btn-ghost btn-sm" onclick="syncFromCloud()">☁️ ↓ Charger</button>
             </div>
+            <div id="sbStatus" style="font-size:12px;padding:8px 12px;border-radius:var(--r-sm);background:var(--surface2);display:none"></div>
           </div>
 
           <!-- Zone non connectée -->
-          <div id="sbPinEntryRow" style="display:none">
-            <div style="background:var(--surface2);border-radius:var(--r-md);padding:12px;font-size:12px;color:var(--text2)">
-              Votre email sera demandé à la prochaine ouverture de l'application.
+          <div id="sbPinEntryRow" style="background:var(--surface2);border-radius:var(--r-md);padding:14px">
+            <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px">
+              <span style="font-size:18px">☁️</span>
+              <span>Votre email cloud sera demandé à la prochaine ouverture de l'application.</span>
             </div>
           </div>
-
-          <div id="sbStatus" style="margin-top:10px;font-size:12px;padding:8px 12px;border-radius:var(--r-sm);background:var(--surface2);display:none"></div>
-          <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6;background:var(--surface2);border-radius:var(--r-sm);padding:8px 12px">
-            🔐 <b>Sécurité :</b> Max. 2 appareils par email. Une tentative sur un 3e appareil bloque définitivement le compte.
-          </div>
+          <div id="sbPinStatus" style="display:none"></div>
+          <div id="sbPinInfo" style="display:none"></div>
         </div></div>
       </div>
     </div>
@@ -1336,14 +1358,7 @@ function cpFingerprint(){
   }
 }
 
-// Pack encodé dans le code : suffix P1 / P2 / P5
-const _PACK_DEFS = {
-  1: { name:'Démarrage', max:1, icon:'📱', color:'#6C8AFF', bg:'rgba(108,138,255,.15)', border:'rgba(108,138,255,.4)' },
-  2: { name:'Pro',       max:2, icon:'💼', color:'#0D9488', bg:'rgba(13,148,136,.15)',  border:'rgba(13,148,136,.4)'  },
-  5: { name:'Entreprise',max:5, icon:'🏢', color:'#F59F00', bg:'rgba(245,159,0,.15)',   border:'rgba(245,159,0,.4)'   },
-};
-
-function cpMakeCode(fp, packMax){
+function cpMakeCode(fp){
   const secret=_cpDeriveSecret();
   const str=secret+fp+secret;
   let h=0x811c9dc5>>>0;
@@ -1351,22 +1366,7 @@ function cpMakeCode(fp, packMax){
   const A='ABCDEFGHJKMNPQRSTVWXYZ23456789';
   let out='',n=h;
   for(let i=0;i<7;i++){out=A[n%30]+out;n=Math.floor(n/30);}
-  // Encoder le pack : ajouter un suffix P1/P2/P5
-  const pm = packMax||1;
-  return out + 'P' + pm;
-}
-
-function cpExtractPack(code){
-  // Extraire le max d'appareils depuis le code (ex: "ABCD123P2" → 2)
-  if(!code) return 1;
-  const m = code.match(/P(\d+)$/);
-  return m ? parseInt(m[1]) : 1;
-}
-
-function cpCodeBase(code){
-  // Extraire la partie de base sans le suffix pack
-  if(!code) return '';
-  return code.replace(/P\d+$/, '');
+  return out;
 }
 
 // ── SECURITY: Rate limiting for brute force ──
@@ -1390,9 +1390,9 @@ function cpCheck(){
   // Check lockout
   const lockoutUntil=parseInt(localStorage.getItem('cp_lockout')||'0');
   if(Date.now()<lockoutUntil){
-    lockGoStep('blocked');
-    const bm=document.getElementById('lockBlockedMsg');
-    if(bm) bm.textContent='Trop de tentatives — reessayez dans '+Math.ceil((lockoutUntil-Date.now())/60000)+' minute(s).';
+    cpShowBlocked();
+    document.querySelector('.lock-blocked h3').textContent='Trop de tentatives';
+    document.querySelector('.lock-blocked p').innerHTML='Réessayez dans '+Math.ceil((lockoutUntil-Date.now())/60000)+' minute(s).';
     return;
   }
 
@@ -1400,54 +1400,36 @@ function cpCheck(){
   if(raw){
     try{
       const d=JSON.parse(raw);
-      // Comparer en ignorant le suffix pack (compatibilité anciens codes)
-      const storedBase = cpCodeBase ? cpCodeBase(d.code) : d.code;
-      const expectedBase = cpCodeBase ? cpCodeBase(cpMakeCode(fp, cpExtractPack(d.code))) : cpMakeCode(fp);
+      const storedBase=cpCodeBase(d.code);
+      const expectedBase=cpCodeBase(cpMakeCode(fp,cpExtractPack(d.code)));
       if(d.fp===fp && storedBase===expectedBase){
-        // Lire le pack depuis le code stocké
-        const packMax = cpExtractPack ? cpExtractPack(d.code) : 1;
-        window._packMax = packMax;
-        localStorage.setItem('cp_pack_max', packMax);
-        // Clé valide — vérifier si email déjà lié
-        if(typeof cpCheck_post === 'function' && cpCheck_post()) return;
-        cpUnlock(); return;
-      }
-      // Clé invalide sur cet appareil → afficher choix
-      lockGoStep('choice');return;
-    }catch(e){}
+        window._packMax=cpExtractPack(d.code);
+        localStorage.setItem('cp_pack_max',window._packMax);cpUnlock();return;}
+      cpShowBlocked();return;
+    }catch(e){/* corrupted data */}
   }
-  // Pas de clé — afficher le choix (nouveau/existant)
-  lockGoStep('choice');
+  cpShowForm();
 }
 
 function cpShowForm(){
   document.getElementById('lockScreen').style.display='flex';
-  lockGoStep('choice');
+  document.getElementById('lockFormSection').style.display='block';
+  document.getElementById('lockBlockedSection').style.display='none';
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('mainApp').style.display='none';
+  setTimeout(()=>{const i=document.getElementById('lockCodeInput');if(i)i.focus();},350);
 }
 
 function cpShowBlocked(){
-  document.getElementById('lockScreen').style.display='flex';
+  const ls=document.getElementById('lockScreen');
+  if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';ls.style.opacity='1';}
   lockGoStep('blocked');
 }
 
 function cpUnlock(){
   document.getElementById('lockScreen').style.display='none';
   localStorage.removeItem('cp_tries3');
-  // Vérifier si l'email est déjà lié pour cet appareil
-  const savedEmail = localStorage.getItem('cp_email');
-  const savedFp = localStorage.getItem('cp_email_fp');
-  const fp = window._cachedFp || cpFingerprint();
-  if(savedEmail && savedFp === fp){
-    // Email déjà lié sur cet appareil — accès direct
-    window._userEmail = savedEmail;
-    _emailSetupCloud(savedEmail);
-    appInit();
-  } else {
-    // Première connexion sur cet appareil — demander l'email
-    showEmailScreen();
-  }
+  appInit();
 }
 
 function submitLockCode(){
@@ -1537,16 +1519,6 @@ function closeAdmin(){
   if(ls) ls.style.zIndex = '99999';
 }
 
-function selectPack(el){
-  document.querySelectorAll('.pack-opt').forEach(b=>b.classList.remove('active'));
-  el.classList.add('active');
-}
-
-function _getSelectedPack(){
-  const active = document.querySelector('.pack-opt.active');
-  return active ? parseInt(active.dataset.max)||1 : 1;
-}
-
 function generateLicense(){
   const name=_sanitize((document.getElementById('adminClientName').value||'').trim());
   const fpInput=document.getElementById('adminFpInput');
@@ -1555,11 +1527,11 @@ function generateLicense(){
   const fp=(fpInput.value||'').replace(/\s/g,'').toUpperCase();
   if(!name){alert('Nom requis');return;}
   if(fp.length<5){alert('Empreinte invalide');return;}
-  const packMax = _getSelectedPack();
-  const code=cpMakeCode(fp, packMax);
-  const packInfo = _PACK_DEFS[packMax] || _PACK_DEFS[1];
+  const packMax=_getSelectedPack();
+  localStorage.setItem('cp_pack_max',packMax);
+  window._packMax=packMax;
+  const code=cpMakeCode(fp,packMax);
   document.getElementById('generatedCode').textContent=code;
-  document.getElementById('generatedCode').title='Pack '+packInfo.name+' — '+packMax+' appareil(s)';
   document.getElementById('generatedCodeWrap').style.display='block';
   const list=cpGetLicenses();
   const idx=list.findIndex(l=>l.fp===fp);
@@ -1823,42 +1795,6 @@ function saveState(){
   }
 }
 
-// ── Pré-initialiser le client Supabase UNE SEULE FOIS ──
-function _getSbClient() {
-  if (_sbClient) return _sbClient;
-  const url = document.getElementById('sbUrl');
-  const key = document.getElementById('sbKey');
-  if (!url || !key || !url.value || !key.value) return null;
-  if (typeof window.supabase === 'undefined') return null;
-  _sbClient = window.supabase.createClient(url.value, key.value);
-  return _sbClient;
-}
-
-// ── AUTO-SYNC SUPABASE (silencieux, 3s après la dernière action) ──
-let _autoSyncTimer=null;
-function _autoSyncDebounced(){
-  clearTimeout(_autoSyncTimer);
-  _autoSyncTimer=setTimeout(async function(){
-    // ── Utilise l'API REST (plus le SDK) + _sbPinHash = emailId ──
-    if(!_sbPinHash || !project) return;
-    try{
-      const payload={project,tasks,transactions,txId,synced:new Date().toISOString(),version:'4.0'};
-      const body=JSON.stringify({id:_sbPinHash,project_data:payload,updated_at:new Date().toISOString()});
-      const res=await fetch(_SB_REST_URL+'/btp_data',{
-        method:'POST',
-        headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
-        body
-      });
-      if(res.ok){
-        _showSyncIndicator();
-        console.log('[AutoSync] Sauvegarde automatique OK');
-      }
-    }catch(e){
-      console.warn('[AutoSync] Erreur silencieuse:',e.message);
-    }
-  },3000); // 3 secondes après la dernière action
-}
-
 // Petit indicateur de sync discret (coin supérieur droit)
 function _showSyncIndicator(){
   let ind=document.getElementById('syncIndicator');
@@ -1880,7 +1816,7 @@ function appInit(){
   const mfd=document.getElementById('mfDate');if(mfd)mfd.value=today();
   const sd=document.getElementById('sDate');if(sd)sd.value=today();
   const ls=document.getElementById('lockScreen');
-  if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
+  if(ls)ls.style.display='none';
   if(loadState()&&project){startApp();}
   else{
     document.getElementById('setupScreen').style.display='block';
@@ -1981,7 +1917,15 @@ function finishSetup(){
 }
 
 function startApp(){
-  // Sync REST API — pas besoin d'initialiser de client SDK
+  // Auto-connect Supabase au démarrage
+  if(!_sbClient){
+    _loadSbSDK(()=>{
+      try{
+        _sbClient=window.supabase.createClient(_SB_URL,_SB_KEY);
+        console.log('[MonSuivi BTP] Cloud sync actif');
+      }catch(e){}
+    });
+  }
   // Auto-remplir les filtres dashboard avec les dates des transactions
   setTimeout(()=>{
     if(transactions.length){
@@ -1993,7 +1937,7 @@ function startApp(){
     }
     buildDashLotFilter();
   },100);
-  const ls=document.getElementById('lockScreen');if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
+  const ls=document.getElementById('lockScreen');if(ls)ls.style.display='none';
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
   document.getElementById('navPills').style.display='flex';
@@ -2909,18 +2853,6 @@ function doImportTasksCSVModal(e){
   });
 }
 
-// ── Prévisualisation montant imprévus ──
-function updateImpPreview(prefix){
-  const budgetEl = document.getElementById(prefix==='s'?'sBudget':'rnBudget');
-  const pctEl    = document.getElementById(prefix==='s'?'sImpPct':'rnImpPct');
-  const prevEl   = document.getElementById(prefix==='s'?'sImpMontant':'rnImpMontant');
-  if(!budgetEl||!pctEl||!prevEl) return;
-  const budget = parseFloat(budgetEl.value)||0;
-  const pct    = parseFloat(pctEl.value)||0;
-  const montant = budget * pct / 100;
-  prevEl.textContent = pct>0 && budget>0 ? fmt(montant)+' max' : '—';
-}
-
 // ── SETUP MODAL CONTROLS ──
 function openSetup(){
   if(project){
@@ -3061,15 +2993,128 @@ function doImport(e){
 
 // ── SUPABASE OPTIONAL CLOUD SYNC ──
 // Chargement dynamique du SDK Supabase (seulement si configuré)
+let _sbClient = null;
+
+function _sbStatus(msg, type='info') {
+  const el = document.getElementById('sbStatus');
+  if (!el) return;
+  el.style.display = msg ? 'block' : 'none';
+  el.style.color = type==='ok'?'var(--success)':type==='err'?'var(--danger)':'var(--text2)';
+  el.style.background = type==='ok'?'var(--success-l)':type==='err'?'var(--danger-l)':'var(--surface2)';
+  el.textContent = msg;
+}
+
+function _loadSbSDK(cb) {
+  if (typeof window.supabase !== 'undefined') { cb(); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
+  s.onload = cb;
+  s.onerror = () => _sbStatus('❌ Impossible de charger le SDK Supabase — vérifiez votre connexion', 'err');
+  document.head.appendChild(s);
+}
+
+function saveSbConfig() {
+  const url = (document.getElementById('sbUrl').value || '').trim();
+  const key = (document.getElementById('sbKey').value || '').trim();
+  if (!url || !key) { _sbStatus('⚠️ URL et clé anon requis', 'err'); return; }
+  if (!url.startsWith('https://')) { _sbStatus('⚠️ URL invalide — doit commencer par https://', 'err'); return; }
+  _sbStatus('🔄 Connexion en cours...', 'info');
+  _loadSbSDK(() => {
+    try {
+      _sbClient = window.supabase.createClient(url, key);
+      localStorage.setItem('cp_sb_url', url);
+      localStorage.setItem('cp_sb_key', key);
+      // Test connexion
+      _sbClient.from('btp_data').select('id').limit(1).then(({ error }) => {
+        if (error && error.code !== 'PGRST116') {
+          _sbStatus('❌ Erreur: ' + error.message + ' — Vérifiez que la table btp_data existe (exécutez supabase-schema.sql)', 'err');
+          _sbClient = null;
+        } else {
+          _sbStatus('✅ Connecté à Supabase ! Données prêtes à être synchronisées.', 'ok');
+          toast('Supabase connecté ✓');
+        }
+      });
+    } catch(e) {
+      _sbStatus('❌ ' + e.message, 'err');
+      _sbClient = null;
+    }
+  });
+}
+
+async function syncToCloud() {
+  if (!_sbClient) { 
+    // Auto-reconnect with preconfigured credentials
+    await new Promise(resolve => { _loadSbSDK(() => { try { _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY); } catch(e){} resolve(); }); });
+    if (!_sbClient) { _sbStatus('Connexion impossible', 'err'); return; }
+  }
+  if (!project) { _sbStatus('⚠️ Aucun projet actif à sauvegarder', 'err'); return; }
+  const fp = cpFingerprint();
+  const payload = { project, tasks, transactions, txId, synced: new Date().toISOString(), version: '4.0' };
+  try {
+    _sbStatus('🔄 Sauvegarde en cours...', 'info');
+    const { error } = await _sbClient.from('btp_data')
+      .upsert({ id: fp, project_data: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
+    if (error) throw error;
+    _sbStatus('✅ Sauvegardé le ' + new Date().toLocaleString('fr-FR'), 'ok');
+    toast('Données sauvegardées sur le cloud ✓');
+  } catch(e) {
+    _sbStatus('❌ Erreur de sauvegarde: ' + e.message, 'err');
+    toast('Erreur cloud', 'err');
+  }
+}
+
+async function syncFromCloud() {
+  if (!_sbClient) {
+    await new Promise(resolve => { _loadSbSDK(() => { try { _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY); } catch(e){} resolve(); }); });
+    if (!_sbClient) { _sbStatus('Connexion impossible', 'err'); return; }
+  }
+  const fp = cpFingerprint();
+  try {
+    _sbStatus('🔄 Chargement depuis le cloud...', 'info');
+    const { data, error } = await _sbClient.from('btp_data').select('project_data, updated_at').eq('id', fp).maybeSingle();
+    if (error) throw error;
+    if (!data || !data.project_data) {
+      _sbStatus('ℹ️ Aucune donnée trouvée pour cet appareil — utilisez ↑ Sauvegarder en premier', 'info');
+      return;
+    }
+    const d = data.project_data;
+    if (!d.project || !d.project.nom) { _sbStatus('❌ Données cloud corrompues', 'err'); return; }
+    if (!confirm('Charger les données cloud ? Cela écrasera vos données locales.')) return;
+    project = d.project;
+    tasks = Array.isArray(d.tasks) ? d.tasks : [];
+    transactions = Array.isArray(d.transactions) ? d.transactions : [];
+    txId = typeof d.txId === 'number' ? d.txId : 1;
+    saveState(); startApp();
+    closeModal('setupModal');
+    const syncDate = new Date(data.updated_at).toLocaleString('fr-FR');
+    _sbStatus('✅ Données du ' + syncDate + ' chargées', 'ok');
+    toast('Données cloud chargées — ' + transactions.length + ' transaction(s) ✓');
+  } catch(e) {
+    _sbStatus('❌ Erreur de chargement: ' + e.message, 'err');
+    toast('Erreur cloud', 'err');
+  }
+}
+
+function disconnectSb() {
+  // Fonction réservée admin — non exposée aux clients
+  toast('Action non disponible', 'warn');
+}
+
 // ══════════════════════════════════════════════════════════════
-// SYSTÈME EMAIL v2 — Choix Nouveau/Existant + Max 2 appareils
+// SYSTÈME EMAIL — Multi-appareils + Packs + Cloud sync REST
 // ══════════════════════════════════════════════════════════════
 
 const _SB_REST_URL = 'https://xlkckemorgpjybqshits.supabase.co/rest/v1';
 const _SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI';
-const MAX_DEVICES = 2;
+const WHATSAPP_NUMBER = '237650000749';
 
-let _sbClient = null;
+// Définition des packs
+const _PACK_DEFS = {
+  1: { name:'Démarrage', max:1, icon:'📱', color:'#6C8AFF', bg:'rgba(108,138,255,.15)', border:'rgba(108,138,255,.4)' },
+  2: { name:'Pro',       max:2, icon:'💼', color:'#0D9488', bg:'rgba(13,148,136,.15)',  border:'rgba(13,148,136,.4)'  },
+  5: { name:'Entreprise',max:5, icon:'🏢', color:'#F59F00', bg:'rgba(245,159,0,.15)',   border:'rgba(245,159,0,.4)'   },
+};
+
 let _sbPinHash = null;
 let _pendingWarningData = null;
 
@@ -3088,291 +3133,332 @@ function _emailToId(email) {
   return 'em_' + _fnvHash('BTPCIVIL_'+n) + _fnvHash(n+'_MONSUIVI');
 }
 
-// ══ NAVIGATION DES ÉTAPES ══
+// ── Encoding pack dans le code de licence ──
+const _PACK_CHARS = {1:'P',2:'Q',5:'R'}; // Suffixes pour 1/2/5 appareils
+const _CHAR_PACK  = {'P':1,'Q':2,'R':5};
+
+function cpMakeCode(fp, packMax) {
+  const secret=_cpDeriveSecret();
+  const str=secret+fp+secret;
+  let h=0x811c9dc5>>>0;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
+  const A='ABCDEFGHJKMNPQRSTVWXYZ23456789';
+  let out='',n=h;
+  for(let i=0;i<7;i++){out=A[n%30]+out;n=Math.floor(n/30);}
+  const suffix = _PACK_CHARS[packMax]||'P';
+  return out + suffix; // ex: ABCD123P (démarrage), ABCD123Q (pro), ABCD123R (entreprise)
+}
+
+function cpExtractPack(code) {
+  if(!code) return 1;
+  const last = code.slice(-1);
+  return _CHAR_PACK[last] || 1;
+}
+
+function cpCodeBase(code) {
+  if(!code) return '';
+  const last = code.slice(-1);
+  return (last in _CHAR_PACK) ? code.slice(0,-1) : code;
+}
+
+// ══ NAVIGATION ÉCRANS ══
 function lockGoStep(step) {
   ['lockStep0','lockStepExisting','lockStepNew','lockStepEmail','lockStepBlocked','lockStepWarning']
-    .forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
-  const map = {
-    'choice':   'lockStep0',
-    'existing': 'lockStepExisting',
-    'new':      'lockStepNew',
-    'email':    'lockStepEmail',
-    'blocked':  'lockStepBlocked',
-    'warning':  'lockStepWarning',
-  };
+    .forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  const map = {choice:'lockStep0',existing:'lockStepExisting',new:'lockStepNew',email:'lockStepEmail',blocked:'lockStepBlocked',warning:'lockStepWarning'};
   const target = document.getElementById(map[step]);
-  if(target) target.style.display = 'block';
-  // Focus auto
-  setTimeout(() => {
-    if(step==='existing') { const i=document.getElementById('existingEmailInput'); if(i)i.focus(); }
-    if(step==='new')      { const i=document.getElementById('lockCodeInput'); if(i)i.focus(); }
-    if(step==='email')    { const i=document.getElementById('newEmailInput'); if(i)i.focus(); }
-  }, 150);
+  if(target) target.style.display='block';
+  setTimeout(()=>{
+    if(step==='existing'){const i=document.getElementById('existingEmailInput');if(i)i.focus();}
+    if(step==='new'){const i=document.getElementById('lockCodeInput');if(i)i.focus();}
+    if(step==='email'){const i=document.getElementById('newEmailInput');if(i)i.focus();}
+  },150);
 }
 
 // ══ VALIDATION EMAILS ══
 function existingEmailValidate() {
-  const v = (document.getElementById('existingEmailInput')||{}).value||'';
-  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
-  const btn = document.getElementById('existingEmailBtn');
-  const msg = document.getElementById('existingEmailMsg');
+  const v=(document.getElementById('existingEmailInput')||{}).value||'';
+  const ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  const btn=document.getElementById('existingEmailBtn');
+  const msg=document.getElementById('existingEmailMsg');
   if(btn){btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';}
-  if(msg) msg.textContent = v.length>3&&!ok?'Adresse email invalide':'';
+  if(msg){msg.textContent=v.length>3&&!ok?'Adresse email invalide':'';msg.style.color='rgba(255,255,255,.4)';}
+  // Si email valide → charger infos pack depuis Supabase
+  if(ok) _loadPackInfoForEmail(v.trim().toLowerCase());
+  else _hideLockPackCard();
 }
+
 function newEmailValidate() {
-  const v = (document.getElementById('newEmailInput')||{}).value||'';
-  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
-  const btn = document.getElementById('newEmailBtn');
-  const msg = document.getElementById('newEmailMsg');
+  const v=(document.getElementById('newEmailInput')||{}).value||'';
+  const ok=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  const btn=document.getElementById('newEmailBtn');
+  const msg=document.getElementById('newEmailMsg');
   if(btn){btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';}
-  if(msg) msg.textContent = v.length>3&&!ok?'Adresse email invalide':'';
+  if(msg) msg.textContent=v.length>3&&!ok?'Adresse email invalide':'';
+}
+
+// ── Charger et afficher les infos pack sur l'écran de connexion ──
+async function _loadPackInfoForEmail(email) {
+  const emailId = _emailToId(email);
+  try {
+    const res = await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=devices,blocked,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
+    if(!res.ok) return;
+    const data = await res.json();
+    if(!data||!data.length) { _hideLockPackCard(); return; }
+    const acc = data[0];
+    if(acc.blocked) { _hideLockPackCard(); return; }
+    const devices = Array.isArray(acc.devices)?acc.devices:[];
+    const maxDev = acc.max_devices||1;
+    _showLockPackCard(email, devices, maxDev);
+  } catch(e){ _hideLockPackCard(); }
+}
+
+function _showLockPackCard(email, devices, maxDev) {
+  const card = document.getElementById('lockPackInfoCard');
+  if(!card) return;
+  const pack = _PACK_DEFS[maxDev]||_PACK_DEFS[1];
+  const fp = window._cachedFp||cpFingerprint();
+  const used = devices.length;
+  const isFull = used >= maxDev;
+  const isCurrentConnected = devices.includes(fp);
+
+  // Couleur de la carte selon état
+  card.style.borderColor = isFull&&!isCurrentConnected ? '#FB7185' : pack.border;
+  card.style.background  = isFull&&!isCurrentConnected ? 'rgba(251,113,133,.08)' : pack.bg;
+
+  const icon = document.getElementById('lpiIcon'); if(icon) icon.textContent=pack.icon;
+  const name = document.getElementById('lpiName'); if(name){name.textContent='Pack '+pack.name;name.style.color=pack.color;}
+  const lpiEmail = document.getElementById('lpiEmail'); if(lpiEmail) lpiEmail.textContent=email;
+  const cnt = document.getElementById('lpiDevCount'); if(cnt) cnt.textContent=used+' / '+maxDev;
+  const bar = document.getElementById('lpiDevBar');
+  if(bar){bar.style.width=Math.min(100,Math.round(used/maxDev*100))+'%';bar.style.background=isFull?'#FB7185':pack.color;}
+  const warn = document.getElementById('lpiWarning');
+  if(warn) warn.style.display = (isFull&&!isCurrentConnected)?'block':'none';
+  const deconnBtn = document.getElementById('lpiDeconnBtn');
+  if(deconnBtn) deconnBtn.style.display = (isFull&&!isCurrentConnected)?'block':'none';
+  card.style.display='block';
+}
+
+function _hideLockPackCard() {
+  const card = document.getElementById('lockPackInfoCard');
+  if(card) card.style.display='none';
 }
 
 // ══ FLUX "J'AI DÉJÀ UN COMPTE" ══
 async function submitExistingEmail() {
-  const email = ((document.getElementById('existingEmailInput')||{}).value||'').trim().toLowerCase();
+  const email=((document.getElementById('existingEmailInput')||{}).value||'').trim().toLowerCase();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
-  const btn = document.getElementById('existingEmailBtn');
+  const btn=document.getElementById('existingEmailBtn');
   if(btn){btn.textContent='⏳ Vérification...';btn.disabled=true;}
-  await _checkEmailAccess(email, false);
+  await _checkEmailAccess(email,false);
   if(btn){btn.textContent='📧 Accéder à mon compte';btn.disabled=false;btn.style.opacity='1';}
 }
 
-// ══ FLUX "PREMIÈRE CONNEXION" — Après activation de la clé ══
+// ══ FLUX "PREMIÈRE CONNEXION" → email après activation ══
 async function submitNewEmail() {
-  const email = ((document.getElementById('newEmailInput')||{}).value||'').trim().toLowerCase();
+  const email=((document.getElementById('newEmailInput')||{}).value||'').trim().toLowerCase();
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
-  const btn = document.getElementById('newEmailBtn');
+  const btn=document.getElementById('newEmailBtn');
   if(btn){btn.textContent='⏳ Liaison...';btn.disabled=true;}
-  await _checkEmailAccess(email, true);
+  await _checkEmailAccess(email,true);
   if(btn){btn.textContent='🔗 Lier mon email & acceder';btn.disabled=false;btn.style.opacity='1';}
 }
 
 // ══ VÉRIFICATION CENTRALE ══
 async function _checkEmailAccess(email, isNew) {
-  const fp = window._cachedFp || cpFingerprint();
+  const fp = window._cachedFp||cpFingerprint();
   const emailId = _emailToId(email);
   try {
-    const res = await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=id,devices,blocked&limit=1', {
-      method:'GET', headers:_sbHeaders()
-    });
+    const res = await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=id,devices,blocked,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data = await res.json();
 
-    if(data && data.length > 0) {
-      const acc = data[0];
-
-      // Compte bloqué ?
-      if(acc.blocked) {
-        _lockShowBlocked('Votre compte a ete bloque. Contactez administrateur.');
-        return;
-      }
-
-      const devices = Array.isArray(acc.devices) ? acc.devices : [];
-      // Lire le max d'appareils depuis Supabase (stocké lors de la 1ère activation)
-      const maxDev = acc.max_devices || window._packMax || parseInt(localStorage.getItem('cp_pack_max')||'1') || 1;
-
-      // Appareil déjà enregistré → accès direct
-      if(devices.includes(fp)) {
-        window._packMax = maxDev;
-        await _grantAccess(email, emailId, false);
-        return;
-      }
-
-      // Nouvel appareil
-      if(devices.length < maxDev) {
-        await _addDeviceAndGrant(email, emailId, fp, devices);
-      } else {
-        // Limite atteinte → avertissement avec info pack
-        const packInfo = _PACK_DEFS[maxDev] || {name:'votre pack', max:maxDev};
-        _pendingWarningData = { email, emailId, fp, maxDev, packInfo };
-        // Mettre à jour le message d'avertissement
-        const warn = document.getElementById('lockStepWarning');
+    if(data&&data.length>0) {
+      const acc=data[0];
+      if(acc.blocked){_lockShowBlocked('Votre compte a ete bloque. Contactez administrateur.');return;}
+      const devices=Array.isArray(acc.devices)?acc.devices:[];
+      const maxDev=acc.max_devices||window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
+      window._packMax=maxDev;
+      if(devices.includes(fp)){await _grantAccess(email,emailId,false);return;}
+      if(devices.length<maxDev){await _addDeviceAndGrant(email,emailId,fp,devices);}
+      else {
+        const pack=_PACK_DEFS[maxDev]||{name:'votre pack',max:maxDev};
+        _pendingWarningData={email,emailId,fp,maxDev,pack};
+        const warn=document.getElementById('lockStepWarning');
         if(warn){
-          warn.querySelector('div:nth-child(3)').innerHTML =
-            'Votre email est utilisé sur <b style="color:#FBBF24">'+maxDev+'/'+maxDev+' appareil(s)</b> '
-            +'(Pack <b>'+packInfo.name+'</b>).<br>'
-            +'Continuer sur cet appareil <b style="color:#FB7185">bloquera définitivement votre compte</b>.';
+          const txt=warn.querySelector('div:nth-child(3)');
+          if(txt) txt.innerHTML='Votre email est sur <b style="color:#FBBF24">'+devices.length+'/'+maxDev+' appareils</b> (Pack '+pack.name+'). Continuer <b style="color:#FB7185">bloquera votre compte</b>.';
         }
         lockGoStep('warning');
       }
     } else {
-      // Email inconnu
-      if(isNew) {
-        // Nouveau compte → créer
-        await _createAccountAndGrant(email, emailId, fp);
-      } else {
-        // "J'ai déjà un compte" mais email non trouvé
-        const msg = document.getElementById('existingEmailMsg');
-        if(msg) msg.style.color='#FB7185';
-        if(msg) msg.textContent='Email non reconnu. Verifiez ou utilisez "Premiere connexion".';
+      if(isNew){await _createAccountAndGrant(email,emailId,fp);}
+      else {
+        const msg=document.getElementById('existingEmailMsg');
+        if(msg){msg.textContent='Email non reconnu. Utilisez "Premiere connexion" si c\'est votre 1er acces.';msg.style.color='#FB7185';}
       }
     }
   } catch(e) {
-    console.warn('[EmailAuth] Erreur reseau:', e.message);
-    // Fallback local — pas de contrôle d'appareils
-    await _grantAccess(email, emailId, true);
+    console.warn('[EmailAuth] Erreur reseau:',e.message);
+    await _grantAccess(email,emailId,true);
   }
 }
 
-async function _createAccountAndGrant(email, emailId, fp) {
-  const maxDev = window._packMax || parseInt(localStorage.getItem('cp_pack_max')||'1') || 1;
+async function _createAccountAndGrant(email,emailId,fp) {
+  const maxDev=window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
   try {
-    await fetch(_SB_REST_URL+'/btp_accounts', {
-      method:'POST',
+    await fetch(_SB_REST_URL+'/btp_accounts',{method:'POST',
       headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
-      body:JSON.stringify({id:emailId,email_hash:_fnvHash(email),devices:[fp],blocked:false,max_devices:maxDev,created_at:new Date().toISOString()})
-    });
-  } catch(e) { console.warn('[EmailAuth] Compte non cree en cloud:', e.message); }
-  await _grantAccess(email, emailId, false);
+      body:JSON.stringify({id:emailId,email_hash:_fnvHash(email),devices:[fp],blocked:false,max_devices:maxDev,created_at:new Date().toISOString()})});
+  } catch(e){console.warn('[EmailAuth] Compte non cree:',e.message);}
+  await _grantAccess(email,emailId,false);
 }
 
-async function _addDeviceAndGrant(email, emailId, fp, existing) {
+async function _addDeviceAndGrant(email,emailId,fp,existing) {
   try {
-    await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId, {
-      method:'PATCH', headers:_sbHeaders(),
-      body:JSON.stringify({devices:[...existing,fp]})
-    });
-  } catch(e) { console.warn('[EmailAuth] Appareil non enregistre:', e.message); }
-  await _grantAccess(email, emailId, false);
+    await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId,{method:'PATCH',headers:_sbHeaders(),
+      body:JSON.stringify({devices:[...existing,fp]})});
+  } catch(e){console.warn('[EmailAuth] Appareil non enregistre:',e.message);}
+  await _grantAccess(email,emailId,false);
 }
 
 async function lockForceAccess() {
   if(!_pendingWarningData) return;
-  const {email, emailId} = _pendingWarningData;
-  // Bloquer le compte immédiatement
+  const {emailId}=_pendingWarningData;
   try {
-    await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId, {
-      method:'PATCH', headers:_sbHeaders(),
-      body:JSON.stringify({blocked:true,blocked_reason:'3e appareil — '+new Date().toISOString()})
-    });
-  } catch(e) {}
-  _lockShowBlocked('Votre compte a ete bloque car vous avez tente de vous connecter sur un 3e appareil. Contactez administrateur pour deblocage.');
+    await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId,{method:'PATCH',headers:_sbHeaders(),
+      body:JSON.stringify({blocked:true,blocked_reason:'3e appareil — '+new Date().toISOString()})});
+  } catch(e){}
+  _lockShowBlocked('Votre compte a ete bloque. Contactez administrateur pour deblocage.');
 }
 
 function _lockShowBlocked(msg) {
   lockGoStep('blocked');
-  const el = document.getElementById('lockBlockedMsg');
-  if(el) el.textContent = msg;
+  const el=document.getElementById('lockBlockedMsg');
+  if(el) el.textContent=msg;
 }
 
-async function _grantAccess(email, emailId, localOnly) {
-  const fp = window._cachedFp || cpFingerprint();
-  localStorage.setItem('cp_email', email);
-  localStorage.setItem('cp_email_fp', fp);
-  localStorage.setItem('cp_email_id', emailId);
-  window._userEmail = email;
-  _sbPinHash = emailId;
-  _emailSetupCloud(email);
-  // Fermer l'écran de licence immédiatement
-  const ls = document.getElementById('lockScreen');
-  if(ls){ ls.style.display='none'; ls.style.pointerEvents='none'; ls.style.opacity='0'; }
-  localStorage.removeItem('cp_tries3');
-
-  // ── Tenter de charger les données cloud AVANT d'appInit ──
-  // Si l'appareil est nouveau (pas de données locales) → charger auto depuis cloud
-  const hasLocalData = !!localStorage.getItem('bc_data');
-  if(!localOnly && !hasLocalData) {
-    // Afficher un écran de chargement temporaire
-    _showCloudLoadingScreen(email);
-    const loaded = await _autoLoadFromCloud(emailId);
-    _hideCloudLoadingScreen();
-    if(loaded) {
-      toast('Données restaurées depuis le cloud ✓');
-    } else {
-      toast('Bienvenue ' + email + ' — aucune donnée cloud trouvée');
+// ══ DÉCONNEXION D'UN APPAREIL (libère une place) ══
+async function disconnectCurrentDevice() {
+  const email=window._userEmail||localStorage.getItem('cp_email');
+  const fp=window._cachedFp||cpFingerprint();
+  if(!email){alert('Vous devez etre connecte pour effectuer cette action.');return;}
+  if(!confirm('Deconnecter CET appareil ? Vous devrez ressaisir votre email pour vous reconnecter ici.')) return;
+  const emailId=localStorage.getItem('cp_email_id')||_emailToId(email);
+  try {
+    // Charger les appareils actuels
+    const res=await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=devices&limit=1',{method:'GET',headers:_sbHeaders()});
+    if(res.ok){
+      const data=await res.json();
+      if(data&&data.length>0){
+        const newDevices=(data[0].devices||[]).filter(d=>d!==fp);
+        await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId,{method:'PATCH',headers:_sbHeaders(),
+          body:JSON.stringify({devices:newDevices})});
+      }
     }
+  } catch(e){console.warn('[Disconnect] Erreur:',e.message);}
+  // Nettoyer localement
+  localStorage.removeItem('cp_email');
+  localStorage.removeItem('cp_email_fp');
+  localStorage.removeItem('cp_email_id');
+  localStorage.removeItem('cp_pack_max');
+  localStorage.removeItem('cp_auth3');
+  _sbPinHash=null; window._userEmail=null; window._packMax=null;
+  // Retour à l'écran d'accueil
+  const ls=document.getElementById('lockScreen');
+  const ma=document.getElementById('mainApp');
+  if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';ls.style.opacity='1';}
+  if(ma) ma.style.display='none';
+  lockGoStep('choice');
+  toast('Appareil deconnecte — vous pouvez vous connecter ailleurs');
+  // Fermer modal si ouvert
+  closeModal('setupModal');
+}
+
+// ══ ACCÈS ACCORDÉ ══
+async function _grantAccess(email,emailId,localOnly) {
+  const fp=window._cachedFp||cpFingerprint();
+  localStorage.setItem('cp_email',email);
+  localStorage.setItem('cp_email_fp',fp);
+  localStorage.setItem('cp_email_id',emailId);
+  window._userEmail=email;
+  _sbPinHash=emailId;
+  _emailSetupCloud(email);
+  const ls=document.getElementById('lockScreen');
+  if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
+  localStorage.removeItem('cp_tries3');
+  const hasLocalData=!!localStorage.getItem('bc_data');
+  if(!localOnly&&!hasLocalData){
+    _showCloudLoadingScreen(email);
+    const loaded=await _autoLoadFromCloud(emailId);
+    _hideCloudLoadingScreen();
+    toast(loaded?'Donnees restaurees depuis le cloud':'Bienvenue '+email+' — aucune donnee cloud');
   } else {
-    toast('Bienvenue ' + email + (localOnly?' (mode local)':' ✓'));
+    toast('Bienvenue '+email+(localOnly?' (mode local)':' ✓'));
   }
   appInit();
 }
 
-// ── Chargement cloud silencieux au 1er accès ──
 async function _autoLoadFromCloud(emailId) {
   try {
-    const res = await fetch(_SB_REST_URL+'/btp_data?id=eq.'+emailId+'&select=project_data,updated_at&limit=1', {
-      method:'GET', headers:_sbHeaders()
-    });
+    const res=await fetch(_SB_REST_URL+'/btp_data?id=eq.'+emailId+'&select=project_data,updated_at&limit=1',{method:'GET',headers:_sbHeaders()});
     if(!res.ok) return false;
-    const data = await res.json();
-    if(!data || !data.length || !data[0].project_data) return false;
-    const d = data[0].project_data;
-    if(!d.project || !d.project.nom) return false;
-    // Charger les données directement dans le state
-    project      = d.project;
-    tasks        = Array.isArray(d.tasks)        ? d.tasks        : [];
-    transactions = Array.isArray(d.transactions) ? d.transactions : [];
-    txId         = typeof d.txId === 'number'    ? d.txId         : 1;
-    saveState();
-    return true;
-  } catch(e) {
-    console.warn('[CloudRestore] Erreur:', e.message);
-    return false;
-  }
+    const data=await res.json();
+    if(!data||!data.length||!data[0].project_data) return false;
+    const d=data[0].project_data;
+    if(!d.project||!d.project.nom) return false;
+    project=d.project;tasks=Array.isArray(d.tasks)?d.tasks:[];
+    transactions=Array.isArray(d.transactions)?d.transactions:[];
+    txId=typeof d.txId==='number'?d.txId:1;
+    saveState();return true;
+  } catch(e){console.warn('[CloudRestore]',e.message);return false;}
 }
 
-// ── Écran de chargement cloud ──
 function _showCloudLoadingScreen(email) {
-  // Créer un overlay de chargement si pas encore présent
-  let overlay = document.getElementById('cloudLoadingOverlay');
-  if(!overlay) {
-    overlay = document.createElement('div');
-    overlay.id = 'cloudLoadingOverlay';
-    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:linear-gradient(160deg,#0C1222,#1A2742);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--font);gap:20px';
-    overlay.innerHTML = `
-      <div style="width:56px;height:56px;border:3px solid rgba(108,138,255,.3);border-top-color:#6C8AFF;border-radius:50%;animation:spin .8s linear infinite"></div>
-      <div style="text-align:center">
-        <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">Restauration des données</div>
-        <div style="font-size:13px;color:rgba(255,255,255,.55)">Chargement depuis le cloud pour<br><b style="color:#6C8AFF">${email}</b></div>
-      </div>
-      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
-    `;
-    document.body.appendChild(overlay);
+  let ov=document.getElementById('cloudLoadingOverlay');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='cloudLoadingOverlay';
+    ov.style.cssText='position:fixed;inset:0;z-index:99998;background:linear-gradient(160deg,#0C1222,#1A2742);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--font);gap:20px';
+    ov.innerHTML='<div style="width:56px;height:56px;border:3px solid rgba(108,138,255,.3);border-top-color:#6C8AFF;border-radius:50%;animation:spin .8s linear infinite"></div><div style="text-align:center"><div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">Restauration des donnees</div><div style="font-size:13px;color:rgba(255,255,255,.55)">Chargement cloud pour<br><b style="color:#6C8AFF">'+email+'</b></div></div><style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
+    document.body.appendChild(ov);
   }
-  overlay.style.display = 'flex';
+  ov.style.display='flex';
 }
+function _hideCloudLoadingScreen(){const ov=document.getElementById('cloudLoadingOverlay');if(ov)ov.style.display='none';}
 
-function _hideCloudLoadingScreen() {
-  const overlay = document.getElementById('cloudLoadingOverlay');
-  if(overlay) overlay.style.display = 'none';
-}
-
-// ══ cpUnlock → REDIRIGE SELON CONTEXTE ══
-function cpUnlock() {
-  const savedEmail = localStorage.getItem('cp_email');
-  const savedFp    = localStorage.getItem('cp_email_fp');
-  const fp = window._cachedFp || cpFingerprint();
-  if(savedEmail && savedFp === fp) {
-    // Même appareil déjà enregistré — accès direct
-    window._userEmail = savedEmail;
-    _sbPinHash = localStorage.getItem('cp_email_id') || _emailToId(savedEmail);
+// ══ cpUnlock ══
+function cpUnlock(){
+  const savedEmail=localStorage.getItem('cp_email');
+  const savedFp=localStorage.getItem('cp_email_fp');
+  const fp=window._cachedFp||cpFingerprint();
+  if(savedEmail&&savedFp===fp){
+    window._userEmail=savedEmail;
+    _sbPinHash=localStorage.getItem('cp_email_id')||_emailToId(savedEmail);
+    window._packMax=parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
     _emailSetupCloud(savedEmail);
-    const ls = document.getElementById('lockScreen');
-    if(ls) ls.style.display='none';
+    const ls=document.getElementById('lockScreen');
+    if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
     localStorage.removeItem('cp_tries3');
     appInit();
   } else {
-    // Après validation clé → afficher étape email
     lockGoStep('email');
-    // Sync l'empreinte dans le champ
-    const fp2El = document.getElementById('lockFpShort2');
-    if(fp2El) fp2El.textContent = fp;
+    const fp2El=document.getElementById('lockFpShort2');
+    if(fp2El) fp2El.textContent=fp;
   }
 }
 
-// ══ cpCheck → AFFICHER STEP CHOIX OU ACCÈS DIRECT ══
-function cpCheck_post() {
-  const savedEmail = localStorage.getItem('cp_email');
-  const savedFp    = localStorage.getItem('cp_email_fp');
-  const fp = window._cachedFp || cpFingerprint();
-  if(savedEmail && savedFp === fp) {
-    // Appareil déjà reconnu → bypass complet de l'écran
-    window._userEmail = savedEmail;
-    _sbPinHash = localStorage.getItem('cp_email_id') || _emailToId(savedEmail);
+function cpCheck_post(){
+  const savedEmail=localStorage.getItem('cp_email');
+  const savedFp=localStorage.getItem('cp_email_fp');
+  const fp=window._cachedFp||cpFingerprint();
+  if(savedEmail&&savedFp===fp){
+    window._userEmail=savedEmail;
+    _sbPinHash=localStorage.getItem('cp_email_id')||_emailToId(savedEmail);
+    window._packMax=parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
     _emailSetupCloud(savedEmail);
-    const ls = document.getElementById('lockScreen');
-    if(ls) ls.style.display='none';
+    const ls=document.getElementById('lockScreen');
+    if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
     localStorage.removeItem('cp_tries3');
     appInit();
     return true;
@@ -3380,58 +3466,131 @@ function cpCheck_post() {
   return false;
 }
 
-// ══ SETUP CLOUD PREFERENCES ══
-function _emailSetupCloud(email) {
-  const emailId = localStorage.getItem('cp_email_id') || _emailToId(email);
-  _sbPinHash = emailId;
-  const badge = document.getElementById('sbPinStatus');
-  if(badge){badge.textContent='✅ '+email;badge.style.background='var(--success-l)';badge.style.color='var(--success)';}
-  const info = document.getElementById('sbPinInfo');
-  if(info) info.textContent = 'Cloud lié à '+email;
-  const conn = document.getElementById('sbConnectedZone');
-  if(conn) conn.style.display='block';
-  const row = document.getElementById('sbPinEntryRow');
-  if(row) row.style.display='none';
-  // ── Afficher le badge pack dans la topbar ──
+// ══ SETUP CLOUD + BADGE PACK TOPBAR ══
+function _emailSetupCloud(email){
+  const emailId=localStorage.getItem('cp_email_id')||_emailToId(email);
+  _sbPinHash=emailId;
   _updatePackBadge();
+  _updatePrefPackCard();
 }
 
 function _updatePackBadge(){
-  const badge = document.getElementById('packBadge');
+  const badge=document.getElementById('packBadge');
   if(!badge) return;
-  const maxDev = window._packMax || parseInt(localStorage.getItem('cp_pack_max')||'1') || 1;
-  const packInfo = _PACK_DEFS[maxDev] || _PACK_DEFS[1];
-  badge.style.display = 'flex';
-  badge.style.background = packInfo.bg;
-  badge.style.borderColor = packInfo.border;
-  badge.style.color = packInfo.color;
-  badge.title = 'Pack '+packInfo.name+' — '+maxDev+' appareil(s) max';
-  badge.innerHTML = packInfo.icon+' <span>Pack '+packInfo.name+'</span>';
+  const maxDev=window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
+  const pack=_PACK_DEFS[maxDev]||_PACK_DEFS[1];
+  badge.style.display='flex';
+  badge.style.background=pack.bg;
+  badge.style.borderColor=pack.border;
+  badge.style.color=pack.color;
+  badge.innerHTML=pack.icon+' <span style="font-size:11px;font-weight:700">Pack '+pack.name+'</span>';
 }
 
-// ── Helpers PIN conservés pour compatibilité ──
+function _updatePrefPackCard(){
+  const email=window._userEmail||localStorage.getItem('cp_email')||'—';
+  const maxDev=window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
+  const pack=_PACK_DEFS[maxDev]||_PACK_DEFS[1];
+  // Màj icone/nom/email
+  const pi=document.getElementById('prefPackIcon');if(pi)pi.textContent=pack.icon;
+  const pn=document.getElementById('prefPackName');if(pn){pn.textContent='Pack '+pack.name;pn.style.color=pack.color;}
+  const pe=document.getElementById('prefPackEmail');if(pe)pe.textContent=email;
+  const pb=document.getElementById('prefPackBadge');if(pb){pb.style.background=pack.bg;pb.style.color=pack.color;}
+  // Afficher les appareils depuis Supabase
+  _loadDevicesForPrefCard();
+}
+
+async function _loadDevicesForPrefCard(){
+  const emailId=_sbPinHash||localStorage.getItem('cp_email_id');
+  if(!emailId) return;
+  const fp=window._cachedFp||cpFingerprint();
+  const maxDev=window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
+  try {
+    const res=await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=devices,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
+    if(!res.ok) return;
+    const data=await res.json();
+    if(!data||!data.length) return;
+    const devices=data[0].devices||[];
+    const max=data[0].max_devices||maxDev;
+    const pack=_PACK_DEFS[max]||_PACK_DEFS[1];
+    const used=devices.length;
+    const isFull=used>=max;
+    // Màj barre
+    const dc=document.getElementById('prefDevCount');if(dc)dc.textContent=used+' / '+max;
+    const db=document.getElementById('prefDevBar');
+    if(db){db.style.width=Math.min(100,Math.round(used/max*100))+'%';db.style.background=isFull?'var(--danger)':pack.color;}
+    // Liste appareils
+    const dl=document.getElementById('prefDevList');
+    if(dl){
+      dl.innerHTML=devices.map((d,i)=>{
+        const isMe=d===fp;
+        return '<div style="display:flex;align-items:center;gap:6px;padding:3px 0">'
+          +'<span style="font-size:12px">'+(isMe?'📱':'💻')+'</span>'
+          +'<span style="color:var(--text2)">Appareil '+(i+1)+(isMe?' <b style="color:var(--accent)">(cet appareil)</b>':'')+'</span>'
+          +'</div>';
+      }).join('');
+    }
+    // Avertissement si plein
+    const pw=document.getElementById('prefPackWarning');if(pw)pw.style.display=isFull?'block':'none';
+    // Màj boutons zone connectée
+    const conn=document.getElementById('sbConnectedZone');if(conn)conn.style.display='block';
+    const row=document.getElementById('sbPinEntryRow');if(row)row.style.display='none';
+  } catch(e){}
+}
+
+// ══ MENU UPGRADE ══
+function toggleUpgradeMenu(){
+  // Chercher les deux menus possibles (topbar + pref)
+  ['upgradeMenuTopbar','upgradeMenuPref'].forEach(id=>{
+    const m=document.getElementById(id);
+    if(m) m.style.display=m.style.display==='block'?'none':'block';
+  });
+  // Fermer au clic extérieur
+  setTimeout(()=>{
+    document.addEventListener('click',_closeUpgradeMenus,{once:true});
+  },100);
+}
+function _closeUpgradeMenus(){
+  ['upgradeMenuTopbar','upgradeMenuPref'].forEach(id=>{
+    const m=document.getElementById(id);if(m)m.style.display='none';
+  });
+}
+
+function requestUpgrade(packMax){
+  const pack=_PACK_DEFS[packMax]||_PACK_DEFS[1];
+  const email=window._userEmail||localStorage.getItem('cp_email')||'';
+  const currentMax=window._packMax||1;
+  const currentPack=_PACK_DEFS[currentMax]||_PACK_DEFS[1];
+  const msg='Bonjour, je souhaite passer du Pack '+currentPack.name+' au Pack '+pack.name+' ('+packMax+' appareils).'
+    +(email?' Mon email: '+email:'')
+    +' Pouvez-vous me faire une offre ? Merci.';
+  const url='https://wa.me/'+WHATSAPP_NUMBER+'?text='+encodeURIComponent(msg);
+  window.open(url,'_blank');
+  // Fermer les menus
+  _closeUpgradeMenus();
+}
+
+// ══ HELPERS COMPATIBILITÉ ══
 function sbUpdatePinStrength(){}
 function sbTogglePin(){}
-function sbConnectPin(){toast('Connecté via email: '+(window._userEmail||'—'));}
-
-function sbDisconnectPin(){
-  if(!confirm('Delier cet appareil ? Vous devrez ressaisir votre email.')) return;
-  localStorage.removeItem('cp_email');
-  localStorage.removeItem('cp_email_fp');
-  localStorage.removeItem('cp_email_id');
-  _sbPinHash=null; window._userEmail=null;
-  const badge=document.getElementById('sbPinStatus');
-  if(badge){badge.textContent='Non lie';badge.style.background='var(--surface3)';badge.style.color='var(--text3)';}
-  toast('Email delie');
-}
+function sbConnectPin(){toast('Connecte via email: '+(window._userEmail||'—'));}
+function sbDisconnectPin(){disconnectCurrentDevice();}
 
 function _sbStatus(msg,type='info'){
-  const el=document.getElementById('sbStatus');
-  if(!el)return;
+  const el=document.getElementById('sbStatus');if(!el)return;
   el.style.display=msg?'block':'none';
   const s={ok:{c:'var(--success)',bg:'var(--success-l)'},err:{c:'var(--danger)',bg:'var(--danger-l)'},info:{c:'var(--text2)',bg:'var(--surface2)'}};
   const st=s[type]||s.info;
   el.style.color=st.c;el.style.background=st.bg;el.textContent=msg;
+}
+
+// ── Admin : sélecteur pack ──
+function selectPack(el){
+  document.querySelectorAll('.pack-opt').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function _getSelectedPack(){
+  const a=document.querySelector('.pack-opt.active');
+  return a?parseInt(a.dataset.max)||1:1;
 }
 
 // ── Cloud sync ──
@@ -3444,8 +3603,7 @@ async function syncToCloud(){
     const res=await fetch(_SB_REST_URL+'/btp_data',{method:'POST',headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body});
     if(!res.ok) throw new Error('HTTP '+res.status);
     _sbStatus('Sauvegarde le '+new Date().toLocaleString('fr-FR'),'ok');
-    toast('Données sauvegardées ☁️ ✓');
-    _showSyncIndicator();
+    toast('Donnees sauvegardees ☁️ ✓');_showSyncIndicator();
   }catch(e){_sbStatus('Erreur: '+e.message,'err');toast('Erreur sauvegarde','err');}
 }
 
@@ -3456,26 +3614,41 @@ async function syncFromCloud(){
     const res=await fetch(_SB_REST_URL+'/btp_data?id=eq.'+_sbPinHash+'&select=project_data,updated_at&limit=1',{method:'GET',headers:_sbHeaders()});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
-    if(!data||!data.length||!data[0].project_data){_sbStatus('Aucune donnee trouvee','info');return;}
+    if(!data||!data.length||!data[0].project_data){_sbStatus('Aucune donnee','info');return;}
     const d=data[0].project_data;
     if(!d.project||!d.project.nom){_sbStatus('Donnees invalides','err');return;}
     if(!confirm('Charger les donnees du '+new Date(data[0].updated_at).toLocaleString('fr-FR')+' ? Cela remplacera vos donnees locales.')) return;
-    project=d.project;tasks=Array.isArray(d.tasks)?d.tasks:[];transactions=Array.isArray(d.transactions)?d.transactions:[];txId=typeof d.txId==='number'?d.txId:1;
+    project=d.project;tasks=Array.isArray(d.tasks)?d.tasks:[];
+    transactions=Array.isArray(d.transactions)?d.transactions:[];
+    txId=typeof d.txId==='number'?d.txId:1;
     saveState();startApp();closeModal('setupModal');
     _sbStatus('Donnees chargees — '+transactions.length+' transaction(s)','ok');
-    toast('Données cloud chargées ✓');
+    toast('Donnees cloud chargees ✓');
   }catch(e){_sbStatus('Erreur: '+e.message,'err');toast('Erreur chargement','err');}
+}
+
+let _autoSyncTimer=null;
+function _autoSyncDebounced(){
+  clearTimeout(_autoSyncTimer);
+  _autoSyncTimer=setTimeout(async function(){
+    if(!_sbPinHash||!project) return;
+    try{
+      const body=JSON.stringify({id:_sbPinHash,project_data:{project,tasks,transactions,txId,synced:new Date().toISOString(),version:'4.0'},updated_at:new Date().toISOString()});
+      const res=await fetch(_SB_REST_URL+'/btp_data',{method:'POST',headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body});
+      if(res.ok){_showSyncIndicator();console.log('[AutoSync] OK');}
+    }catch(e){console.warn('[AutoSync]',e.message);}
+  },3000);
 }
 
 function initSbOnStartup(){
   const email=localStorage.getItem('cp_email');
-  if(!email)return;
+  if(!email) return;
   window._userEmail=email;
+  window._packMax=parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
   _emailSetupCloud(email);
 }
 
 
-// ── Pré-initialiser le client Supabase UNE SEULE FOIS ──
 
 // PAGE RAPPORTS — Filtres, KPI, Graphiques, PDF, CSV
 // ══════════════════════════════════════════════════
@@ -3930,4 +4103,44 @@ document.addEventListener('keydown',e=>{
 
 </script>
 </body>
-</html>
+</html>    <!-- ════ ÉTAPE 1A : J'AI DÉJÀ UN COMPTE → EMAIL ════ -->
+    <div id="lockStepExisting" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:none;border-radius:var(--r-sm);padding:6px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:12px;font-family:var(--font)">← Retour</button>
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9)">Connexion avec mon email</div>
+      </div>
+      <input id="existingEmailInput" type="email" placeholder="votre@email.com"
+        style="width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r-md);padding:13px 18px;font-size:15px;color:#fff;text-align:center;outline:none;font-family:var(--font);margin-bottom:6px;transition:.2s"
+        oninput="existingEmailValidate()" onkeydown="if(event.key==='Enter')submitExistingEmail()">
+      <div id="existingEmailMsg" style="font-size:11px;text-align:center;margin-bottom:10px;min-height:16px;color:rgba(255,255,255,.4)"></div>
+      <!-- Carte pack -->
+      <div id="lockPackInfoCard" style="display:none;border-radius:var(--r-md);padding:14px;margin-bottom:10px;border:1.5px solid rgba(108,138,255,.4);background:rgba(108,138,255,.08)">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div id="lpiIcon" style="font-size:28px;flex-shrink:0">📱</div>
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+              <span id="lpiName" style="font-size:13px;font-weight:800;color:#fff">Pack Démarrage</span>
+              <span id="lpiStatusBadge" style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:var(--r-full);background:rgba(108,138,255,.3);color:#6C8AFF">ACTIF</span>
+            </div>
+            <div id="lpiEmail" style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap">—</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px">
+          <span style="color:rgba(255,255,255,.6)">Appareils connectés</span>
+          <span id="lpiDevCount" style="font-weight:700;color:#fff">0 / 1</span>
+        </div>
+        <div style="height:8px;background:rgba(255,255,255,.1);border-radius:var(--r-full);overflow:hidden;margin-bottom:6px">
+          <div id="lpiDevBar" style="height:100%;border-radius:var(--r-full);transition:width .5s;width:0%"></div>
+        </div>
+        <div id="lpiWarning" style="display:none;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-sm);padding:8px 10px;font-size:11px;color:#FB7185;line-height:1.5;margin-bottom:8px">
+          ⚠️ <b>Limite atteinte !</b> Connecter cet appareil <b>bloquera définitivement votre compte</b>.
+        </div>
+        <button id="lpiDeconnBtn" onclick="disconnectCurrentDevice()" style="display:none;width:100%;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-sm);padding:8px;color:#FB7185;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">
+          🔌 Me déconnecter d'un appareil pour libérer une place
+        </button>
+      </div>
+      <button class="lock-btn" id="existingEmailBtn" onclick="submitExistingEmail()" style="opacity:.5;cursor:not-allowed" disabled>
+        📧 Accéder à mon compte
+      </button>
+    </div>
+

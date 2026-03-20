@@ -3184,8 +3184,74 @@ async function _grantAccess(email, emailId, localOnly) {
   const ls = document.getElementById('lockScreen');
   if(ls){ ls.style.display='none'; ls.style.pointerEvents='none'; ls.style.opacity='0'; }
   localStorage.removeItem('cp_tries3');
-  toast('Bienvenue ' + email + (localOnly?' (mode local)':' ✓'));
+
+  // ── Tenter de charger les données cloud AVANT d'appInit ──
+  // Si l'appareil est nouveau (pas de données locales) → charger auto depuis cloud
+  const hasLocalData = !!localStorage.getItem('bc_data');
+  if(!localOnly && !hasLocalData) {
+    // Afficher un écran de chargement temporaire
+    _showCloudLoadingScreen(email);
+    const loaded = await _autoLoadFromCloud(emailId);
+    _hideCloudLoadingScreen();
+    if(loaded) {
+      toast('Données restaurées depuis le cloud ✓');
+    } else {
+      toast('Bienvenue ' + email + ' — aucune donnée cloud trouvée');
+    }
+  } else {
+    toast('Bienvenue ' + email + (localOnly?' (mode local)':' ✓'));
+  }
   appInit();
+}
+
+// ── Chargement cloud silencieux au 1er accès ──
+async function _autoLoadFromCloud(emailId) {
+  try {
+    const res = await fetch(_SB_REST_URL+'/btp_data?id=eq.'+emailId+'&select=project_data,updated_at&limit=1', {
+      method:'GET', headers:_sbHeaders()
+    });
+    if(!res.ok) return false;
+    const data = await res.json();
+    if(!data || !data.length || !data[0].project_data) return false;
+    const d = data[0].project_data;
+    if(!d.project || !d.project.nom) return false;
+    // Charger les données directement dans le state
+    project      = d.project;
+    tasks        = Array.isArray(d.tasks)        ? d.tasks        : [];
+    transactions = Array.isArray(d.transactions) ? d.transactions : [];
+    txId         = typeof d.txId === 'number'    ? d.txId         : 1;
+    saveState();
+    return true;
+  } catch(e) {
+    console.warn('[CloudRestore] Erreur:', e.message);
+    return false;
+  }
+}
+
+// ── Écran de chargement cloud ──
+function _showCloudLoadingScreen(email) {
+  // Créer un overlay de chargement si pas encore présent
+  let overlay = document.getElementById('cloudLoadingOverlay');
+  if(!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'cloudLoadingOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;z-index:99998;background:linear-gradient(160deg,#0C1222,#1A2742);display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:var(--font);gap:20px';
+    overlay.innerHTML = `
+      <div style="width:56px;height:56px;border:3px solid rgba(108,138,255,.3);border-top-color:#6C8AFF;border-radius:50%;animation:spin .8s linear infinite"></div>
+      <div style="text-align:center">
+        <div style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px">Restauration des données</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.55)">Chargement depuis le cloud pour<br><b style="color:#6C8AFF">${email}</b></div>
+      </div>
+      <style>@keyframes spin{to{transform:rotate(360deg)}}</style>
+    `;
+    document.body.appendChild(overlay);
+  }
+  overlay.style.display = 'flex';
+}
+
+function _hideCloudLoadingScreen() {
+  const overlay = document.getElementById('cloudLoadingOverlay');
+  if(overlay) overlay.style.display = 'none';
 }
 
 // ══ cpUnlock → REDIRIGE SELON CONTEXTE ══

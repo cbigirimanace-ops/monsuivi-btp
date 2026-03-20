@@ -661,6 +661,9 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
         <button onclick="requestUpgrade(5)" class="upgrade-opt">🏢 Pack Entreprise — 5 appareils</button>
         <div style="font-size:10px;color:var(--text3);padding:6px 8px;border-top:1px solid var(--border);margin-top:4px;line-height:1.4">Vous serez redirigé vers WhatsApp pour finaliser.</div>
       </div>
+      <button class="topbar-btn" id="btnLogout" onclick="confirmLogout()" style="display:none;align-items:center;gap:5px;color:var(--danger);border-color:rgba(224,49,49,.3)" title="Se déconnecter">
+        🔌 <span style="font-size:11px;font-weight:700">Déconnecter</span>
+      </button>
       <button class="topbar-btn" id="btnSetup" onclick="openSetup()" style="display:none" title="Paramètres">⚙️</button>
       <button class="topbar-btn topbar-btn-new" id="btnReset" onclick="confirmReset()" style="display:none">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -1943,6 +1946,7 @@ function startApp(){
   document.getElementById('navPills').style.display='flex';
   document.getElementById('btnSetup').style.display='flex';
   document.getElementById('btnReset').style.display='flex';
+  const bl=document.getElementById('btnLogout');if(bl)bl.style.display='flex';
   buildNprixSelects();buildLotFilters();
   renderBanner();renderJournal();renderMiniKpi();
   initUserName();
@@ -3339,6 +3343,13 @@ function _lockShowBlocked(msg) {
 }
 
 // ══ DÉCONNEXION D'UN APPAREIL (libère une place) ══
+
+// ── Déconnexion depuis la topbar ──
+function confirmLogout(){
+  if(!confirm('Se déconnecter de cet appareil ?\nVotre empreinte sera supprimée — vous pourrez vous reconnecter avec votre email sur un autre appareil.')) return;
+  disconnectCurrentDevice();
+}
+
 async function disconnectCurrentDevice() {
   const email=window._userEmail||localStorage.getItem('cp_email');
   const fp=window._cachedFp||cpFingerprint();

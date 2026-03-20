@@ -1361,16 +1361,7 @@ function cpFingerprint(){
   }
 }
 
-function cpMakeCode(fp){
-  const secret=_cpDeriveSecret();
-  const str=secret+fp+secret;
-  let h=0x811c9dc5>>>0;
-  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
-  const A='ABCDEFGHJKMNPQRSTVWXYZ23456789';
-  let out='',n=h;
-  for(let i=0;i<7;i++){out=A[n%30]+out;n=Math.floor(n/30);}
-  return out;
-}
+// cpMakeCode v1 supprimé — voir version v2 avec packMax ci-dessous
 
 // ── SECURITY: Rate limiting for brute force ──
 const MAX_ATTEMPTS = 10;
@@ -1439,19 +1430,25 @@ function submitLockCode(){
   const inp=document.getElementById('lockCodeInput');
   const btn=document.getElementById('lockSubmitBtn');
   const val=(inp.value||'').replace(/\s/g,'').toUpperCase();
-  if(val.length<5){
+  if(val.length<7){
     cpShake();
     const sub=document.getElementById('lockSub');
-    if(sub) sub.innerHTML='<span style="color:#FFA8A8">&#9888;&#65039; Entrez votre code (7 caract&egrave;res)</span>';
+    if(sub) sub.innerHTML='<span style="color:#FFA8A8">&#9888;&#65039; Entrez votre code d\'activation (8 caractères)</span>';
     setTimeout(()=>{ if(sub) sub.innerHTML='Saisissez votre code d&#39;activation<br>pour acc&eacute;der &agrave; votre espace de travail'; },2500);
     return;
   }
 
   const fp=cpFingerprint();
-  const exp=cpMakeCode(fp);
+  // Extraire la base et le pack depuis le code saisi (ex: "FNZKF82Q" → base="FNZKF82", pack=2)
+  const packFromCode = cpExtractPack(val);
+  const baseFromCode = cpCodeBase(val);
+  const expectedBase = cpCodeBase(cpMakeCode(fp, packFromCode));
 
-  if(val===exp){
-    localStorage.setItem('cp_auth3',JSON.stringify({fp,code:exp,ts:Date.now()}));
+  if(baseFromCode===expectedBase){
+    // Stocker avec le code complet incluant le suffix pack
+    localStorage.setItem('cp_pack_max', packFromCode);
+    window._packMax = packFromCode;
+    localStorage.setItem('cp_auth3',JSON.stringify({fp,code:val,ts:Date.now()}));
     localStorage.removeItem('cp_tries3');
     localStorage.removeItem('cp_lockout');
     btn.textContent='✓ Activé !';

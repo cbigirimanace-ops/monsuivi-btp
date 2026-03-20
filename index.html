@@ -111,6 +111,53 @@ html.theme-transition,html.theme-transition *,html.theme-transition *::before,ht
 }
 .theme-toggle-track.active .theme-toggle-thumb{transform:translateX(24px)}
 
+/* ══ THEME TOGGLE BUTTON (topbar) — Style interrupteur soleil/lune ══ */
+/* Design basé sur l'image : pill doré (light) ↔ pill sombre (dark) avec thumb glissant */
+#btnTheme{
+  position:relative;padding:0;border:none;cursor:pointer;background:none;
+  width:64px;height:30px;border-radius:15px;flex-shrink:0;
+  outline:none;transition:box-shadow .2s;
+}
+#btnTheme:focus-visible{box-shadow:0 0 0 3px rgba(var(--accent-rgb),.3)}
+.tt-track{
+  position:relative;width:64px;height:30px;border-radius:15px;
+  /* Light mode : fond doré/ambre */
+  background:#E8A020;
+  transition:background .4s cubic-bezier(.4,0,.2,1),box-shadow .3s;
+  display:flex;align-items:center;overflow:hidden;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+}
+[data-theme="dark"] .tt-track{background:#2D3348;}
+/* Thumb (cercle blanc) */
+.tt-thumb{
+  position:absolute;left:4px;
+  width:22px;height:22px;border-radius:50%;
+  background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.22);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1),background .3s;
+  z-index:2;
+}
+[data-theme="dark"] .tt-thumb{transform:translateX(34px);}
+/* Icônes sun + moon dans la piste */
+.tt-sun,.tt-moon{
+  position:absolute;top:50%;transform:translateY(-50%);
+  display:flex;align-items:center;justify-content:center;
+  width:18px;height:18px;z-index:1;transition:opacity .35s;
+}
+/* Sun : à droite de la piste (light mode) */
+.tt-sun{right:6px;opacity:1;}
+[data-theme="dark"] .tt-sun{opacity:0;}
+/* Moon : à gauche de la piste (dark mode) */
+.tt-moon{left:6px;opacity:0;}
+[data-theme="dark"] .tt-moon{opacity:1;}
+.tt-sun svg,.tt-moon svg{width:14px;height:14px;}
+.tt-sun svg{stroke:#fff;fill:none;}
+.tt-moon svg{stroke:#fff;fill:none;}
+/* Animation du thumb au clic */
+@keyframes ttBounce{0%{transform:translateX(34px) scale(.85)}60%{transform:translateX(34px) scale(1.12)}100%{transform:translateX(34px) scale(1)}}
+@keyframes ttBounceBack{0%{transform:translateX(0) scale(.85)}60%{transform:translateX(0) scale(1.12)}100%{transform:translateX(0) scale(1)}}
+.tt-thumb.anim-to-dark{animation:ttBounce .4s cubic-bezier(.34,1.56,.64,1) forwards;}
+.tt-thumb.anim-to-light{animation:ttBounceBack .4s cubic-bezier(.34,1.56,.64,1) forwards;}
+
 .currency-card{
   padding:14px 16px;border-radius:var(--r-md);border:2px solid var(--border);
   background:var(--surface);cursor:pointer;transition:.2s;
@@ -652,7 +699,29 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
       </a>
       <div class="topbar-sep"></div>
-      <button class="topbar-btn" id="btnTheme" onclick="toggleTheme()" title="Changer de thème">🌙</button>
+      <!-- Toggle thème style interrupteur (soleil/lune) -->
+      <button id="btnTheme" onclick="toggleTheme()" title="Changer de thème" aria-label="Changer de thème">
+        <span class="tt-track">
+          <!-- Thumb (cercle blanc glissant) -->
+          <span class="tt-thumb" id="ttThumb"></span>
+          <!-- Icône lune à gauche (visible en dark) -->
+          <span class="tt-moon">
+            <svg viewBox="0 0 24 24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+            </svg>
+          </span>
+          <!-- Icône soleil à droite (visible en light) -->
+          <span class="tt-sun">
+            <svg viewBox="0 0 24 24" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="5"/>
+              <line x1="12" y1="19" x2="12" y2="22"/><line x1="4.22" y1="4.22" x2="6.34" y2="6.34"/>
+              <line x1="17.66" y1="17.66" x2="19.78" y2="19.78"/><line x1="2" y1="12" x2="5" y2="12"/>
+              <line x1="19" y1="12" x2="22" y2="12"/><line x1="4.22" y1="19.78" x2="6.34" y2="17.66"/>
+              <line x1="17.66" y1="6.34" x2="19.78" y2="4.22"/>
+            </svg>
+          </span>
+        </span>
+      </button>
       <div id="packBadge" style="display:none;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-full);font-size:11px;font-weight:700;border:1.5px solid;cursor:pointer;position:relative" onclick="toggleUpgradeMenu()" title="Votre pack — cliquez pour changer"></div>
       <div id="upgradeMenuTopbar" style="display:none;position:absolute;top:56px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:8px;z-index:9999;min-width:210px;box-shadow:0 8px 24px rgba(0,0,0,.15)">
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;margin-bottom:4px">Changer de pack — via WhatsApp</div>
@@ -1397,20 +1466,54 @@ function cpCheck(){
       const storedBase=cpCodeBase(d.code);
       const expectedBase=cpCodeBase(cpMakeCode(fp,cpExtractPack(d.code)));
       if(d.fp===fp && storedBase===expectedBase){
+        // SÉCURITÉ : Vérifier la blacklist locale avant d'accepter (code révoqué ?)
+        if(_isBlacklisted(d.code)){
+          localStorage.removeItem('cp_auth3');
+          cpShowForm();return;
+        }
         window._packMax=cpExtractPack(d.code);
-        localStorage.setItem('cp_pack_max',window._packMax);cpUnlock();return;}
+        localStorage.setItem('cp_pack_max',window._packMax);
+        // SÉCURITÉ : Re-vérification périodique côté Supabase (tous les 7 jours)
+        const lastCheck=parseInt(localStorage.getItem('cp_last_cloud_check')||'0');
+        if(Date.now()-lastCheck > 7*24*60*60*1000){
+          // En arrière-plan : vérifier que la licence est toujours valide
+          _periodicLicenseCheck(d.code, fp, cpExtractPack(d.code));
+        }
+        cpUnlock();return;
+      }
       cpShowBlocked();return;
     }catch(e){/* corrupted data */}
   }
   cpShowForm();
 }
 
+// Vérification périodique cloud en arrière-plan (sans bloquer l'UI)
+async function _periodicLicenseCheck(code, fp, packMax){
+  try{
+    const licId=_licenseToId(code);
+    const res=await fetch(_SB_REST_URL+'/btp_licenses?id=eq.'+licId+'&select=id,used,fp_hash&limit=1',{method:'GET',headers:_sbHeaders()});
+    if(!res.ok) return;
+    const data=await res.json();
+    localStorage.setItem('cp_last_cloud_check',String(Date.now()));
+    if(!data||!data.length) return; // Ancienne licence non enregistrée → tolérer
+    const lic=data[0];
+    // Si la licence est marquée used avec une AUTRE empreinte → fraude
+    if(lic.used && lic.fp_hash && lic.fp_hash!==_fnvHash(fp)){
+      _blacklistCode(code);
+      _revokeLocalAuth('Votre clé a été détectée comme frauduleuse. Accès révoqué.');
+    }
+  }catch(e){/* Silencieux — ne pas bloquer l'app */}
+}
+
 function cpShowForm(){
-  document.getElementById('lockScreen').style.display='flex';
-  document.getElementById('lockFormSection').style.display='block';
-  document.getElementById('lockBlockedSection').style.display='none';
-  document.getElementById('setupScreen').style.display='none';
-  document.getElementById('mainApp').style.display='none';
+  // FIX CRITIQUE : lockFormSection/lockBlockedSection n'existent pas → utiliser lockGoStep
+  const ls=document.getElementById('lockScreen');
+  if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';}
+  const ss=document.getElementById('setupScreen');
+  if(ss) ss.style.display='none';
+  const ma=document.getElementById('mainApp');
+  if(ma) ma.style.display='none';
+  lockGoStep('choice'); // Afficher l'écran de choix (connexion existante ou nouvelle clé)
   setTimeout(()=>{const i=document.getElementById('lockCodeInput');if(i)i.focus();},350);
 }
 
@@ -1420,11 +1523,9 @@ function cpShowBlocked(){
   lockGoStep('blocked');
 }
 
-function cpUnlock(){
-  document.getElementById('lockScreen').style.display='none';
-  localStorage.removeItem('cp_tries3');
-  appInit();
-}
+// NOTE: Cette première définition de cpUnlock est remplacée par la version complète
+// définie plus bas (qui gère le flux email). Ne pas utiliser cette version directement.
+// function cpUnlock_LEGACY(){ ... } — conservée en commentaire pour référence
 
 function submitLockCode(){
   const inp=document.getElementById('lockCodeInput');
@@ -1460,8 +1561,8 @@ function submitLockCode(){
         btn.style.background='var(--success)';
         inp.style.borderColor='rgba(13,148,136,.7)';
         setTimeout(()=>{
-          const ls=document.getElementById('lockScreen');
-          if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
+          // Ne PAS masquer lockScreen ici — cpUnlock() gère la transition
+          // Si email non lié → lockScreen reste visible pour étape email
           cpUnlock();
         },700);
       } else {
@@ -1648,19 +1749,26 @@ function toggleTheme(){
     document.documentElement.setAttribute('data-theme','dark');
     localStorage.setItem('cp_theme','dark');
   }
-  updateThemeUI();
+  updateThemeUI(true); // true = animate
   // Re-render charts with correct colors
   if(document.getElementById('page-dashboard').classList.contains('active')) renderDashboard();
   if(document.getElementById('page-saisie').classList.contains('active')){renderJournal();renderMiniKpi();}
   if(document.getElementById('page-synthese').classList.contains('active')) renderSynthese();
 }
 
-function updateThemeUI(){
+function updateThemeUI(animate){
   const dark=_isDark();
-  // Topbar button
-  const btn=document.getElementById('btnTheme');
-  if(btn) btn.innerHTML=dark?'☀️':'🌙';
-  // Settings panel toggle
+  // Topbar toggle — le CSS [data-theme="dark"] gère la position du thumb et les icônes
+  // Animation de bounce sur le thumb lors du clic
+  if(animate){
+    const thumb=document.getElementById('ttThumb');
+    if(thumb){
+      thumb.classList.remove('anim-to-dark','anim-to-light');
+      void thumb.offsetWidth; // force reflow
+      thumb.classList.add(dark?'anim-to-dark':'anim-to-light');
+    }
+  }
+  // Settings panel toggle (dans le modal paramètres)
   const track=document.getElementById('themeTrack');
   if(track) track.classList.toggle('active',dark);
   const icon=document.getElementById('themeIcon');
@@ -1844,6 +1952,53 @@ function appInit(){
   }
   // Init Supabase if previously configured
   setTimeout(initSbOnStartup, 500);
+  // SÉCURITÉ : Vérification différée pour activations hors-ligne
+  setTimeout(_verifyPendingActivation, 2000);
+}
+
+// SÉCURITÉ : Valider les activations faites hors-ligne (quand Supabase était down)
+async function _verifyPendingActivation(){
+  const pending=localStorage.getItem('cp_pending_verify');
+  if(!pending) return;
+  try{
+    const {code,fp,packMax,ts}=JSON.parse(pending);
+    // Ignorer si plus de 7 jours
+    if(Date.now()-ts > 7*24*60*60*1000){localStorage.removeItem('cp_pending_verify');return;}
+    const licId=_licenseToId(code);
+    const res=await fetch(_SB_REST_URL+'/btp_licenses?id=eq.'+licId+'&select=id,used,fp_hash&limit=1',{method:'GET',headers:_sbHeaders()});
+    if(!res.ok) return; // Toujours hors-ligne, réessayer plus tard
+    const data=await res.json();
+    localStorage.removeItem('cp_pending_verify');
+    if(!data||!data.length){
+      // Licence non trouvée → activation invalide → révoquer
+      console.warn('[Security] Activation hors-ligne invalide — licence absente du cloud');
+      _revokeLocalAuth('Votre activation n\'a pas pu être vérifiée. Clé inconnue du serveur.');
+      return;
+    }
+    const lic=data[0];
+    if(lic.used){
+      // Déjà marqué used — vérifier si c'est notre propre activation (même fp_hash)
+      const fpHash=_fnvHash(fp);
+      if(lic.fp_hash&&lic.fp_hash!==fpHash){
+        // Différent appareil → fraude détectée
+        _blacklistCode(code);
+        _revokeLocalAuth('Clé déjà activée sur un autre appareil. Accès révoqué.');
+        return;
+      }
+      // C'est notre activation → tout bon, juste marquer depuis cloud
+      await _markLicenseUsed(licId,fp,packMax);
+    }
+  }catch(e){console.warn('[PendingVerify]',e.message);}
+}
+
+// Révoquer l'accès local en cas de fraude détectée
+function _revokeLocalAuth(msg){
+  localStorage.removeItem('cp_auth3');
+  localStorage.removeItem('cp_email');
+  localStorage.removeItem('cp_email_fp');
+  localStorage.removeItem('cp_pack_max');
+  alert('🔒 ACCÈS RÉVOQUÉ\n\n'+msg+'\n\nContactez l\'administrateur.');
+  location.reload();
 }
 
 window.onload=function(){cpCheck();};
@@ -3470,6 +3625,10 @@ function cpUnlock(){
     localStorage.removeItem('cp_tries3');
     appInit();
   } else {
+    // FIX: Ré-afficher le lockScreen AVANT d'afficher l'étape email
+    // Sans ça, l'étape email s'affiche dans un lockScreen caché → page blanche
+    const ls=document.getElementById('lockScreen');
+    if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';ls.style.opacity='1';}
     lockGoStep('email');
     const fp2El=document.getElementById('lockFpShort2');
     if(fp2El) fp2El.textContent=fp;
@@ -3677,13 +3836,54 @@ function _licenseToId(code) {
   return 'lic_' + _fnvHash(code.trim().toUpperCase()) + _fnvHash('BTPCIVIL_' + code.trim().toUpperCase());
 }
 
+// ══════════════════════════════════════════════════════════════
+// SÉCURITÉ LICENCES — Anti-fraude multicouche
+// Couche 1 : Math (cpMakeCode lié à l'empreinte)
+// Couche 2 : Supabase used=true (usage unique côté serveur)
+// Couche 3 : fp_hash check (empreinte cohérente)
+// Couche 4 : LocalStorage blacklist (cache local 90 jours)
+// Couche 5 : Vérification différée au démarrage
+// ══════════════════════════════════════════════════════════════
+
+// Blacklist locale : stocker les codes refusés pour bloquer sans réseau
+function _blacklistCode(code){
+  try{
+    const bl=JSON.parse(localStorage.getItem('cp_bl3')||'{}');
+    bl[_fnvHash(code.toUpperCase())]=Date.now()+90*24*60*60*1000; // 90 jours
+    localStorage.setItem('cp_bl3',JSON.stringify(bl));
+  }catch(e){}
+}
+function _isBlacklisted(code){
+  try{
+    const bl=JSON.parse(localStorage.getItem('cp_bl3')||'{}');
+    const exp=bl[_fnvHash(code.toUpperCase())];
+    if(exp&&exp>Date.now()) return true;
+    if(exp&&exp<=Date.now()){delete bl[_fnvHash(code.toUpperCase())];localStorage.setItem('cp_bl3',JSON.stringify(bl));}
+  }catch(e){}
+  return false;
+}
+
 // Enregistrer une nouvelle licence dans Supabase (admin)
+// SÉCURITÉ CRITIQUE : résolution=ignore-duplicates (jamais écraser used:true)
 async function _registerLicenseInCloud(code, fp, clientName, packMax) {
   try {
     const licId = _licenseToId(code);
+    // IMPORTANT : Vérifier d'abord si la licence existe déjà et est déjà utilisée
+    const checkRes = await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId + '&select=id,used&limit=1', {
+      method: 'GET', headers: _sbHeaders()
+    });
+    if(checkRes.ok){
+      const existing = await checkRes.json();
+      if(existing && existing.length > 0 && existing[0].used === true){
+        // Licence déjà activée → ne JAMAIS écraser used:true, même en tant qu'admin
+        alert('⚠️ SÉCURITÉ : Cette clé a déjà été activée et ne peut pas être réémise. Générez une nouvelle clé pour un autre appareil.');
+        console.warn('[Admin][Security] Tentative de re-registration d\'une licence déjà utilisée — BLOQUÉE');
+        return;
+      }
+    }
     const body = JSON.stringify({
       id: licId,
-      fp_hash: _fnvHash(fp),          // Empreinte hashée (pas en clair)
+      fp_hash: _fnvHash(fp),     // Hash de l'empreinte autorisée
       client_name: clientName,
       pack_max: packMax,
       used: false,
@@ -3691,76 +3891,104 @@ async function _registerLicenseInCloud(code, fp, clientName, packMax) {
       used_at: null,
       used_email: null,
     });
+    // SÉCURITÉ : 'ignore-duplicates' — si la ligne existe déjà, on ne l'écrase PAS
     const res = await fetch(_SB_REST_URL + '/btp_licenses', {
       method: 'POST',
-      headers: { ..._sbHeaders(), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      headers: { ..._sbHeaders(), 'Prefer': 'resolution=ignore-duplicates,return=minimal' },
       body
     });
     if(res.ok) {
-      console.log('[Admin] Licence enregistrée dans Supabase:', code);
+      console.log('[Admin] Licence enregistrée dans Supabase:', licId);
     } else {
-      console.warn('[Admin] Licence non enregistree:', await res.text());
+      console.warn('[Admin] Licence non enregistree:', res.status);
     }
   } catch(e) {
     console.warn('[Admin] Erreur enregistrement:', e.message);
   }
 }
 
-// Vérifier si une licence est valide et non utilisée
+// Vérifier si une licence est valide et non utilisée (multicouche)
 async function _checkLicenseUsage(code, fp, packMax) {
+  // Couche 4 : Vérification blacklist locale d'abord (sans réseau)
+  if(_isBlacklisted(code)){
+    return { ok: false, msg: 'Clé déjà refusée sur cet appareil. Contactez l\'administrateur.' };
+  }
   try {
     const licId = _licenseToId(code);
+    const fpHash = _fnvHash(fp);
     const res = await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId + '&select=id,used,used_email,fp_hash,pack_max&limit=1', {
       method: 'GET', headers: _sbHeaders()
     });
 
     if(!res.ok) {
-      // Supabase indisponible → autoriser (fallback local)
-      console.warn('[License] Supabase indisponible');
-      return { ok: true };
+      // Supabase indisponible — fallback sécurisé :
+      // Si la licence n'est pas dans localStorage admin non plus, refuser par précaution
+      console.warn('[License] Supabase indisponible — fallback mode');
+      // Vérifier si l'admin a généré cette licence localement (présence dans cp_lic3)
+      const localLics=cpGetLicenses();
+      const found=localLics.find(l=>l.code===code&&l.active&&!l.used);
+      if(found){
+        // Marquer localement comme utilisée pour éviter la double activation hors-ligne
+        const idx=localLics.findIndex(l=>l.code===code);
+        if(idx>=0){localLics[idx].used=true;cpSaveLicenses(localLics);}
+        // Enregistrer marquage différé (à valider quand Supabase revient)
+        localStorage.setItem('cp_pending_verify',JSON.stringify({code,fp,packMax,ts:Date.now()}));
+        return { ok: true };
+      }
+      // Aucune trace locale → refuser pour éviter fraude hors-ligne
+      return { ok: false, msg: 'Vérification impossible (hors-ligne). Connectez-vous à Internet pour activer.' };
     }
 
     const data = await res.json();
 
     if(!data || data.length === 0) {
-      // Licence pas encore dans Supabase (ancienne licence ou offline)
-      // Vérifier localement
-      return { ok: true };
+      // Licence absente de Supabase (ancienne ou générée hors-admin)
+      // Refuser par mesure de sécurité — admin doit enregistrer la licence d'abord
+      return { ok: false, msg: 'Clé non reconnue dans notre système. Contactez l\'administrateur.' };
     }
 
     const lic = data[0];
 
+    // COUCHE 3 : Vérifier que l'empreinte correspond à celle enregistrée
+    if(lic.fp_hash && lic.fp_hash !== fpHash){
+      _blacklistCode(code); // Blacklister localement
+      return { ok: false, msg: 'Cette clé appartient à un autre appareil. Chaque clé est liée à un seul appareil.' };
+    }
+
     // Licence déjà utilisée ?
     if(lic.used) {
+      _blacklistCode(code); // Blacklister pour éviter les tentatives répétées
       const msg = lic.used_email
-        ? 'Clé déjà utilisée par ' + lic.used_email.substring(0,4) + '***. Contactez administrateur.'
-        : 'Cle deja utilisee. Demandez une nouvelle cle a l\'administrateur.';
+        ? 'Clé déjà activée (compte : ' + lic.used_email.substring(0,4) + '***). Contactez l\'administrateur.'
+        : 'Clé déjà activée sur un appareil. Chaque clé est à usage unique.';
       return { ok: false, msg };
     }
 
-    // Marquer comme utilisée immédiatement
+    // ✅ Licence valide — marquer immédiatement comme utilisée (atomique)
     await _markLicenseUsed(licId, fp, packMax);
     return { ok: true };
 
   } catch(e) {
     console.warn('[License] Erreur verification:', e.message);
-    // En cas d'erreur réseau → autoriser (pas bloquer le client)
-    return { ok: true };
+    // Erreur réseau — fallback prudent
+    if(_isBlacklisted(code)) return { ok: false, msg: 'Clé déjà refusée localement.' };
+    return { ok: false, msg: 'Erreur de vérification réseau. Vérifiez votre connexion et réessayez.' };
   }
 }
 
-// Marquer la licence comme utilisée dans Supabase
+// Marquer la licence comme utilisée dans Supabase (PATCH atomique)
 async function _markLicenseUsed(licId, fp, packMax) {
   try {
-    await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId, {
+    const res = await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId, {
       method: 'PATCH',
       headers: _sbHeaders(),
       body: JSON.stringify({
         used: true,
         used_at: new Date().toISOString(),
-        used_fp_hash: _fnvHash(fp),
+        used_fp_hash: _fnvHash(fp), // Hash de l'empreinte qui a activé
       })
     });
+    if(!res.ok) console.warn('[License] Erreur PATCH used:', res.status);
   } catch(e) {
     console.warn('[License] Erreur marquage:', e.message);
   }
@@ -3859,18 +4087,33 @@ function renderRapport(){
     }
   }
 
-  // KPI
+  // KPI — calcul imprévus (budget alloué + consommé)
+  const _kpiImpPct=project?project.impPct||0:0;
+  const _kpiImpMax=_kpiImpPct>0?(project.budget*_kpiImpPct/100):0;
+  const _kpiImpCol=_kpiImpMax>0?(imp>_kpiImpMax?'var(--danger)':imp>_kpiImpMax*0.8?'var(--warning)':'var(--amber)'):'var(--warning)';
   const kpiEl=document.getElementById('rptKpi');
-  if(kpiEl) kpiEl.innerHTML=[
-    {i:'💸',l:'Dépenses',v:fmt(dep),c:'var(--danger)'},
-    {i:'💰',l:'Entrées',v:fmt(rec),c:'var(--success)'},
-    {i:'📊',l:'Solde net',v:fmt(sol),c:sol>=0?'var(--success)':'var(--danger)'},
-    {i:'👷',l:"Main d'oeuvre",v:fmt(mo),c:'var(--accent)'},
-    {i:'🧱',l:'Matériaux',v:fmt(mat),c:'var(--cyan)'},
-    {i:'⚙️',l:'Matériels',v:fmt(mtr),c:'var(--amber)'},
-    {i:'⚠️',l:'Imprévus',v:fmt(imp),c:'var(--warning)'},
-    {i:'🔢',l:'Transactions',v:tx.length,c:'var(--text)'},
-  ].map(k=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;box-shadow:var(--shadow-sm)"><div style="font-size:18px;margin-bottom:4px">${k.i}</div><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px">${k.l}</div><div style="font-weight:800;font-size:15px;color:${k.c}">${k.v}</div></div>`).join('');
+  if(kpiEl){
+    const baseKpis=[
+      {i:'💸',l:'Dépenses',v:fmt(dep),c:'var(--danger)'},
+      {i:'💰',l:'Entrées',v:fmt(rec),c:'var(--success)'},
+      {i:'📊',l:'Solde net',v:fmt(sol),c:sol>=0?'var(--success)':'var(--danger)'},
+      {i:'👷',l:"Main d'oeuvre",v:fmt(mo),c:'var(--accent)'},
+      {i:'🧱',l:'Matériaux',v:fmt(mat),c:'var(--cyan)'},
+      {i:'⚙️',l:'Matériels',v:fmt(mtr),c:'var(--amber)'},
+      {i:'🔢',l:'Transactions',v:tx.length,c:'var(--text)'},
+    ];
+    // Carte imprévus étendue : budget alloué + consommé
+    const impKpiHtml=`<div style="background:var(--warning-l);border:1.5px solid rgba(232,89,12,.25);border-radius:var(--r-md);padding:14px;box-shadow:var(--shadow-sm)">
+      <div style="font-size:18px;margin-bottom:4px">⚠️</div>
+      <div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px">Imprévus${_kpiImpPct>0?' ('+_kpiImpPct+'%)':''}</div>
+      ${_kpiImpMax>0
+        ?`<div style="font-weight:800;font-size:13px;color:${_kpiImpCol}">${fmt(imp)} <span style="font-size:10px;font-weight:600;color:var(--text3)">/ ${fmt(_kpiImpMax)}</span></div>
+           <div style="font-size:10px;color:var(--text3);margin-top:3px">Alloué : <b style="color:var(--warning)">${fmt(_kpiImpMax)}</b></div>`
+        :`<div style="font-weight:800;font-size:15px;color:${_kpiImpCol}">${fmt(imp)}</div>
+           <div style="font-size:10px;color:var(--text3);margin-top:3px">Aucun plafond défini</div>`}
+    </div>`;
+    kpiEl.innerHTML=baseKpis.map(k=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;box-shadow:var(--shadow-sm)"><div style="font-size:18px;margin-bottom:4px">${k.i}</div><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px">${k.l}</div><div style="font-weight:800;font-size:15px;color:${k.c}">${k.v}</div></div>`).join('')+impKpiHtml;
+  }
 
   // Avancement budget
   const bb=document.getElementById('rptBudgetBody');
@@ -3898,10 +4141,13 @@ function renderRapport(){
           <div style="font-size:10px;font-weight:600;color:var(--text3)">RESTANT</div>
           <div style="font-size:15px;font-weight:800;color:var(--success);margin-top:2px">${fmt(project.budget-dep)}</div>
         </div>
-        ${impMax>0?`<div style="background:var(--warning-l);border-radius:var(--r-sm);padding:10px;text-align:center;border:1px solid rgba(var(--accent-rgb),.1)">
-          <div style="font-size:10px;font-weight:600;color:var(--text3)">IMPRÉVUS (${impPct}%)</div>
-          <div style="font-size:15px;font-weight:800;color:${impCol};margin-top:2px">${fmt(impDep)}</div>
-          <div style="font-size:10px;color:${impCol};font-weight:700">${impPctUsed.toFixed(0)}% / max ${fmt(impMax)}</div>
+        ${(impMax>0||impDep>0)?`<div style="background:var(--warning-l);border-radius:var(--r-sm);padding:10px;text-align:center;border:1.5px solid rgba(232,89,12,.25)">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">BUDGET IMPRÉVUS${impPct>0?' ('+impPct+'%)':''}</div>
+          ${impMax>0
+            ?`<div style="font-size:15px;font-weight:800;color:var(--warning);margin-top:2px">${fmt(impMax)}</div>
+               <div style="font-size:10px;color:${impCol};font-weight:700;margin-top:2px">Consommé : ${fmt(impDep)} (${impPctUsed.toFixed(0)}%)</div>`
+            :`<div style="font-size:13px;font-weight:800;color:var(--warning);margin-top:2px">${fmt(impDep)}</div>
+               <div style="font-size:10px;color:var(--text3);margin-top:2px">Dépenses enregistrées — plafond non défini</div>`}
         </div>`:''}
       </div>
       <div style="margin-bottom:6px">
@@ -3922,10 +4168,24 @@ function renderRapport(){
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
           <span style="font-size:12px;font-weight:700;color:var(--text2)">⚠️ Imprévus${impPct>0?' ('+impPct+'% du budget)':''}</span>
           ${impMax>0
-            ?`<span style="font-size:12px;font-weight:800;color:${impCol}">${impPctUsed.toFixed(1)}% — ${fmt(impDep)} / ${fmt(impMax)}</span>`
-            :`<span style="font-size:12px;font-weight:700;color:var(--warning)">${fmt(impDep)} — aucun plafond défini</span>`}
+            ?`<span style="font-size:12px;font-weight:800;color:${impCol}">Budget alloué : <b>${fmt(impMax)}</b> — Consommé : ${fmt(impDep)} (${impPctUsed.toFixed(1)}%)</span>`
+            :`<span style="font-size:12px;font-weight:700;color:var(--warning)">${fmt(impDep)} consommé — aucun plafond défini</span>`}
         </div>
         ${impMax>0?`
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px">
+          <div style="background:var(--surface2);border-radius:var(--r-sm);padding:8px;text-align:center">
+            <div style="font-size:9px;font-weight:600;color:var(--text3)">ALLOUÉ</div>
+            <div style="font-size:13px;font-weight:800;color:var(--warning)">${fmt(impMax)}</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--r-sm);padding:8px;text-align:center">
+            <div style="font-size:9px;font-weight:600;color:var(--text3)">CONSOMMÉ</div>
+            <div style="font-size:13px;font-weight:800;color:${impCol}">${fmt(impDep)}</div>
+          </div>
+          <div style="background:var(--surface2);border-radius:var(--r-sm);padding:8px;text-align:center">
+            <div style="font-size:9px;font-weight:600;color:var(--text3)">DISPONIBLE</div>
+            <div style="font-size:13px;font-weight:800;color:${impDep>impMax?'var(--danger)':'var(--success)'}">${fmt(Math.max(0,impMax-impDep))}</div>
+          </div>
+        </div>
         <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
           <div class="progress-fill amber" id="rptImpFill2" style="background:${impCol};width:${Math.min(impPctUsed,100)}%"></div>
         </div>
@@ -3935,7 +4195,7 @@ function renderRapport(){
           <span>Plafond : ${fmt(impMax)}</span>
         </div>
         ${impPctUsed>100?`<div style="margin-top:6px;background:var(--danger-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--danger);font-weight:600">🔴 Dépassement du plafond imprévus : +${fmt(impDep-impMax)}</div>`:''}`:''}
-        ${impPct===0?`<div style="margin-top:6px;background:var(--amber-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--amber);font-weight:600">💡 Définissez un % d'imprévus dans Paramètres pour activer le suivi</div>`:''}
+        ${impPct===0?`<div style="margin-top:6px;background:var(--amber-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--amber);font-weight:600">💡 Définissez un % d'imprévus dans Paramètres pour activer le suivi automatique</div>`:''}
       </div>`:''}
       <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--text3);margin-top:10px">
         <span>🟢 0—60% : Dans les limites</span>
@@ -4176,7 +4436,10 @@ function exportRapportPDF(){
   <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
     <span>Consommation : <b style="color:${col}">${pct.toFixed(1)}% — ${fmt(dep)}</b></span>
     <span>Restant : <b style="color:#0D9488">${fmt(project.budget-dep)}</b></span>
-    ${_impMaxPdf>0?`<span>Imprévus : <b style="color:${_impColPdf}">${fmt(_impDepPdf)} / ${fmt(_impMaxPdf)} (${_impPctPdf.toFixed(0)}%)</b></span>`:''}
+    ${_impMaxPdf>0
+      ?`<span>Budget imprévus : <b style="color:#E8590C">${fmt(_impMaxPdf)}</b> (${_impPctPdf.toFixed(0)}%)</span>
+         <span>Imprévus consommés : <b style="color:${_impColPdf}">${fmt(_impDepPdf)} / ${fmt(_impMaxPdf)} — ${_impPctUsedPdf.toFixed(1)}%</b></span>`
+      :(_impDepPdf>0?`<span>Imprévus : <b style="color:#E8590C">${fmt(_impDepPdf)}</b> (plafond non défini)</span>`:'')}
   </div>
   <div class="progress-bg"><div class="progress-fill" style="width:${Math.min(pct,100)}%;background:${col}">${pct.toFixed(1)}%</div></div>
 </div>
@@ -4243,44 +4506,4 @@ document.addEventListener('keydown',e=>{
 
 </script>
 </body>
-</html>    <!-- ════ ÉTAPE 1A : J'AI DÉJÀ UN COMPTE → EMAIL ════ -->
-    <div id="lockStepExisting" style="display:none">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
-        <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:none;border-radius:var(--r-sm);padding:6px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:12px;font-family:var(--font)">← Retour</button>
-        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9)">Connexion avec mon email</div>
-      </div>
-      <input id="existingEmailInput" type="email" placeholder="votre@email.com"
-        style="width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r-md);padding:13px 18px;font-size:15px;color:#fff;text-align:center;outline:none;font-family:var(--font);margin-bottom:6px;transition:.2s"
-        oninput="existingEmailValidate()" onkeydown="if(event.key==='Enter')submitExistingEmail()">
-      <div id="existingEmailMsg" style="font-size:11px;text-align:center;margin-bottom:10px;min-height:16px;color:rgba(255,255,255,.4)"></div>
-      <!-- Carte pack -->
-      <div id="lockPackInfoCard" style="display:none;border-radius:var(--r-md);padding:14px;margin-bottom:10px;border:1.5px solid rgba(108,138,255,.4);background:rgba(108,138,255,.08)">
-        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <div id="lpiIcon" style="font-size:28px;flex-shrink:0">📱</div>
-          <div style="flex:1;min-width:0">
-            <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-              <span id="lpiName" style="font-size:13px;font-weight:800;color:#fff">Pack Démarrage</span>
-              <span id="lpiStatusBadge" style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:var(--r-full);background:rgba(108,138,255,.3);color:#6C8AFF">ACTIF</span>
-            </div>
-            <div id="lpiEmail" style="font-size:11px;color:rgba(255,255,255,.5);margin-top:2px;text-overflow:ellipsis;overflow:hidden;white-space:nowrap">—</div>
-          </div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:4px">
-          <span style="color:rgba(255,255,255,.6)">Appareils connectés</span>
-          <span id="lpiDevCount" style="font-weight:700;color:#fff">0 / 1</span>
-        </div>
-        <div style="height:8px;background:rgba(255,255,255,.1);border-radius:var(--r-full);overflow:hidden;margin-bottom:6px">
-          <div id="lpiDevBar" style="height:100%;border-radius:var(--r-full);transition:width .5s;width:0%"></div>
-        </div>
-        <div id="lpiWarning" style="display:none;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-sm);padding:8px 10px;font-size:11px;color:#FB7185;line-height:1.5;margin-bottom:8px">
-          ⚠️ <b>Limite atteinte !</b> Connecter cet appareil <b>bloquera définitivement votre compte</b>.
-        </div>
-        <button id="lpiDeconnBtn" onclick="disconnectCurrentDevice()" style="display:none;width:100%;background:rgba(251,113,133,.12);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-sm);padding:8px;color:#FB7185;font-size:11px;font-weight:600;cursor:pointer;font-family:var(--font)">
-          🔌 Me déconnecter d'un appareil pour libérer une place
-        </button>
-      </div>
-      <button class="lock-btn" id="existingEmailBtn" onclick="submitExistingEmail()" style="opacity:.5;cursor:not-allowed" disabled>
-        📧 Accéder à mon compte
-      </button>
-    </div>
-
+</html>

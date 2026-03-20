@@ -186,6 +186,9 @@ body::before{content:'';position:fixed;inset:0;z-index:-1;
 .topbar-btn:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
 .topbar-btn-new{background:linear-gradient(135deg,var(--accent),#7C3AED)!important;color:#fff!important;border-color:transparent!important;box-shadow:0 3px 10px rgba(var(--accent-rgb),.25);gap:5px}
 .topbar-btn-new:hover{box-shadow:0 5px 16px rgba(var(--accent-rgb),.35)!important;filter:brightness(1.05)}
+.pack-opt{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.15);border-radius:10px;padding:10px 8px;cursor:pointer;font-family:var(--font);color:#fff;text-align:center;transition:.2s}
+.pack-opt:hover{background:rgba(108,138,255,.2);border-color:rgba(108,138,255,.5)}
+.pack-opt.active{background:linear-gradient(135deg,rgba(59,91,219,.4),rgba(112,72,232,.4));border-color:#6C8AFF;box-shadow:0 0 12px rgba(108,138,255,.3)}
 .topbar-social{width:34px;height:34px;border-radius:var(--r-full);display:flex;align-items:center;justify-content:center;color:var(--text3);transition:.2s;text-decoration:none}
 .topbar-social:hover{color:var(--accent);background:var(--accent-l);transform:scale(1.1)}
 .topbar-sep{width:1px;height:20px;background:var(--border);margin:0 4px;flex-shrink:0}
@@ -592,6 +595,27 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
       <div class="admin-label">Générer un code client</div>
       <input class="admin-input" id="adminClientName" placeholder="Nom du client">
       <input class="admin-input" id="adminFpInput" placeholder="Empreinte client (7 caractères)">
+      <!-- Sélecteur de pack -->
+      <div style="margin:10px 0 12px">
+        <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Pack / Nombre d'appareils</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px" id="packSelector">
+          <button class="pack-opt active" data-pack="1" data-max="1" onclick="selectPack(this)">
+            <div style="font-size:18px;margin-bottom:4px">📱</div>
+            <div style="font-size:12px;font-weight:800">Démarrage</div>
+            <div style="font-size:10px;opacity:.7;margin-top:2px">1 appareil</div>
+          </button>
+          <button class="pack-opt" data-pack="2" data-max="2" onclick="selectPack(this)">
+            <div style="font-size:18px;margin-bottom:4px">💼</div>
+            <div style="font-size:12px;font-weight:800">Pro</div>
+            <div style="font-size:10px;opacity:.7;margin-top:2px">2 appareils</div>
+          </button>
+          <button class="pack-opt" data-pack="5" data-max="5" onclick="selectPack(this)">
+            <div style="font-size:18px;margin-bottom:4px">🏢</div>
+            <div style="font-size:12px;font-weight:800">Entreprise</div>
+            <div style="font-size:10px;opacity:.7;margin-top:2px">5 appareils</div>
+          </button>
+        </div>
+      </div>
       <button class="admin-btn admin-btn-blue" onclick="generateLicense()" style="width:100%">Générer le code</button>
       <div id="generatedCodeWrap" style="display:none;margin-top:14px">
         <div class="admin-label">Code à transmettre :</div>
@@ -639,6 +663,8 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
       </a>
       <div class="topbar-sep"></div>
       <button class="topbar-btn" id="btnTheme" onclick="toggleTheme()" title="Changer de thème">🌙</button>
+      <!-- Badge Pack -->
+      <div id="packBadge" style="display:none;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-full);font-size:11px;font-weight:700;border:1.5px solid;cursor:default" title="Votre abonnement"></div>
       <button class="topbar-btn" id="btnSetup" onclick="openSetup()" style="display:none" title="Paramètres">⚙️</button>
       <button class="topbar-btn topbar-btn-new" id="btnReset" onclick="confirmReset()" style="display:none">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
@@ -1310,7 +1336,14 @@ function cpFingerprint(){
   }
 }
 
-function cpMakeCode(fp){
+// Pack encodé dans le code : suffix P1 / P2 / P5
+const _PACK_DEFS = {
+  1: { name:'Démarrage', max:1, icon:'📱', color:'#6C8AFF', bg:'rgba(108,138,255,.15)', border:'rgba(108,138,255,.4)' },
+  2: { name:'Pro',       max:2, icon:'💼', color:'#0D9488', bg:'rgba(13,148,136,.15)',  border:'rgba(13,148,136,.4)'  },
+  5: { name:'Entreprise',max:5, icon:'🏢', color:'#F59F00', bg:'rgba(245,159,0,.15)',   border:'rgba(245,159,0,.4)'   },
+};
+
+function cpMakeCode(fp, packMax){
   const secret=_cpDeriveSecret();
   const str=secret+fp+secret;
   let h=0x811c9dc5>>>0;
@@ -1318,7 +1351,22 @@ function cpMakeCode(fp){
   const A='ABCDEFGHJKMNPQRSTVWXYZ23456789';
   let out='',n=h;
   for(let i=0;i<7;i++){out=A[n%30]+out;n=Math.floor(n/30);}
-  return out;
+  // Encoder le pack : ajouter un suffix P1/P2/P5
+  const pm = packMax||1;
+  return out + 'P' + pm;
+}
+
+function cpExtractPack(code){
+  // Extraire le max d'appareils depuis le code (ex: "ABCD123P2" → 2)
+  if(!code) return 1;
+  const m = code.match(/P(\d+)$/);
+  return m ? parseInt(m[1]) : 1;
+}
+
+function cpCodeBase(code){
+  // Extraire la partie de base sans le suffix pack
+  if(!code) return '';
+  return code.replace(/P\d+$/, '');
 }
 
 // ── SECURITY: Rate limiting for brute force ──
@@ -1352,7 +1400,14 @@ function cpCheck(){
   if(raw){
     try{
       const d=JSON.parse(raw);
-      if(d.fp===fp && d.code===cpMakeCode(fp)){
+      // Comparer en ignorant le suffix pack (compatibilité anciens codes)
+      const storedBase = cpCodeBase ? cpCodeBase(d.code) : d.code;
+      const expectedBase = cpCodeBase ? cpCodeBase(cpMakeCode(fp, cpExtractPack(d.code))) : cpMakeCode(fp);
+      if(d.fp===fp && storedBase===expectedBase){
+        // Lire le pack depuis le code stocké
+        const packMax = cpExtractPack ? cpExtractPack(d.code) : 1;
+        window._packMax = packMax;
+        localStorage.setItem('cp_pack_max', packMax);
         // Clé valide — vérifier si email déjà lié
         if(typeof cpCheck_post === 'function' && cpCheck_post()) return;
         cpUnlock(); return;
@@ -1482,6 +1537,16 @@ function closeAdmin(){
   if(ls) ls.style.zIndex = '99999';
 }
 
+function selectPack(el){
+  document.querySelectorAll('.pack-opt').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function _getSelectedPack(){
+  const active = document.querySelector('.pack-opt.active');
+  return active ? parseInt(active.dataset.max)||1 : 1;
+}
+
 function generateLicense(){
   const name=_sanitize((document.getElementById('adminClientName').value||'').trim());
   const fpInput=document.getElementById('adminFpInput');
@@ -1490,8 +1555,11 @@ function generateLicense(){
   const fp=(fpInput.value||'').replace(/\s/g,'').toUpperCase();
   if(!name){alert('Nom requis');return;}
   if(fp.length<5){alert('Empreinte invalide');return;}
-  const code=cpMakeCode(fp);
+  const packMax = _getSelectedPack();
+  const code=cpMakeCode(fp, packMax);
+  const packInfo = _PACK_DEFS[packMax] || _PACK_DEFS[1];
   document.getElementById('generatedCode').textContent=code;
+  document.getElementById('generatedCode').title='Pack '+packInfo.name+' — '+packMax+' appareil(s)';
   document.getElementById('generatedCodeWrap').style.display='block';
   const list=cpGetLicenses();
   const idx=list.findIndex(l=>l.fp===fp);
@@ -3101,19 +3169,31 @@ async function _checkEmailAccess(email, isNew) {
       }
 
       const devices = Array.isArray(acc.devices) ? acc.devices : [];
+      // Lire le max d'appareils depuis Supabase (stocké lors de la 1ère activation)
+      const maxDev = acc.max_devices || window._packMax || parseInt(localStorage.getItem('cp_pack_max')||'1') || 1;
 
       // Appareil déjà enregistré → accès direct
       if(devices.includes(fp)) {
+        window._packMax = maxDev;
         await _grantAccess(email, emailId, false);
         return;
       }
 
       // Nouvel appareil
-      if(devices.length < MAX_DEVICES) {
+      if(devices.length < maxDev) {
         await _addDeviceAndGrant(email, emailId, fp, devices);
       } else {
-        // 3e appareil → avertissement
-        _pendingWarningData = { email, emailId, fp };
+        // Limite atteinte → avertissement avec info pack
+        const packInfo = _PACK_DEFS[maxDev] || {name:'votre pack', max:maxDev};
+        _pendingWarningData = { email, emailId, fp, maxDev, packInfo };
+        // Mettre à jour le message d'avertissement
+        const warn = document.getElementById('lockStepWarning');
+        if(warn){
+          warn.querySelector('div:nth-child(3)').innerHTML =
+            'Votre email est utilisé sur <b style="color:#FBBF24">'+maxDev+'/'+maxDev+' appareil(s)</b> '
+            +'(Pack <b>'+packInfo.name+'</b>).<br>'
+            +'Continuer sur cet appareil <b style="color:#FB7185">bloquera définitivement votre compte</b>.';
+        }
         lockGoStep('warning');
       }
     } else {
@@ -3136,11 +3216,12 @@ async function _checkEmailAccess(email, isNew) {
 }
 
 async function _createAccountAndGrant(email, emailId, fp) {
+  const maxDev = window._packMax || parseInt(localStorage.getItem('cp_pack_max')||'1') || 1;
   try {
     await fetch(_SB_REST_URL+'/btp_accounts', {
       method:'POST',
       headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
-      body:JSON.stringify({id:emailId,email_hash:_fnvHash(email),devices:[fp],blocked:false,created_at:new Date().toISOString()})
+      body:JSON.stringify({id:emailId,email_hash:_fnvHash(email),devices:[fp],blocked:false,max_devices:maxDev,created_at:new Date().toISOString()})
     });
   } catch(e) { console.warn('[EmailAuth] Compte non cree en cloud:', e.message); }
   await _grantAccess(email, emailId, false);
@@ -3311,6 +3392,21 @@ function _emailSetupCloud(email) {
   if(conn) conn.style.display='block';
   const row = document.getElementById('sbPinEntryRow');
   if(row) row.style.display='none';
+  // ── Afficher le badge pack dans la topbar ──
+  _updatePackBadge();
+}
+
+function _updatePackBadge(){
+  const badge = document.getElementById('packBadge');
+  if(!badge) return;
+  const maxDev = window._packMax || parseInt(localStorage.getItem('cp_pack_max')||'1') || 1;
+  const packInfo = _PACK_DEFS[maxDev] || _PACK_DEFS[1];
+  badge.style.display = 'flex';
+  badge.style.background = packInfo.bg;
+  badge.style.borderColor = packInfo.border;
+  badge.style.color = packInfo.color;
+  badge.title = 'Pack '+packInfo.name+' — '+maxDev+' appareil(s) max';
+  badge.innerHTML = packInfo.icon+' <span>Pack '+packInfo.name+'</span>';
 }
 
 // ── Helpers PIN conservés pour compatibilité ──

@@ -459,63 +459,127 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 <div id="toast"></div>
 
 <!-- ══ LOCK SCREEN ══ -->
-<div id="lockScreen" style="display:flex">
-  <div class="lock-card" id="lockCard">
-    <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FscXVlXzEiIGRhdGEtbmFtZT0iQ2FscXVlIDEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZpZXdCb3g9IjAgMCA1NiA1NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogdXJsKCNEw6lncmFkw6lfc2Fuc19ub21fNik7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogIzFkMWQxYjsKICAgICAgfQoKICAgICAgLmNscy0zIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CgogICAgICAuY2xzLTQgewogICAgICAgIGZpbGw6IG5vbmU7CiAgICAgIH0KCiAgICAgIC5jbHMtNSB7CiAgICAgICAgZmlsbDogdXJsKCNEw6lncmFkw6lfc2Fuc19ub21fNC0yKTsKICAgICAgfQoKICAgICAgLmNscy02IHsKICAgICAgICBmaWxsOiB1cmwoI0TDqWdyYWTDqV9zYW5zX25vbV80KTsKICAgICAgfQogICAgPC9zdHlsZT4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzQiIGRhdGEtbmFtZT0iRMOpZ3JhZMOpIHNhbnMgbm9tIDQiIHgxPSIyMC45MSIgeTE9IjI1LjM4IiB4Mj0iMjcuMzYiIHkyPSIyNS4zOCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4xNSIgc3RvcC1jb2xvcj0iI2ZhZjJhNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4yMyIgc3RvcC1jb2xvcj0iI2Y5ZWQ5ZSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4zNiIgc3RvcC1jb2xvcj0iI2Y4ZTE4YiIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii41MSIgc3RvcC1jb2xvcj0iI2Y2Y2U2ZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii42NyIgc3RvcC1jb2xvcj0iI2YzYjM0MiIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NCIgc3RvcC1jb2xvcj0iI2VmOTAwYyIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44OCIgc3RvcC1jb2xvcj0iI2VmODkwMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzQtMiIgZGF0YS1uYW1lPSJEw6lncmFkw6kgc2FucyBub20gNCIgeDE9IjEwLjE0IiB5MT0iMzMuNTEiIHgyPSI0My4zNiIgeTI9IjIxLjA4IiB4bGluazpocmVmPSIjRMOpZ3JhZMOpX3NhbnNfbm9tXzQiLz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzYiIGRhdGEtbmFtZT0iRMOpZ3JhZMOpIHNhbnMgbm9tIDYiIHgxPSItMi4wNiIgeTE9IjM2Ljc4IiB4Mj0iNDMuMTQiIHkyPSIyMy4zOSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4xMiIgc3RvcC1jb2xvcj0iI2VmODkwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii40NyIgc3RvcC1jb2xvcj0iI2Y2YzE1OCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii42MSIgc3RvcC1jb2xvcj0iI2Y3ZDI3NCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NSIgc3RvcC1jb2xvcj0iI2ZhZjJhNSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgY2xhc3M9ImNscy0zIiB4PSIwIiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSIxNS43NyIgcnk9IjE1Ljc3Ii8+CiAgPGc+CiAgICA8cG9seWdvbiBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMjkuNTIgMzQuMzUgMjkuNTIgMzAuNDMgMzMuNzQgMzAuNDIgMzMuNzQgMjguMzcgMjcuMjkgMjguMzcgMjcuMjkgMzQuMzUgMjkuNTIgMzQuMzUiLz4KICAgIDxwb2x5Z29uIGNsYXNzPSJjbHMtNiIgcG9pbnRzPSIyNS4xMyAyMi4zOSAyNS4xMyAyNi4zMSAyMC45MSAyNi4zMiAyMC45MSAyOC4zNyAyNy4zNiAyOC4zNyAyNy4zNiAyMi4zOSAyNS4xMyAyMi4zOSIvPgogICAgPGc+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNSIgZD0iTTE4Ljk5LDI4YzAsNS4xLDMuNCw4LjQ5LDguNjcsOC40OSwzLjAyLDAsNS42MS0xLjMxLDYuODgtMy41MS0uNTYsMi40My0yLjM5LDQuMDMtMy41Niw0LjcyLTMuNTcsMi4xLTkuMTcuNTEtMTIuMjMtMi42Ny0zLjg1LTMuOTktMy43MS0xMC40OS0uNTctMTQuNzEsMy44NS01LjE3LDEwLjc0LTQuOTQsMTEuODUtNC45LDUuNjcuMTksOS40LDMuNDEsMTAuMzgsNC4zM2wtNS44NiwzLjI3Yy0xLjMxLTIuMjEtMy44Ni0zLjUxLTYuODgtMy41MS01LjI3LDAtOC42NywzLjM5LTguNjcsOC40OVoiLz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMzQuNTMsMzIuOTlsNS44NiwzLjI3Yy0yLjU0LDQuMDQtNy4zLDYuNjEtMTIuNzQsNi42MS04Ljk2LDAtMTUuNDUtNi40NS0xNS40NS0xNC44NnM2LjUtMTQuODcsMTUuNDUtMTQuODdjNS40LDAsMTAuMTUsMi41OCwxMi43NCw2LjYyLS45OC0uOTItNC43MS00LjE0LTEwLjM4LTQuMzMtMS4xMS0uMDQtOC4wMS0uMjctMTEuODUsNC45LTMuMTQsNC4yMi0zLjI3LDEwLjcyLjU3LDE0LjcxLDMuMDYsMy4xNyw4LjY2LDQuNzcsMTIuMjMsMi42NywxLjE4LS42OSwzLTIuMjksMy41Ni00LjcyWiIvPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik0zNC42MiwzMC4yNWMuMTEuNjQuMTksMS42LS4wOSwyLjczIi8+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTQzLjgsMzIuMDZjLTEuODgtLjQxLTMuNTctLjgzLTUuMDUtMS4yNCIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+" alt="Mon Suivi Financier BTP" style="width:56px;height:56px;margin:0 auto 16px;display:block;border-radius:14px;box-shadow:0 3px 10px rgba(239,137,0,.3)">
+<!-- ══════════════════════════════════════════════════════════ -->
+<!-- ÉCRAN D'ACCUEIL UNIFIÉ — Nouvelle connexion / Déjà un compte -->
+<!-- ══════════════════════════════════════════════════════════ -->
+<div id="lockScreen" style="display:flex;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0C1222 0%,#1A2742 50%,#151030 100%);align-items:center;justify-content:center;font-family:var(--font)">
+  <div class="lock-card" id="lockCard" style="max-width:460px;width:100%">
+
+    <!-- Logo & Titre -->
+    <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FscXVlXzEiIGRhdGEtbmFtZT0iQ2FscXVlIDEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZpZXdCb3g9IjAgMCA1NiA1NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogdXJsKCNEw6lncmFkw6lfc2Fuc19ub21fNik7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogIzFkMWQxYjsKICAgICAgfQoKICAgICAgLmNscy0zIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CgogICAgICAuY2xzLTQgewogICAgICAgIGZpbGw6IG5vbmU7CiAgICAgIH0KCiAgICAgIC5jbHMtNSB7CiAgICAgICAgZmlsbDogdXJsKCNEw6lncmFkw6lfc2Fuc19ub21fNC0yKTsKICAgICAgfQoKICAgICAgLmNscy02IHsKICAgICAgICBmaWxsOiB1cmwoI0TDqWdyYWTDqV9zYW5zX25vbV80KTsKICAgICAgfQogICAgPC9zdHlsZT4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzQiIGRhdGEtbmFtZT0iRMOpZ3JhZMOpIHNhbnMgbm9tIDQiIHgxPSIyMC45MSIgeTE9IjI1LjM4IiB4Mj0iMjcuMzYiIHkyPSIyNS4zOCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4xNSIgc3RvcC1jb2xvcj0iI2ZhZjJhNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4yMyIgc3RvcC1jb2xvcj0iI2Y5ZWQ5ZSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4zNiIgc3RvcC1jb2xvcj0iI2Y4ZTE4YiIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii41MSIgc3RvcC1jb2xvcj0iI2Y2Y2U2ZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii42NyIgc3RvcC1jb2xvcj0iI2YzYjM0MiIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NCIgc3RvcC1jb2xvcj0iI2VmOTAwYyIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44OCIgc3RvcC1jb2xvcj0iI2VmODkwMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzQtMiIgZGF0YS1uYW1lPSJEw6lncmFkw6kgc2FucyBub20gNCIgeDE9IjEwLjE0IiB5MT0iMzMuNTEiIHgyPSI0My4zNiIgeTI9IjIxLjA4IiB4bGluazpocmVmPSIjRMOpZ3JhZMOpX3NhbnNfbm9tXzQiLz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzYiIGRhdGEtbmFtZT0iRMOpZ3JhZMOpIHNhbnMgbm9tIDYiIHgxPSItMi4wNiIgeTE9IjM2Ljc4IiB4Mj0iNDMuMTQiIHkyPSIyMy4zOSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4xMiIgc3RvcC1jb2xvcj0iI2VmODkwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii40NyIgc3RvcC1jb2xvcj0iI2Y2YzE1OCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii42MSIgc3RvcC1jb2xvcj0iI2Y3ZDI3NCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NSIgc3RvcC1jb2xvcj0iI2ZhZjJhNSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgY2xhc3M9ImNscy0zIiB4PSIwIiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSIxNS43NyIgcnk9IjE1Ljc3Ii8+CiAgPGc+CiAgICA8cG9seWdvbiBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMjkuNTIgMzQuMzUgMjkuNTIgMzAuNDMgMzMuNzQgMzAuNDIgMzMuNzQgMjguMzcgMjcuMjkgMjguMzcgMjcuMjkgMzQuMzUgMjkuNTIgMzQuMzUiLz4KICAgIDxwb2x5Z29uIGNsYXNzPSJjbHMtNiIgcG9pbnRzPSIyNS4xMyAyMi4zOSAyNS4xMyAyNi4zMSAyMC45MSAyNi4zMiAyMC45MSAyOC4zNyAyNy4zNiAyOC4zNyAyNy4zNiAyMi4zOSAyNS4xMyAyMi4zOSIvPgogICAgPGc+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNSIgZD0iTTE4Ljk5LDI4YzAsNS4xLDMuNCw4LjQ5LDguNjcsOC40OSwzLjAyLDAsNS42MS0xLjMxLDYuODgtMy41MS0uNTYsMi40My0yLjM5LDQuMDMtMy41Niw0LjcyLTMuNTcsMi4xLTkuMTcuNTEtMTIuMjMtMi42Ny0zLjg1LTMuOTktMy43MS0xMC40OS0uNTctMTQuNzEsMy44NS01LjE3LDEwLjc0LTQuOTQsMTEuODUtNC45LDUuNjcuMTksOS40LDMuNDEsMTAuMzgsNC4zM2wtNS44NiwzLjI3Yy0xLjMxLTIuMjEtMy44Ni0zLjUxLTYuODgtMy41MS01LjI3LDAtOC42NywzLjM5LTguNjcsOC40OVoiLz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMzQuNTMsMzIuOTlsNS44NiwzLjI3Yy0yLjU0LDQuMDQtNy4zLDYuNjEtMTIuNzQsNi42MS04Ljk2LDAtMTUuNDUtNi40NS0xNS40NS0xNC44NnM2LjUtMTQuODcsMTUuNDUtMTQuODdjNS40LDAsMTAuMTUsMi41OCwxMi43NCw2LjYyLS45OC0uOTItNC43MS00LjE0LTEwLjM4LTQuMzMtMS4xMS0uMDQtOC4wMS0uMjctMTEuODUsNC45LTMuMTQsNC4yMi0zLjI3LDEwLjcyLjU3LDE0LjcxLDMuMDYsMy4xNyw4LjY2LDQuNzcsMTIuMjMsMi42NywxLjE4LS42OSwzLTIuMjksMy41Ni00LjcyWiIvPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik0zNC42MiwzMC4yNWMuMTEuNjQuMTksMS42LS4wOSwyLjczIi8+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTQzLjgsMzIuMDZjLTEuODgtLjQxLTMuNTctLjgzLTUuMDUtMS4yNCIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+" alt="Logo" style="width:56px;height:56px;margin:0 auto 14px;display:block;border-radius:14px;box-shadow:0 3px 10px rgba(239,137,0,.3)">
     <div class="lock-title">Mon Suivi Financier BTP</div>
-    <div class="lock-sub" id="lockSub">Saisissez votre code d'activation<br>pour accéder à votre espace de travail</div>
-    <div id="lockFormSection">
+
+    <!-- ════ ÉTAPE 0 : CHOIX ════ -->
+    <div id="lockStep0" style="text-align:center">
+      <div class="lock-sub" style="margin-bottom:24px">Bienvenue ! Comment souhaitez-vous accéder ?</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+
+        <!-- Bouton Déjà un compte -->
+        <button onclick="lockGoStep('existing')" style="background:linear-gradient(135deg,rgba(108,138,255,.2),rgba(124,58,237,.2));border:1.5px solid rgba(108,138,255,.4);border-radius:var(--r-md);padding:18px 12px;cursor:pointer;font-family:var(--font);text-align:center;transition:.2s;color:#fff" onmouseover="this.style.borderColor='rgba(108,138,255,.8)'" onmouseout="this.style.borderColor='rgba(108,138,255,.4)'">
+          <div style="font-size:28px;margin-bottom:6px">👤</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">J'ai déjà un compte</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);line-height:1.4">Entrez votre email pour accéder</div>
+        </button>
+
+        <!-- Bouton Nouvelle connexion -->
+        <button onclick="lockGoStep('new')" style="background:linear-gradient(135deg,rgba(59,91,219,.25),rgba(112,72,232,.25));border:1.5px solid rgba(59,91,219,.4);border-radius:var(--r-md);padding:18px 12px;cursor:pointer;font-family:var(--font);text-align:center;transition:.2s;color:#fff" onmouseover="this.style.borderColor='rgba(59,91,219,.8)'" onmouseout="this.style.borderColor='rgba(59,91,219,.4)'">
+          <div style="font-size:28px;margin-bottom:6px">🆕</div>
+          <div style="font-size:13px;font-weight:700;color:#fff;margin-bottom:3px">Première connexion</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55);line-height:1.4">J'ai une clé d'activation</div>
+        </button>
+
+      </div>
+      <div class="lock-fp-badge" id="lockFpBadge" onclick="copyFp()" title="Cliquer pour copier" style="cursor:pointer;margin-top:8px">
+        Empreinte : <b id="lockFpShort">—</b> 📋
+      </div>
+    </div>
+
+    <!-- ════ ÉTAPE 1A : J'AI DÉJÀ UN COMPTE → EMAIL ════ -->
+    <div id="lockStepExisting" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:none;border-radius:var(--r-sm);padding:6px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:12px;font-family:var(--font)">← Retour</button>
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9)">Connexion avec mon email</div>
+      </div>
+      <div class="lock-sub" style="margin-bottom:16px;font-size:12px">
+        Entrez l'adresse email liée à votre compte pour accéder depuis cet appareil.
+      </div>
+      <input id="existingEmailInput" type="email" placeholder="votre@email.com"
+        style="width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r-md);padding:13px 18px;font-size:16px;color:#fff;text-align:center;outline:none;font-family:var(--font);margin-bottom:8px;letter-spacing:1px;transition:.2s"
+        oninput="existingEmailValidate()"
+        onkeydown="if(event.key==='Enter')submitExistingEmail()">
+      <div id="existingEmailMsg" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:12px;min-height:16px"></div>
+      <button class="lock-btn" id="existingEmailBtn" onclick="submitExistingEmail()" style="opacity:.5;cursor:not-allowed" disabled>
+        📧 Accéder à mon compte
+      </button>
+      <div style="margin-top:12px;padding:10px;background:rgba(255,255,255,.05);border-radius:var(--r-sm);font-size:11px;color:rgba(255,255,255,.45);text-align:center;line-height:1.5">
+        Max. <b style="color:rgba(255,255,255,.7)">2 appareils</b> par compte · Au-delà = <b style="color:#FB7185">blocage définitif</b>
+      </div>
+    </div>
+
+    <!-- ════ ÉTAPE 1B : PREMIÈRE CONNEXION → CLÉ DE LICENCE ════ -->
+    <div id="lockStepNew" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px">
+        <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:none;border-radius:var(--r-sm);padding:6px 10px;color:rgba(255,255,255,.7);cursor:pointer;font-size:12px;font-family:var(--font)">← Retour</button>
+        <div style="font-size:13px;font-weight:700;color:rgba(255,255,255,.9)">Première connexion</div>
+      </div>
+      <div class="lock-sub" id="lockSub" style="margin-bottom:16px;font-size:12px">
+        Saisissez la clé d'activation reçue de l'administrateur.
+      </div>
       <input class="lock-input" id="lockCodeInput" type="text" maxlength="8"
-        placeholder="CODE" autocomplete="off" autocorrect="off" spellcheck="false"
+        placeholder="CLE" autocomplete="off" autocorrect="off" spellcheck="false"
         oninput="this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'')"
         onkeydown="if(event.key==='Enter')submitLockCode()">
       <button class="lock-btn" onclick="submitLockCode()" id="lockSubmitBtn">Activer</button>
+      <div style="margin-top:12px;padding:8px;background:rgba(59,91,219,.1);border-radius:var(--r-sm);font-size:11px;color:rgba(108,138,255,.8);text-align:center">
+        📋 Votre empreinte : <b id="lockFpShort2">—</b> — Communiquez-la à l'administrateur
+      </div>
     </div>
-    <div id="lockBlockedSection" style="display:none" class="lock-blocked">
-      <h3>Appareil non autorisé</h3>
-      <p>Cette application est liée à un autre appareil.<br>Contactez <b>Mon Suivi Financier BTP</b> pour un accès.</p>
+
+    <!-- ════ ÉTAPE 2 : EMAIL APRÈS ACTIVATION ════ -->
+    <div id="lockStepEmail" style="display:none">
+      <div style="text-align:center;margin-bottom:16px">
+        <div style="font-size:32px;margin-bottom:8px">🎉</div>
+        <div style="font-size:14px;font-weight:700;color:#6C8AFF;margin-bottom:4px">Accès activé !</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.65)">Liez votre email pour accéder depuis n'importe quel appareil</div>
+      </div>
+      <input id="newEmailInput" type="email" placeholder="votre@email.com"
+        style="width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.15);border-radius:var(--r-md);padding:13px 18px;font-size:16px;color:#fff;text-align:center;outline:none;font-family:var(--font);margin-bottom:8px;letter-spacing:1px;transition:.2s"
+        oninput="newEmailValidate()"
+        onkeydown="if(event.key==='Enter')submitNewEmail()">
+      <div id="newEmailMsg" style="font-size:11px;color:rgba(255,255,255,.4);text-align:center;margin-bottom:12px;min-height:16px"></div>
+      <button class="lock-btn" id="newEmailBtn" onclick="submitNewEmail()" style="opacity:.5;cursor:not-allowed" disabled>
+        🔗 Lier mon email &amp; accéder
+      </button>
     </div>
-    <div class="lock-fp-badge" id="lockFpBadge" onclick="copyFp()" title="Cliquer pour copier" style="cursor:pointer">
-      Empreinte : <b id="lockFpShort">—</b> 📋
+
+    <!-- ════ ÉTAPE : BLOQUÉ ════ -->
+    <div id="lockStepBlocked" style="display:none" class="lock-blocked">
+      <div style="font-size:48px;text-align:center;margin-bottom:12px">🚫</div>
+      <h3 style="color:#FB7185;margin-bottom:8px">Compte bloqué</h3>
+      <p id="lockBlockedMsg">Votre compte a été bloqué suite à une tentative de connexion non autorisée. Contactez l'administrateur.</p>
+      <div style="margin-top:12px;font-size:11px;color:rgba(255,255,255,.4)">📱 WhatsApp: +237 650 000 749</div>
     </div>
-  </div>
+
+    <!-- ════ ÉTAPE : AVERTISSEMENT 3e APPAREIL ════ -->
+    <div id="lockStepWarning" style="display:none;text-align:center">
+      <div style="font-size:48px;margin-bottom:12px">⚠️</div>
+      <div style="font-size:16px;font-weight:800;color:#FBBF24;margin-bottom:10px">Limite d'appareils atteinte</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.6;margin-bottom:16px">
+        Votre email est déjà utilisé sur <b style="color:#FBBF24">2 appareils</b>.<br>
+        Continuer sur cet appareil <b style="color:#FB7185">bloquera définitivement votre compte</b> et vous perdrez tout accès.
+      </div>
+      <div style="background:rgba(251,113,133,.1);border:1px solid rgba(251,113,133,.3);border-radius:var(--r-md);padding:12px;margin-bottom:14px;font-size:11px;color:#FB7185;line-height:1.5">
+        ⚠️ Cette action est <b>irréversible</b>. Seul l'administrateur pourra débloquer votre compte.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+        <button onclick="lockGoStep('choice')" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:var(--r-sm);padding:11px;color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">← Annuler</button>
+        <button onclick="lockForceAccess()" style="background:rgba(251,113,133,.15);border:1px solid rgba(251,113,133,.4);border-radius:var(--r-sm);padding:11px;color:#FB7185;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font)">⚠️ Forcer &amp; bloquer</button>
+      </div>
+    </div>
+
+  </div><!-- /lock-card -->
 </div>
-<script>
-// ═══ FINGERPRINT INLINE — S'exécute IMMÉDIATEMENT, sans attendre quoi que ce soit ═══
-(function immediateFingerprint(){
-  try{
-    var w=screen.width||1920, h=screen.height||1080, d=screen.colorDepth||24;
-    var lang=navigator.language||'fr';
-    var cpu=navigator.hardwareConcurrency||2;
-    var tz='UTC';
-    try{tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'UTC';}catch(e){}
-    var plat=navigator.platform||'Web';
-    var raw=[w,h,d,lang,cpu,tz,plat].join('|');
-    var hash=0x811c9dc5>>>0;
-    for(var i=0;i<raw.length;i++){hash^=raw.charCodeAt(i);hash=Math.imul(hash,0x01000193)>>>0;}
-    var chars='ABCDEFGHJKMNPQRSTVWXYZ23456789';
-    var fp='', n=hash;
-    for(var j=0;j<7;j++){fp=chars[n%30]+fp;n=Math.floor(n/30);}
-    // Afficher immédiatement
-    var el=document.getElementById('lockFpShort');
-    if(el) el.innerText=fp;
-    // Stocker globalement pour cpCheck
-    window._cachedFp=fp;
-    // Retry toutes les 200ms au cas où
-    var retries=0;
-    var iv=setInterval(function(){
-      retries++;
-      var el2=document.getElementById('lockFpShort');
-      if(el2) el2.innerText=fp;
-      if(retries>=10) clearInterval(iv);
-    },200);
-  }catch(err){
-    var el=document.getElementById('lockFpShort');
-    if(el) el.innerText='FP-ERR';
-    window._cachedFp='BTPDEF1';
-  }
-})();
-</script>
+
 
 <!-- ══ ADMIN PANEL ══ -->
 <div id="adminPanel">
@@ -1108,18 +1172,46 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
             <div class="currency-check">✓</div>
           </div>
         </div>
-        <!-- ☁️ SUPABASE CLOUD SYNC — Préconfigurée -->
+        <!-- ☁️ SYNC CLOUD — Via Email -->
         <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
-          <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:8px">☁️ Sync Cloud <span style="font-size:10px;font-weight:600;background:var(--success-l);color:var(--success);padding:2px 8px;border-radius:var(--r-full)">ACTIF</span></div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Synchronisation cloud activée — données sauvegardées en sécurité</div>
+          <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            ☁️ Sync Cloud
+            <span id="sbPinStatus" style="font-size:10px;font-weight:600;background:var(--surface3);color:var(--text3);padding:2px 8px;border-radius:var(--r-full)">Non lié</span>
+          </div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:14px">Vos données sont synchronisées via votre adresse email</div>
+
+          <!-- Champs cachés -->
           <input id="sbUrl" type="hidden" value="https://xlkckemorgpjybqshits.supabase.co">
           <input id="sbKey" type="hidden" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI">
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-success btn-sm" onclick="syncToCloud()">☁️ ↑ Sauvegarder</button>
-            <button class="btn btn-ghost btn-sm" onclick="syncFromCloud()">☁️ ↓ Charger</button>
+
+          <!-- Zone connectée -->
+          <div id="sbConnectedZone" style="display:none">
+            <div style="background:var(--success-l);border:1px solid rgba(13,148,136,.2);border-radius:var(--r-md);padding:12px;margin-bottom:12px;display:flex;align-items:center;gap:10px">
+              <span style="font-size:18px">✅</span>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:700;color:var(--success)">Cloud lié à votre email</div>
+                <div style="font-size:11px;color:var(--text3)" id="sbPinInfo">auto-connecté</div>
+              </div>
+              <button onclick="sbDisconnectPin()" style="background:none;border:1px solid var(--border);border-radius:var(--r-sm);padding:4px 10px;font-size:11px;cursor:pointer;color:var(--text2)">Délier</button>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn btn-success btn-sm" onclick="syncToCloud()">☁️ ↑ Sauvegarder</button>
+              <button class="btn btn-ghost btn-sm" onclick="syncFromCloud()">☁️ ↓ Charger</button>
+            </div>
           </div>
+
+          <!-- Zone non connectée -->
+          <div id="sbPinEntryRow" style="display:none">
+            <div style="background:var(--surface2);border-radius:var(--r-md);padding:12px;font-size:12px;color:var(--text2)">
+              Votre email sera demandé à la prochaine ouverture de l'application.
+            </div>
+          </div>
+
           <div id="sbStatus" style="margin-top:10px;font-size:12px;padding:8px 12px;border-radius:var(--r-sm);background:var(--surface2);display:none"></div>
-        </div>        </div>
+          <div style="margin-top:10px;font-size:11px;color:var(--text3);line-height:1.6;background:var(--surface2);border-radius:var(--r-sm);padding:8px 12px">
+            🔐 <b>Sécurité :</b> Max. 2 appareils par email. Une tentative sur un 3e appareil bloque définitivement le compte.
+          </div>
+        </div></div>
       </div>
     </div>
   </div>
@@ -1249,9 +1341,9 @@ function cpCheck(){
   // Check lockout
   const lockoutUntil=parseInt(localStorage.getItem('cp_lockout')||'0');
   if(Date.now()<lockoutUntil){
-    cpShowBlocked();
-    document.querySelector('.lock-blocked h3').textContent='Trop de tentatives';
-    document.querySelector('.lock-blocked p').innerHTML='Réessayez dans '+Math.ceil((lockoutUntil-Date.now())/60000)+' minute(s).';
+    lockGoStep('blocked');
+    const bm=document.getElementById('lockBlockedMsg');
+    if(bm) bm.textContent='Trop de tentatives — reessayez dans '+Math.ceil((lockoutUntil-Date.now())/60000)+' minute(s).';
     return;
   }
 
@@ -1259,32 +1351,47 @@ function cpCheck(){
   if(raw){
     try{
       const d=JSON.parse(raw);
-      if(d.fp===fp && d.code===cpMakeCode(fp)){cpUnlock();return;}
-      cpShowBlocked();return;
-    }catch(e){/* corrupted data */}
+      if(d.fp===fp && d.code===cpMakeCode(fp)){
+        // Clé valide — vérifier si email déjà lié
+        if(typeof cpCheck_post === 'function' && cpCheck_post()) return;
+        cpUnlock(); return;
+      }
+      // Clé invalide sur cet appareil → afficher choix
+      lockGoStep('choice');return;
+    }catch(e){}
   }
-  cpShowForm();
+  // Pas de clé — afficher le choix (nouveau/existant)
+  lockGoStep('choice');
 }
 
 function cpShowForm(){
   document.getElementById('lockScreen').style.display='flex';
-  document.getElementById('lockFormSection').style.display='block';
-  document.getElementById('lockBlockedSection').style.display='none';
+  lockGoStep('choice');
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('mainApp').style.display='none';
-  setTimeout(()=>{const i=document.getElementById('lockCodeInput');if(i)i.focus();},350);
 }
 
 function cpShowBlocked(){
   document.getElementById('lockScreen').style.display='flex';
-  document.getElementById('lockFormSection').style.display='none';
-  document.getElementById('lockBlockedSection').style.display='block';
+  lockGoStep('blocked');
 }
 
 function cpUnlock(){
   document.getElementById('lockScreen').style.display='none';
   localStorage.removeItem('cp_tries3');
-  appInit();
+  // Vérifier si l'email est déjà lié pour cet appareil
+  const savedEmail = localStorage.getItem('cp_email');
+  const savedFp = localStorage.getItem('cp_email_fp');
+  const fp = window._cachedFp || cpFingerprint();
+  if(savedEmail && savedFp === fp){
+    // Email déjà lié sur cet appareil — accès direct
+    window._userEmail = savedEmail;
+    _emailSetupCloud(savedEmail);
+    appInit();
+  } else {
+    // Première connexion sur cet appareil — demander l'email
+    showEmailScreen();
+  }
 }
 
 function submitLockCode(){
@@ -1647,6 +1754,17 @@ function saveState(){
   }
 }
 
+// ── Pré-initialiser le client Supabase UNE SEULE FOIS ──
+function _getSbClient() {
+  if (_sbClient) return _sbClient;
+  const url = document.getElementById('sbUrl');
+  const key = document.getElementById('sbKey');
+  if (!url || !key || !url.value || !key.value) return null;
+  if (typeof window.supabase === 'undefined') return null;
+  _sbClient = window.supabase.createClient(url.value, key.value);
+  return _sbClient;
+}
+
 // ── AUTO-SYNC SUPABASE (silencieux, 3s après la dernière action) ──
 let _autoSyncTimer=null;
 function _autoSyncDebounced(){
@@ -1791,15 +1909,7 @@ function finishSetup(){
 }
 
 function startApp(){
-  // Auto-connect Supabase au démarrage
-  if(!_sbClient){
-    _loadSbSDK(()=>{
-      try{
-        _sbClient=window.supabase.createClient(_SB_URL,_SB_KEY);
-        console.log('[MonSuivi BTP] Cloud sync actif');
-      }catch(e){}
-    });
-  }
+  // Sync REST API — pas besoin d'initialiser de client SDK
   // Auto-remplir les filtres dashboard avec les dates des transactions
   setTimeout(()=>{
     if(transactions.length){
@@ -2867,572 +2977,327 @@ function doImport(e){
 
 // ── SUPABASE OPTIONAL CLOUD SYNC ──
 // Chargement dynamique du SDK Supabase (seulement si configuré)
+// ══════════════════════════════════════════════════════════════
+// SYSTÈME EMAIL v2 — Choix Nouveau/Existant + Max 2 appareils
+// ══════════════════════════════════════════════════════════════
+
+const _SB_REST_URL = 'https://xlkckemorgpjybqshits.supabase.co/rest/v1';
+const _SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI';
+const MAX_DEVICES = 2;
+
 let _sbClient = null;
+let _sbPinHash = null;
+let _pendingWarningData = null;
 
-function _sbStatus(msg, type='info') {
-  const el = document.getElementById('sbStatus');
-  if (!el) return;
-  el.style.display = msg ? 'block' : 'none';
-  el.style.color = type==='ok'?'var(--success)':type==='err'?'var(--danger)':'var(--text2)';
-  el.style.background = type==='ok'?'var(--success-l)':type==='err'?'var(--danger-l)':'var(--surface2)';
-  el.textContent = msg;
+function _sbHeaders() {
+  return { 'Content-Type':'application/json', 'apikey':_SB_ANON_KEY, 'Authorization':'Bearer '+_SB_ANON_KEY, 'Prefer':'return=minimal' };
 }
 
-function _loadSbSDK(cb) {
-  if (typeof window.supabase !== 'undefined') { cb(); return; }
-  const s = document.createElement('script');
-  s.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js';
-  s.onload = cb;
-  s.onerror = () => _sbStatus('❌ Impossible de charger le SDK Supabase — vérifiez votre connexion', 'err');
-  document.head.appendChild(s);
+// ── Hash utilitaires ──
+function _fnvHash(str) {
+  let h = 0x811c9dc5>>>0;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
+  return h.toString(36).toUpperCase().padStart(8,'0').slice(0,8);
+}
+function _emailToId(email) {
+  const n = email.trim().toLowerCase();
+  return 'em_' + _fnvHash('BTPCIVIL_'+n) + _fnvHash(n+'_MONSUIVI');
 }
 
-function saveSbConfig() {
-  const url = (document.getElementById('sbUrl').value || '').trim();
-  const key = (document.getElementById('sbKey').value || '').trim();
-  if (!url || !key) { _sbStatus('⚠️ URL et clé anon requis', 'err'); return; }
-  if (!url.startsWith('https://')) { _sbStatus('⚠️ URL invalide — doit commencer par https://', 'err'); return; }
-  _sbStatus('🔄 Connexion en cours...', 'info');
-  _loadSbSDK(() => {
-    try {
-      _sbClient = window.supabase.createClient(url, key);
-      localStorage.setItem('cp_sb_url', url);
-      localStorage.setItem('cp_sb_key', key);
-      // Test connexion
-      _sbClient.from('btp_data').select('id').limit(1).then(({ error }) => {
-        if (error && error.code !== 'PGRST116') {
-          _sbStatus('❌ Erreur: ' + error.message + ' — Vérifiez que la table btp_data existe (exécutez supabase-schema.sql)', 'err');
-          _sbClient = null;
-        } else {
-          _sbStatus('✅ Connecté à Supabase ! Données prêtes à être synchronisées.', 'ok');
-          toast('Supabase connecté ✓');
-        }
-      });
-    } catch(e) {
-      _sbStatus('❌ ' + e.message, 'err');
-      _sbClient = null;
-    }
-  });
+// ══ NAVIGATION DES ÉTAPES ══
+function lockGoStep(step) {
+  ['lockStep0','lockStepExisting','lockStepNew','lockStepEmail','lockStepBlocked','lockStepWarning']
+    .forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
+  const map = {
+    'choice':   'lockStep0',
+    'existing': 'lockStepExisting',
+    'new':      'lockStepNew',
+    'email':    'lockStepEmail',
+    'blocked':  'lockStepBlocked',
+    'warning':  'lockStepWarning',
+  };
+  const target = document.getElementById(map[step]);
+  if(target) target.style.display = 'block';
+  // Focus auto
+  setTimeout(() => {
+    if(step==='existing') { const i=document.getElementById('existingEmailInput'); if(i)i.focus(); }
+    if(step==='new')      { const i=document.getElementById('lockCodeInput'); if(i)i.focus(); }
+    if(step==='email')    { const i=document.getElementById('newEmailInput'); if(i)i.focus(); }
+  }, 150);
 }
 
-async function syncToCloud() {
-  if (!_sbClient) { 
-    // Auto-reconnect with preconfigured credentials
-    await new Promise(resolve => { _loadSbSDK(() => { try { _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY); } catch(e){} resolve(); }); });
-    if (!_sbClient) { _sbStatus('Connexion impossible', 'err'); return; }
-  }
-  if (!project) { _sbStatus('⚠️ Aucun projet actif à sauvegarder', 'err'); return; }
-  const fp = cpFingerprint();
-  const payload = { project, tasks, transactions, txId, synced: new Date().toISOString(), version: '4.0' };
+// ══ VALIDATION EMAILS ══
+function existingEmailValidate() {
+  const v = (document.getElementById('existingEmailInput')||{}).value||'';
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  const btn = document.getElementById('existingEmailBtn');
+  const msg = document.getElementById('existingEmailMsg');
+  if(btn){btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';}
+  if(msg) msg.textContent = v.length>3&&!ok?'Adresse email invalide':'';
+}
+function newEmailValidate() {
+  const v = (document.getElementById('newEmailInput')||{}).value||'';
+  const ok = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+  const btn = document.getElementById('newEmailBtn');
+  const msg = document.getElementById('newEmailMsg');
+  if(btn){btn.disabled=!ok;btn.style.opacity=ok?'1':'0.5';btn.style.cursor=ok?'pointer':'not-allowed';}
+  if(msg) msg.textContent = v.length>3&&!ok?'Adresse email invalide':'';
+}
+
+// ══ FLUX "J'AI DÉJÀ UN COMPTE" ══
+async function submitExistingEmail() {
+  const email = ((document.getElementById('existingEmailInput')||{}).value||'').trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+  const btn = document.getElementById('existingEmailBtn');
+  if(btn){btn.textContent='⏳ Vérification...';btn.disabled=true;}
+  await _checkEmailAccess(email, false);
+  if(btn){btn.textContent='📧 Accéder à mon compte';btn.disabled=false;btn.style.opacity='1';}
+}
+
+// ══ FLUX "PREMIÈRE CONNEXION" — Après activation de la clé ══
+async function submitNewEmail() {
+  const email = ((document.getElementById('newEmailInput')||{}).value||'').trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return;
+  const btn = document.getElementById('newEmailBtn');
+  if(btn){btn.textContent='⏳ Liaison...';btn.disabled=true;}
+  await _checkEmailAccess(email, true);
+  if(btn){btn.textContent='🔗 Lier mon email & acceder';btn.disabled=false;btn.style.opacity='1';}
+}
+
+// ══ VÉRIFICATION CENTRALE ══
+async function _checkEmailAccess(email, isNew) {
+  const fp = window._cachedFp || cpFingerprint();
+  const emailId = _emailToId(email);
   try {
-    _sbStatus('🔄 Sauvegarde en cours...', 'info');
-    const { error } = await _sbClient.from('btp_data')
-      .upsert({ id: fp, project_data: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    if (error) throw error;
-    _sbStatus('✅ Sauvegardé le ' + new Date().toLocaleString('fr-FR'), 'ok');
-    toast('Données sauvegardées sur le cloud ✓');
-  } catch(e) {
-    _sbStatus('❌ Erreur de sauvegarde: ' + e.message, 'err');
-    toast('Erreur cloud', 'err');
-  }
-}
+    const res = await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=id,devices,blocked&limit=1', {
+      method:'GET', headers:_sbHeaders()
+    });
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data = await res.json();
 
-async function syncFromCloud() {
-  if (!_sbClient) {
-    await new Promise(resolve => { _loadSbSDK(() => { try { _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY); } catch(e){} resolve(); }); });
-    if (!_sbClient) { _sbStatus('Connexion impossible', 'err'); return; }
-  }
-  const fp = cpFingerprint();
-  try {
-    _sbStatus('🔄 Chargement depuis le cloud...', 'info');
-    const { data, error } = await _sbClient.from('btp_data').select('project_data, updated_at').eq('id', fp).maybeSingle();
-    if (error) throw error;
-    if (!data || !data.project_data) {
-      _sbStatus('ℹ️ Aucune donnée trouvée pour cet appareil — utilisez ↑ Sauvegarder en premier', 'info');
-      return;
-    }
-    const d = data.project_data;
-    if (!d.project || !d.project.nom) { _sbStatus('❌ Données cloud corrompues', 'err'); return; }
-    if (!confirm('Charger les données cloud ? Cela écrasera vos données locales.')) return;
-    project = d.project;
-    tasks = Array.isArray(d.tasks) ? d.tasks : [];
-    transactions = Array.isArray(d.transactions) ? d.transactions : [];
-    txId = typeof d.txId === 'number' ? d.txId : 1;
-    saveState(); startApp();
-    closeModal('setupModal');
-    const syncDate = new Date(data.updated_at).toLocaleString('fr-FR');
-    _sbStatus('✅ Données du ' + syncDate + ' chargées', 'ok');
-    toast('Données cloud chargées — ' + transactions.length + ' transaction(s) ✓');
-  } catch(e) {
-    _sbStatus('❌ Erreur de chargement: ' + e.message, 'err');
-    toast('Erreur cloud', 'err');
-  }
-}
+    if(data && data.length > 0) {
+      const acc = data[0];
 
-function disconnectSb() {
-  // Fonction réservée admin — non exposée aux clients
-  toast('Action non disponible', 'warn');
-}
+      // Compte bloqué ?
+      if(acc.blocked) {
+        _lockShowBlocked('Votre compte a ete bloque. Contactez administrateur.');
+        return;
+      }
 
-// ── SUPABASE CONFIG (préconfigurée) ──
-const _SB_URL = "https://xlkckemorgpjybqshits.supabase.co";
-const _SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI";
+      const devices = Array.isArray(acc.devices) ? acc.devices : [];
 
-function initSbOnStartup() {
-  // Connexion automatique avec les credentials préconfigurés
-  _loadSbSDK(() => {
-    try {
-      _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY);
-      console.log('[MonSuivi BTP] Supabase connecté automatiquement');
-    } catch(e) { console.error('[Supabase] Connexion échouée:', e); }
-  });
-}
+      // Appareil déjà enregistré → accès direct
+      if(devices.includes(fp)) {
+        await _grantAccess(email, emailId, false);
+        return;
+      }
 
-
-
-// ══════════════════════════════════════════════════
-// PAGE RAPPORTS — Filtres, KPI, Graphiques, PDF, CSV
-// ══════════════════════════════════════════════════
-
-let rptCharts = {};
-
-function buildRptFilters(){
-  // Lots
-  const lots = [...new Set(tasks.map(t=>t.lot))];
-  const lotSel = document.getElementById('rptLot');
-  if(lotSel){ lotSel.innerHTML='<option value="">Tous les lots</option>'; lots.forEach(l=>{ const o=document.createElement('option');o.value=l;o.textContent=l;lotSel.appendChild(o); }); }
-  // Désignations
-  const desigSel = document.getElementById('rptDesig');
-  if(desigSel){ desigSel.innerHTML='<option value="">Toutes</option>'; tasks.forEach(t=>{ const o=document.createElement('option');o.value=t.num;o.textContent=t.num+' — '+t.desig.slice(0,40);desigSel.appendChild(o); }); }
-}
-
-function resetRptFilters(){
-  ['rptDateFrom','rptDateTo','rptLot','rptDesig','rptCat','rptType'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
-  renderRapport();
-}
-
-function getFilteredTxRpt(){
-  const fDateFrom = (document.getElementById('rptDateFrom')||{}).value||'';
-  const fDateTo   = (document.getElementById('rptDateTo')||{}).value||'';
-  const fLot      = (document.getElementById('rptLot')||{}).value||'';
-  const fDesig    = (document.getElementById('rptDesig')||{}).value||'';
-  const fCat      = (document.getElementById('rptCat')||{}).value||'';
-  const fType     = (document.getElementById('rptType')||{}).value||'';
-  let tx = [...transactions];
-  if(fDateFrom) tx=tx.filter(t=>t.date>=fDateFrom);
-  if(fDateTo)   tx=tx.filter(t=>t.date<=fDateTo);
-  if(fLot)      tx=tx.filter(t=>t.lot===fLot);
-  if(fDesig)    tx=tx.filter(t=>t.nprix===fDesig);
-  if(fCat)      tx=tx.filter(t=>t.categorie===fCat);
-  if(fType)     tx=tx.filter(t=>t.type===fType);
-  return tx.sort((a,b)=>a.date>b.date?-1:1);
-}
-
-function renderRapport(){
-  if(!project) return;
-  const tx = getFilteredTxRpt();
-  const dep = tx.filter(t=>t.type==='depense').reduce((s,t)=>s+t.montant,0);
-  const rec = tx.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
-  const mo  = tx.filter(t=>t.categorie==='MO').reduce((s,t)=>s+t.montant,0);
-  const mat = tx.filter(t=>t.categorie==='MAT').reduce((s,t)=>s+t.montant,0);
-  const mtr = tx.filter(t=>t.categorie==='MTR').reduce((s,t)=>s+t.montant,0);
-  const imp = tx.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
-  const sol = rec-dep;
-  const pct = project.budget>0?(dep/project.budget)*100:0;
-
-  // Nom projet
-  const pn=document.getElementById('rptProjectName');
-  if(pn) pn.textContent=project.nom+(project.lieu?' — '+project.lieu:'');
-  // Mettre à jour le label de période
-  const fdf=(document.getElementById('rptDateFrom')||{}).value||'';
-  const fdt=(document.getElementById('rptDateTo')||{}).value||'';
-  const pl=document.getElementById('rptPeriodLabel');
-  if(pl){
-    if(fdf||fdt){
-      const debut=fdf||'debut';
-      const fin=fdt||'fin';
-      pl.textContent='Periode : '+debut+' -> '+fin;
-    } else if(transactions.length){
-      const dates=transactions.map(t=>t.date).sort();
-      pl.textContent='Du '+dates[0]+' au '+dates[dates.length-1];
+      // Nouvel appareil
+      if(devices.length < MAX_DEVICES) {
+        await _addDeviceAndGrant(email, emailId, fp, devices);
+      } else {
+        // 3e appareil → avertissement
+        _pendingWarningData = { email, emailId, fp };
+        lockGoStep('warning');
+      }
     } else {
-      pl.textContent='Aucune transaction';
-    }
-  }
-
-  // KPI
-  const kpiEl=document.getElementById('rptKpi');
-  if(kpiEl) kpiEl.innerHTML=[
-    {i:'💸',l:'Dépenses',v:fmt(dep),c:'var(--danger)'},
-    {i:'💰',l:'Entrées',v:fmt(rec),c:'var(--success)'},
-    {i:'📊',l:'Solde net',v:fmt(sol),c:sol>=0?'var(--success)':'var(--danger)'},
-    {i:'👷',l:"Main d'oeuvre",v:fmt(mo),c:'var(--accent)'},
-    {i:'🧱',l:'Matériaux',v:fmt(mat),c:'var(--cyan)'},
-    {i:'⚙️',l:'Matériels',v:fmt(mtr),c:'var(--amber)'},
-    {i:'⚠️',l:'Imprévus',v:fmt(imp),c:'var(--warning)'},
-    {i:'🔢',l:'Transactions',v:tx.length,c:'var(--text)'},
-  ].map(k=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;box-shadow:var(--shadow-sm)"><div style="font-size:18px;margin-bottom:4px">${k.i}</div><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px">${k.l}</div><div style="font-weight:800;font-size:15px;color:${k.c}">${k.v}</div></div>`).join('');
-
-  // Avancement budget
-  const bb=document.getElementById('rptBudgetBody');
-  if(bb){
-    const colCss=pct>90?'var(--danger)':pct>60?'var(--amber)':'var(--success)';
-    // Calcul montant imprévus max
-  const impPct = project.impPct||0;
-  const impMax = impPct>0 ? (project.budget*impPct/100) : 0;
-  const impDep = tx.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
-  const impPctUsed = impMax>0?(impDep/impMax)*100:0;
-  const impCol = impPctUsed>100?'var(--danger)':impPctUsed>80?'var(--warning)':'var(--amber)';
-
-  bb.innerHTML=`
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px">
-        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
-          <div style="font-size:10px;font-weight:600;color:var(--text3)">BUDGET TOTAL</div>
-          <div style="font-size:15px;font-weight:800;color:var(--accent);margin-top:2px">${fmt(project.budget)}</div>
-        </div>
-        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
-          <div style="font-size:10px;font-weight:600;color:var(--text3)">CONSOMMÉ</div>
-          <div style="font-size:15px;font-weight:800;color:${colCss};margin-top:2px">${fmt(dep)}</div>
-          <div style="font-size:10px;color:${colCss};font-weight:700">${pct.toFixed(1)}% du budget</div>
-        </div>
-        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
-          <div style="font-size:10px;font-weight:600;color:var(--text3)">RESTANT</div>
-          <div style="font-size:15px;font-weight:800;color:var(--success);margin-top:2px">${fmt(project.budget-dep)}</div>
-        </div>
-        ${impMax>0?`<div style="background:var(--warning-l);border-radius:var(--r-sm);padding:10px;text-align:center;border:1px solid rgba(var(--accent-rgb),.1)">
-          <div style="font-size:10px;font-weight:600;color:var(--text3)">IMPRÉVUS (${impPct}%)</div>
-          <div style="font-size:15px;font-weight:800;color:${impCol};margin-top:2px">${fmt(impDep)}</div>
-          <div style="font-size:10px;color:${impCol};font-weight:700">${impPctUsed.toFixed(0)}% / max ${fmt(impMax)}</div>
-        </div>`:''}
-      </div>
-      <div style="margin-bottom:6px">
-        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
-          <span style="font-size:11px;font-weight:700;color:var(--text2)">Consommation budget</span>
-          <span style="font-size:12px;font-weight:800;color:${colCss}">${pct.toFixed(1)}% — ${fmt(dep)} / ${fmt(project.budget)}</span>
-        </div>
-        <div style="height:20px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
-          <div style="height:100%;width:${Math.min(pct,100)}%;background:${colCss};border-radius:var(--r-full);transition:width .8s;display:flex;align-items:center;justify-content:center">
-            <span style="font-size:10px;font-weight:700;color:#fff">${pct>8?pct.toFixed(1)+'%':''}</span>
-          </div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
-          <span style="color:${colCss};font-weight:600">${fmt(dep)} consommé</span><span>Restant : ${fmt(project.budget-dep)}</span><span>${fmt(project.budget)}</span>
-        </div>
-      </div>
-      ${(impMax>0||impDep>0)?`<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
-          <span style="font-size:12px;font-weight:700;color:var(--text2)">⚠️ Imprévus${impPct>0?' ('+impPct+'% du budget)':''}</span>
-          ${impMax>0
-            ?`<span style="font-size:12px;font-weight:800;color:${impCol}">${impPctUsed.toFixed(1)}% — ${fmt(impDep)} / ${fmt(impMax)}</span>`
-            :`<span style="font-size:12px;font-weight:700;color:var(--warning)">${fmt(impDep)} — aucun plafond défini</span>`}
-        </div>
-        ${impMax>0?`
-        <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
-          <div class="progress-fill amber" id="rptImpFill2" style="background:${impCol};width:${Math.min(impPctUsed,100)}%"></div>
-        </div>
-        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
-          <span style="color:${impCol};font-weight:600">${fmt(impDep)} consommé</span>
-          <span>Disponible : ${fmt(Math.max(0,impMax-impDep))}</span>
-          <span>Plafond : ${fmt(impMax)}</span>
-        </div>
-        ${impPctUsed>100?`<div style="margin-top:6px;background:var(--danger-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--danger);font-weight:600">🔴 Dépassement du plafond imprévus : +${fmt(impDep-impMax)}</div>`:''}`:''}
-        ${impPct===0?`<div style="margin-top:6px;background:var(--amber-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--amber);font-weight:600">💡 Définissez un % d'imprévus dans Paramètres pour activer le suivi</div>`:''}
-      </div>`:''}
-      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--text3);margin-top:10px">
-        <span>🟢 0—60% : Dans les limites</span>
-        <span>🟡 60—90% : Surveiller</span>
-        <span>🔴 90%+ : Dépassement imminent</span>
-      </div>`;
-  }
-
-  // Graphiques
-  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
-  const chartTextColor=isDark?'#B8C4D6':'#4A5568';
-  const chartGridColor=isDark?'#222E45':'#E8ECF4';
-
-  // Pie chart
-  if(rptCharts.pie){try{rptCharts.pie.destroy();}catch(e){}}
-  const pieCanvas=document.getElementById('rptChartPie');
-  if(pieCanvas&&dep>0){
-    const pieData=[mo,mat,mtr,imp].filter(v=>v>0);
-    const pieLabels=["MO","Matériaux","Matériels","Imprévus"].filter((_,i)=>[mo,mat,mtr,imp][i]>0);
-    const pieColors=isDark?['#818CF8','#34D399','#FBBF24','#FB7185']:['#4F46E5','#059669','#D97706','#DC2626'];
-    const pieTotal=pieData.reduce((a,b)=>a+b,0);
-    const rptPieLegendEl=document.getElementById('rptPieLegend');
-    // Pie chart avec étiquettes inline sur les segments
-  rptCharts.pie=new Chart(pieCanvas,{
-    type:'doughnut',
-    data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors,borderWidth:2,borderColor:'rgba(255,255,255,.6)',hoverOffset:8,borderRadius:4}]},
-    options:{
-      responsive:true,
-      cutout:'60%',
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:isDark?'rgba(20,28,47,.9)':'rgba(255,255,255,.95)',
-          titleColor:isDark?'#F2F4F8':'#1C1C1E',
-          bodyColor:isDark?'#B8C4D6':'#636366',
-          borderColor:isDark?'rgba(108,138,255,.2)':'rgba(200,210,255,.4)',
-          borderWidth:1,
-          padding:10,
-          callbacks:{label:function(ctx){return' '+ctx.label+': '+fmt(ctx.raw)+' ('+((ctx.raw/pieTotal)*100).toFixed(0)+'%)';}}
-        }
+      // Email inconnu
+      if(isNew) {
+        // Nouveau compte → créer
+        await _createAccountAndGrant(email, emailId, fp);
+      } else {
+        // "J'ai déjà un compte" mais email non trouvé
+        const msg = document.getElementById('existingEmailMsg');
+        if(msg) msg.style.color='#FB7185';
+        if(msg) msg.textContent='Email non reconnu. Verifiez ou utilisez "Premiere connexion".';
       }
     }
-  });
-  // Légende HTML enrichie avec montants
-  if(rptPieLegendEl){
-    rptPieLegendEl.innerHTML=pieLabels.map((label,i)=>{
-      if(pieData[i]<=0)return'';
-      const pctv=((pieData[i]/pieTotal)*100).toFixed(1);
-      return`<div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text2);background:rgba(255,255,255,.5);padding:6px 12px;border-radius:var(--r-full);border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(4px)">
-        <span style="width:12px;height:12px;border-radius:4px;background:${pieColors[i]};flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15)"></span>
-        <span>${label}</span>
-        <span style="color:var(--text);font-weight:700">${pctv}%</span>
-        <span style="color:var(--text3);font-size:11px">${fmt(pieData[i])}</span>
-      </div>`;
-    }).join('');
+  } catch(e) {
+    console.warn('[EmailAuth] Erreur reseau:', e.message);
+    // Fallback local — pas de contrôle d'appareils
+    await _grantAccess(email, emailId, true);
   }
-  }
+}
 
-  // Bar chart par LOT
-  if(rptCharts.bar){try{rptCharts.bar.destroy();}catch(e){}}
-  const barCanvas=document.getElementById('rptChartBar');
-  const lotMap={};
-  tasks.forEach(t=>{ if(!lotMap[t.lot])lotMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0}; lotMap[t.lot].budget+=t.budget||0; });
-  tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!lotMap[lot])lotMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')lotMap[lot].rec+=t.montant; else lotMap[lot].dep+=t.montant; });
-  const lotData=Object.values(lotMap).filter(r=>r.budget>0||r.dep>0).sort((a,b)=>b.budget-a.budget);
-  if(barCanvas&&lotData.length){
-    rptCharts.bar=new Chart(barCanvas,{type:'bar',data:{labels:lotData.map(r=>r.lot.length>15?r.lot.slice(0,15)+'…':r.lot),datasets:[{label:'Budget',data:lotData.map(r=>r.budget),backgroundColor:isDark?'rgba(108,138,255,.7)':'rgba(59,91,219,.7)',borderRadius:3},{label:'Dépenses',data:lotData.map(r=>r.dep),backgroundColor:isDark?'rgba(251,113,133,.7)':'rgba(224,49,49,.7)',borderRadius:3}]},options:{responsive:true,plugins:{legend:{labels:{color:chartTextColor,font:{size:10}}}},scales:{x:{ticks:{color:chartTextColor,font:{size:9}},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:9}},grid:{display:false}}}}});
-  }
-
-  // Synthèse par LOT
-  const lotBody=document.getElementById('rptLotBody');
-  const lotFoot=document.getElementById('rptLotFoot');
-  if(lotBody){
-    const synMap={};
-    tasks.forEach(t=>{ if(!synMap[t.lot])synMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0}; synMap[t.lot].budget+=t.budget||0; });
-    tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!synMap[lot])synMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')synMap[lot].rec+=t.montant; else synMap[lot].dep+=t.montant; });
-    const synRows=Object.values(synMap).filter(r=>r.budget>0||r.dep>0).sort((a,b)=>b.dep-a.dep);
-    const frag=document.createDocumentFragment();
-    synRows.forEach((r,i)=>{
-      const pct2=r.budget>0?(r.dep/r.budget)*100:0;
-      const col=pct2>100?'var(--danger)':pct2>80?'var(--warning)':pct2>50?'var(--amber)':'var(--success)';
-      const al=pct2>100?'🔴 Dépassé':pct2>80?'🟠 Attention':pct2>50?'🟡 En cours':r.dep>0?'🟢 OK':'—';
-      const lc=getLotColor(r.lot);
-      const tr=document.createElement('tr');
-      if(i%2)tr.style.background='var(--surface2)';
-      tr.innerHTML=`
-        <td><span style="font-weight:700;color:${lc};font-size:12px">${_sanitize(r.lot)}</span></td>
-        <td style="text-align:right;font-weight:600">${r.budget>0?fmt(r.budget):'—'}</td>
-        <td style="text-align:right;font-weight:700;color:${pct2>100?'var(--danger)':'var(--text)'}">${r.dep>0?fmt(r.dep):'—'}</td>
-        <td style="text-align:right;color:var(--success)">${r.rec>0?fmt(r.rec):'—'}</td>
-        <td style="text-align:right;font-weight:700;color:${(r.rec-r.dep)>=0?'var(--success)':'var(--danger)'}">${fmt(r.rec-r.dep)}</td>
-        <td>${r.budget>0&&r.dep>0?`<div style="display:flex;align-items:center;gap:6px"><div style="width:60px;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.min(pct2,100)}%;background:${col}"></div></div><span style="font-size:11px;font-weight:700;color:${col}">${pct2.toFixed(0)}%</span></div>`:'—'}</td>
-        <td style="font-size:12px">${al}</td>`;
-      frag.appendChild(tr);
+async function _createAccountAndGrant(email, emailId, fp) {
+  try {
+    await fetch(_SB_REST_URL+'/btp_accounts', {
+      method:'POST',
+      headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({id:emailId,email_hash:_fnvHash(email),devices:[fp],blocked:false,created_at:new Date().toISOString()})
     });
-    lotBody.innerHTML='';
-    lotBody.appendChild(frag);
-    if(lotFoot) lotFoot.innerHTML=`<td style="color:var(--text2);font-size:12px;font-weight:700">TOTAL</td><td style="text-align:right;font-weight:700">${fmt(synRows.reduce((s,r)=>s+r.budget,0))}</td><td style="text-align:right;font-weight:700">${fmt(synRows.reduce((s,r)=>s+r.dep,0))}</td><td style="text-align:right;font-weight:700">${fmt(synRows.reduce((s,r)=>s+r.rec,0))}</td><td style="text-align:right;font-weight:700">${fmt(synRows.reduce((s,r)=>s+(r.rec-r.dep),0))}</td><td colspan="2"></td>`;
+  } catch(e) { console.warn('[EmailAuth] Compte non cree en cloud:', e.message); }
+  await _grantAccess(email, emailId, false);
+}
+
+async function _addDeviceAndGrant(email, emailId, fp, existing) {
+  try {
+    await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId, {
+      method:'PATCH', headers:_sbHeaders(),
+      body:JSON.stringify({devices:[...existing,fp]})
+    });
+  } catch(e) { console.warn('[EmailAuth] Appareil non enregistre:', e.message); }
+  await _grantAccess(email, emailId, false);
+}
+
+async function lockForceAccess() {
+  if(!_pendingWarningData) return;
+  const {email, emailId} = _pendingWarningData;
+  // Bloquer le compte immédiatement
+  try {
+    await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId, {
+      method:'PATCH', headers:_sbHeaders(),
+      body:JSON.stringify({blocked:true,blocked_reason:'3e appareil — '+new Date().toISOString()})
+    });
+  } catch(e) {}
+  _lockShowBlocked('Votre compte a ete bloque car vous avez tente de vous connecter sur un 3e appareil. Contactez administrateur pour deblocage.');
+}
+
+function _lockShowBlocked(msg) {
+  lockGoStep('blocked');
+  const el = document.getElementById('lockBlockedMsg');
+  if(el) el.textContent = msg;
+}
+
+async function _grantAccess(email, emailId, localOnly) {
+  const fp = window._cachedFp || cpFingerprint();
+  localStorage.setItem('cp_email', email);
+  localStorage.setItem('cp_email_fp', fp);
+  localStorage.setItem('cp_email_id', emailId);
+  window._userEmail = email;
+  _sbPinHash = emailId;
+  _emailSetupCloud(email);
+  // Fermer l'écran de licence
+  const ls = document.getElementById('lockScreen');
+  if(ls){ ls.style.transition='opacity .4s'; ls.style.opacity='0'; setTimeout(()=>ls.style.display='none',420); }
+  localStorage.removeItem('cp_tries3');
+  toast('Bienvenue ' + email + (localOnly?' (mode local)':' ✓'));
+  appInit();
+}
+
+// ══ cpUnlock → REDIRIGE SELON CONTEXTE ══
+function cpUnlock() {
+  const savedEmail = localStorage.getItem('cp_email');
+  const savedFp    = localStorage.getItem('cp_email_fp');
+  const fp = window._cachedFp || cpFingerprint();
+  if(savedEmail && savedFp === fp) {
+    // Même appareil déjà enregistré — accès direct
+    window._userEmail = savedEmail;
+    _sbPinHash = localStorage.getItem('cp_email_id') || _emailToId(savedEmail);
+    _emailSetupCloud(savedEmail);
+    const ls = document.getElementById('lockScreen');
+    if(ls) ls.style.display='none';
+    localStorage.removeItem('cp_tries3');
+    appInit();
+  } else {
+    // Après validation clé → afficher étape email
+    lockGoStep('email');
+    // Sync l'empreinte dans le champ
+    const fp2El = document.getElementById('lockFpShort2');
+    if(fp2El) fp2El.textContent = fp;
   }
-
-  // Transactions
-  const txBody=document.getElementById('rptTxBody');
-  const txEmpty=document.getElementById('rptTxEmpty');
-  const txCount=document.getElementById('rptTxCount');
-  const txTotal=document.getElementById('rptTxTotal');
-  if(txCount) txCount.textContent=tx.length;
-  if(!tx.length){ if(txBody)txBody.innerHTML=''; if(txEmpty)txEmpty.style.display='block'; if(txTotal)txTotal.textContent='—'; return; }
-  if(txEmpty) txEmpty.style.display='none';
-  const catLabel={MO:'👷 MO',MAT:'🧱 MAT',MTR:'⚙️ MTR',IMP:'⚠️ IMP'};
-  const frag2=document.createDocumentFragment();
-  tx.forEach((t,i)=>{
-    const lc=getLotColor(t.lot);
-    const tr=document.createElement('tr');
-    if(i%2)tr.style.background='var(--surface2)';
-    tr.innerHTML=`
-      <td style="font-size:12px;color:var(--text2);white-space:nowrap">${t.date}</td>
-      <td style="font-weight:700;color:${lc};font-size:12px;font-family:var(--mono)">${_sanitize(t.nprix)}</td>
-      <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${_sanitize(t.desig)}">${_sanitize(t.desig)}</td>
-      <td><span style="font-size:11px;font-weight:600;background:${lc}18;color:${lc};padding:2px 8px;border-radius:var(--r-full)">${_sanitize(t.lot||'—')}</span></td>
-      <td style="font-size:12px">${catLabel[t.categorie]||t.categorie}</td>
-      <td><span style="font-size:11px;font-weight:700;color:${t.type==='entree'?'var(--success)':'var(--danger)'}">${t.type==='entree'?'↑ Entrée':'↓ Dépense'}</span></td>
-      <td style="text-align:right;font-weight:700;color:${t.type==='entree'?'var(--success)':'var(--text)'};white-space:nowrap">${t.type==='entree'?'+':'-'}${fmt(t.montant)}</td>
-      <td style="font-size:11px;color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_sanitize(t.description||'—')}</td>`;
-    frag2.appendChild(tr);
-  });
-  txBody.innerHTML='';
-  txBody.appendChild(frag2);
-  const total=tx.reduce((s,t)=>s+(t.type==='entree'?t.montant:-t.montant),0);
-  if(txTotal){ txTotal.textContent=fmt(total); txTotal.style.color=total>=0?'var(--success)':'var(--danger)'; }
 }
 
-// ── EXPORT CSV ──
-function exportRapportCSV(){
-  const tx=getFilteredTxRpt();
-  if(!tx.length){toast('Aucune transaction à exporter','warn');return;}
-  const sep=';';
-  const headers=['Date','N° Prix','Désignation','LOT','Catégorie','Type','Montant ('+curSym()+')','Note'];
-  const rows=tx.map(t=>[
-    t.date,t.nprix,
-    '"'+(t.desig||'').replace(/"/g,'""')+'"',
-    t.lot||'',t.categorie,t.type,
-    t.type==='entree'?t.montant:-t.montant,
-    '"'+(t.description||'').replace(/"/g,'""')+'"'
-  ].join(sep));
-  // Ajouter entête rapport
-  const info=[
-    ['RAPPORT MONSUIVI BTP — '+project.nom],
-    ['Projet:',project.nom,'Lieu:',project.lieu||'—'],
-    ['Budget:',project.budget,'MO:',project.mo||'—'],
-    ['Exporté le:',new Date().toLocaleDateString('fr-FR')],
-    [''],
-    [headers.join(sep)],
-    ...rows.map(r=>[r]),
-    [''],
-    ['TOTAL DÉPENSES',tx.filter(t=>t.type==='depense').reduce((s,t)=>s+t.montant,0)],
-    ['TOTAL ENTRÉES',tx.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0)],
-    ['SOLDE',tx.reduce((s,t)=>s+(t.type==='entree'?t.montant:-t.montant),0)],
-  ];
-  const csv='\uFEFF'+info.map(r=>Array.isArray(r)?r.join(sep):r).join('\n');
-  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-  a.download='rapport_'+project.nom.replace(/\s/g,'_')+'_'+today()+'.csv';
-  a.click();URL.revokeObjectURL(a.href);
-  toast('CSV exporté ✓');
-}
-
-// ── EXPORT PDF (via impression navigateur) ──
-function exportRapportPDF(){
-  const tx=getFilteredTxRpt();
-  if(!tx.length){toast('Aucune transaction','warn');return;}
-  const dep=tx.filter(t=>t.type==='depense').reduce((s,t)=>s+t.montant,0);
-  const rec=tx.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
-  const pct=project.budget>0?(dep/project.budget)*100:0;
-  const col=pct>90?'#E03131':pct>60?'#E8590C':'#0D9488';
-
-  // Synthèse par LOT
-  const synMap={};
-  tasks.forEach(t=>{ if(!synMap[t.lot])synMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0}; synMap[t.lot].budget+=t.budget||0; });
-  tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!synMap[lot])synMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')synMap[lot].rec+=t.montant; else synMap[lot].dep+=t.montant; });
-  const synRows=Object.values(synMap).filter(r=>r.budget>0||r.dep>0);
-
-  const _impPctPdf=project?project.impPct||0:0;
-  const _impMaxPdf=_impPctPdf>0?(project.budget*_impPctPdf/100):0;
-  const _impDepPdf=tx.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
-  const _impPctUsedPdf=_impMaxPdf>0?(_impDepPdf/_impMaxPdf)*100:0;
-  const _impColPdf=_impPctUsedPdf>100?'#E03131':_impPctUsedPdf>80?'#E8590C':'#F59F00';
-  const fDateFrom=(document.getElementById('rptDateFrom')||{}).value||'';
-  const fDateTo=(document.getElementById('rptDateTo')||{}).value||'';
-  const periodeTxt=fDateFrom||fDateTo?`Période : ${fDateFrom||'début'} → ${fDateTo||'aujourd\'hui'}`:'Toutes les dates';
-
-  const printWin=window.open('','_blank','width=900,height=700');
-  printWin.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
-<title>Rapport BTP — ${project.nom}</title>
-<style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a2e;background:#fff;padding:30px}
-  h1{font-size:22px;font-weight:800;color:#3B5BDB;margin-bottom:4px}
-  .subtitle{color:#636366;font-size:13px;margin-bottom:20px}
-  .meta{display:flex;gap:24px;flex-wrap:wrap;background:#F5F5F7;border-radius:8px;padding:14px;margin-bottom:20px}
-  .meta-item{flex:1;min-width:120px}.meta-label{font-size:10px;font-weight:700;color:#636366;text-transform:uppercase;letter-spacing:.5px}.meta-value{font-size:14px;font-weight:800;margin-top:2px}
-  .section-title{font-size:14px;font-weight:700;margin:20px 0 8px;padding-bottom:4px;border-bottom:2px solid #3B5BDB;color:#3B5BDB}
-  table{width:100%;border-collapse:collapse;font-size:11px}
-  th{background:#3B5BDB;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
-  td{padding:6px 8px;border-bottom:1px solid #e5e5ea}
-  tr:nth-child(even) td{background:#F5F5F7}
-  tfoot td{background:#EDF2FF;font-weight:700;border-top:2px solid #3B5BDB}
-  .badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
-  .dep{background:#FFF5F5;color:#E03131}.ent{background:#F0FDFA;color:#0D9488}
-  .progress-bg{background:#e5e5ea;border-radius:6px;height:14px;overflow:hidden;margin:4px 0}
-  .progress-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
-  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-  .kpi{background:#F5F5F7;border-radius:8px;padding:12px;text-align:center}
-  .kpi-label{font-size:9px;font-weight:700;color:#636366;text-transform:uppercase}
-  .kpi-val{font-size:15px;font-weight:800;margin-top:2px}
-  .footer{margin-top:30px;text-align:center;font-size:10px;color:#AEAEB2;border-top:1px solid #e5e5ea;padding-top:12px}
-  @media print{body{padding:15px}.no-print{display:none}button{display:none}}
-</style></head><body>
-<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
-  <div>
-    <h1>📊 Rapport Financier BTP</h1>
-    <div class="subtitle">${_sanitize(project.nom)}${project.lieu?' — '+_sanitize(project.lieu):''} &nbsp;|&nbsp; ${periodeTxt}</div>
-  </div>
-  <div style="text-align:right;font-size:11px;color:#636366">
-    Généré le ${new Date().toLocaleDateString('fr-FR')}<br>
-    MonSuivi Financier BTP
-  </div>
-</div>
-
-<div class="kpi-grid">
-  <div class="kpi"><div class="kpi-label">Budget</div><div class="kpi-val" style="color:#3B5BDB">${fmt(project.budget)}</div></div>
-  <div class="kpi"><div class="kpi-label">Dépenses</div><div class="kpi-val" style="color:#E03131">${fmt(dep)}</div></div>
-  <div class="kpi"><div class="kpi-label">Entrées</div><div class="kpi-val" style="color:#0D9488">${fmt(rec)}</div></div>
-  <div class="kpi"><div class="kpi-label">Solde net</div><div class="kpi-val" style="color:${(rec-dep)>=0?'#0D9488':'#E03131'}">${fmt(rec-dep)}</div></div>
-</div>
-
-<div class="section-title">🎯 Avancement du budget</div>
-<div style="background:#F5F5F7;border-radius:8px;padding:14px;margin-bottom:16px">
-  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-    <span>Consommation : <b style="color:${col}">${pct.toFixed(1)}% — ${fmt(dep)}</b></span>
-    <span>Restant : <b style="color:#0D9488">${fmt(project.budget-dep)}</b></span>
-    ${_impMaxPdf>0?`<span>Imprévus : <b style="color:${_impColPdf}">${fmt(_impDepPdf)} / ${fmt(_impMaxPdf)} (${_impPctPdf.toFixed(0)}%)</b></span>`:''}
-  </div>
-  <div class="progress-bg"><div class="progress-fill" style="width:${Math.min(pct,100)}%;background:${col}">${pct.toFixed(1)}%</div></div>
-</div>
-
-<div class="section-title">📋 Synthèse par LOT</div>
-<table style="margin-bottom:16px">
-  <thead><tr><th>LOT</th><th style="text-align:right">Budget</th><th style="text-align:right">Dépenses</th><th style="text-align:right">Entrées</th><th style="text-align:right">Solde</th><th>Avancement</th><th>Statut</th></tr></thead>
-  <tbody>${synRows.map(r=>{const p2=r.budget>0?(r.dep/r.budget)*100:0;const c2=p2>100?'#E03131':p2>80?'#E8590C':p2>50?'#F59F00':'#0D9488';return`<tr><td><b>${_sanitize(r.lot)}</b></td><td style="text-align:right">${r.budget>0?fmt(r.budget):'—'}</td><td style="text-align:right;color:#E03131;font-weight:700">${r.dep>0?fmt(r.dep):'—'}</td><td style="text-align:right;color:#0D9488">${r.rec>0?fmt(r.rec):'—'}</td><td style="text-align:right;font-weight:700;color:${(r.rec-r.dep)>=0?'#0D9488':'#E03131'}">${fmt(r.rec-r.dep)}</td><td><div class="progress-bg" style="width:80px"><div class="progress-fill" style="width:${Math.min(p2,100)}%;background:${c2}">${p2>10?p2.toFixed(0)+'%':''}</div></div></td><td style="font-size:11px">${p2>100?'🔴 Dépassé':p2>80?'🟠 Attention':p2>50?'🟡 En cours':r.dep>0?'🟢 OK':'—'}</td></tr>`}).join('')}</tbody>
-  <tfoot><tr><td><b>TOTAL</b></td><td style="text-align:right"><b>${fmt(synRows.reduce((s,r)=>s+r.budget,0))}</b></td><td style="text-align:right"><b>${fmt(synRows.reduce((s,r)=>s+r.dep,0))}</b></td><td style="text-align:right"><b>${fmt(synRows.reduce((s,r)=>s+r.rec,0))}</b></td><td style="text-align:right"><b>${fmt(synRows.reduce((s,r)=>s+(r.rec-r.dep),0))}</b></td><td colspan="2"></td></tr></tfoot>
-</table>
-
-<div class="section-title">📝 Transactions détaillées (${tx.length})</div>
-<table>
-  <thead><tr><th>Date</th><th>N° Prix</th><th>Désignation</th><th>LOT</th><th>Cat.</th><th>Type</th><th style="text-align:right">Montant</th><th>Note</th></tr></thead>
-  <tbody>${tx.map((t,i)=>`<tr style="${i%2?'background:#F5F5F7':''}"><td style="white-space:nowrap">${t.date}</td><td style="font-weight:700;font-size:11px">${_sanitize(t.nprix)}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_sanitize(t.desig)}</td><td style="font-size:10px">${_sanitize(t.lot||'—')}</td><td style="font-size:10px">${t.categorie}</td><td><span class="badge ${t.type==='entree'?'ent':'dep'}">${t.type==='entree'?'↑ Entrée':'↓ Dépense'}</span></td><td style="text-align:right;font-weight:700;color:${t.type==='entree'?'#0D9488':'#1a1a2e'};white-space:nowrap">${t.type==='entree'?'+':'-'}${fmt(t.montant)}</td><td style="font-size:10px;color:#636366">${_sanitize(t.description||'—')}</td></tr>`).join('')}</tbody>
-  <tfoot><tr><td colspan="6">TOTAL FILTRÉ</td><td style="text-align:right">${fmt(tx.reduce((s,t)=>s+(t.type==='entree'?t.montant:-t.montant),0))}</td><td></td></tr></tfoot>
-</table>
-
-<div class="footer">MonSuivi Financier BTP — CIVIL+ &nbsp;|&nbsp; ${project.nom} &nbsp;|&nbsp; Rapport généré le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div>
-
-<div style="text-align:center;margin-top:20px" class="no-print">
-  <button onclick="window.print()" style="background:#3B5BDB;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-right:10px">🖨️ Imprimer / Sauvegarder PDF</button>
-  <button onclick="window.close()" style="background:#F2F2F7;color:#1a1a2e;border:none;padding:12px 20px;border-radius:8px;font-size:14px;cursor:pointer">✕ Fermer</button>
-</div>
-</body></html>`);
-  printWin.document.close();
-  toast('Rapport PDF prêt — cliquez Imprimer ✓');
-}
-
-// Hook: charger les filtres quand on arrive sur la page rapports
-const _origGoPage = goPage;
-goPage = function(page, btn){
-  _origGoPage(page, btn);
-  if(page==='rapports'){
-    buildRptFilters();
-    // Auto-remplir les dates avec 1ère et dernière transaction
-    if(transactions.length){
-      const dates = transactions.map(t=>t.date).sort();
-      const fromEl = document.getElementById('rptDateFrom');
-      const toEl   = document.getElementById('rptDateTo');
-      if(fromEl && !fromEl.value) fromEl.value = dates[0];
-      if(toEl   && !toEl.value)   toEl.value   = dates[dates.length-1];
-    }
-    renderRapport();
+// ══ cpCheck → AFFICHER STEP CHOIX OU ACCÈS DIRECT ══
+function cpCheck_post() {
+  const savedEmail = localStorage.getItem('cp_email');
+  const savedFp    = localStorage.getItem('cp_email_fp');
+  const fp = window._cachedFp || cpFingerprint();
+  if(savedEmail && savedFp === fp) {
+    // Appareil déjà reconnu → bypass complet de l'écran
+    window._userEmail = savedEmail;
+    _sbPinHash = localStorage.getItem('cp_email_id') || _emailToId(savedEmail);
+    _emailSetupCloud(savedEmail);
+    const ls = document.getElementById('lockScreen');
+    if(ls) ls.style.display='none';
+    localStorage.removeItem('cp_tries3');
+    appInit();
+    return true;
   }
-};
-
-// ── IMPRÉVUS — Calcul prévisualisation ──
-function updateImpPreview(prefix){
-  const budget = parseFloat(document.getElementById(prefix+'Budget').value)||0;
-  const pct    = parseFloat(document.getElementById(prefix+'ImpPct').value)||0;
-  const montant= budget*pct/100;
-  const el     = document.getElementById(prefix+'ImpMontant');
-  if(el) el.value = pct>0&&budget>0 ? fmt(montant)+' max' : '';
+  return false;
 }
+
+// ══ SETUP CLOUD PREFERENCES ══
+function _emailSetupCloud(email) {
+  const emailId = localStorage.getItem('cp_email_id') || _emailToId(email);
+  _sbPinHash = emailId;
+  const badge = document.getElementById('sbPinStatus');
+  if(badge){badge.textContent='✅ '+email;badge.style.background='var(--success-l)';badge.style.color='var(--success)';}
+  const info = document.getElementById('sbPinInfo');
+  if(info) info.textContent = 'Cloud lié à '+email;
+  const conn = document.getElementById('sbConnectedZone');
+  if(conn) conn.style.display='block';
+  const row = document.getElementById('sbPinEntryRow');
+  if(row) row.style.display='none';
+}
+
+// ── Helpers PIN conservés pour compatibilité ──
+function sbUpdatePinStrength(){}
+function sbTogglePin(){}
+function sbConnectPin(){toast('Connecté via email: '+(window._userEmail||'—'));}
+
+function sbDisconnectPin(){
+  if(!confirm('Delier cet appareil ? Vous devrez ressaisir votre email.')) return;
+  localStorage.removeItem('cp_email');
+  localStorage.removeItem('cp_email_fp');
+  localStorage.removeItem('cp_email_id');
+  _sbPinHash=null; window._userEmail=null;
+  const badge=document.getElementById('sbPinStatus');
+  if(badge){badge.textContent='Non lie';badge.style.background='var(--surface3)';badge.style.color='var(--text3)';}
+  toast('Email delie');
+}
+
+function _sbStatus(msg,type='info'){
+  const el=document.getElementById('sbStatus');
+  if(!el)return;
+  el.style.display=msg?'block':'none';
+  const s={ok:{c:'var(--success)',bg:'var(--success-l)'},err:{c:'var(--danger)',bg:'var(--danger-l)'},info:{c:'var(--text2)',bg:'var(--surface2)'}};
+  const st=s[type]||s.info;
+  el.style.color=st.c;el.style.background=st.bg;el.textContent=msg;
+}
+
+// ── Cloud sync ──
+async function syncToCloud(){
+  if(!_sbPinHash){toast('Email non lie','warn');return;}
+  if(!project){_sbStatus('Aucun projet actif','err');return;}
+  try{
+    _sbStatus('Sauvegarde en cours...','info');
+    const body=JSON.stringify({id:_sbPinHash,project_data:{project,tasks,transactions,txId,synced:new Date().toISOString(),version:'4.0'},updated_at:new Date().toISOString()});
+    const res=await fetch(_SB_REST_URL+'/btp_data',{method:'POST',headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    _sbStatus('Sauvegarde le '+new Date().toLocaleString('fr-FR'),'ok');
+    toast('Données sauvegardées ☁️ ✓');
+    _showSyncIndicator();
+  }catch(e){_sbStatus('Erreur: '+e.message,'err');toast('Erreur sauvegarde','err');}
+}
+
+async function syncFromCloud(){
+  if(!_sbPinHash){toast('Email non lie','warn');return;}
+  try{
+    _sbStatus('Chargement cloud...','info');
+    const res=await fetch(_SB_REST_URL+'/btp_data?id=eq.'+_sbPinHash+'&select=project_data,updated_at&limit=1',{method:'GET',headers:_sbHeaders()});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    if(!data||!data.length||!data[0].project_data){_sbStatus('Aucune donnee trouvee','info');return;}
+    const d=data[0].project_data;
+    if(!d.project||!d.project.nom){_sbStatus('Donnees invalides','err');return;}
+    if(!confirm('Charger les donnees du '+new Date(data[0].updated_at).toLocaleString('fr-FR')+' ? Cela remplacera vos donnees locales.')) return;
+    project=d.project;tasks=Array.isArray(d.tasks)?d.tasks:[];transactions=Array.isArray(d.transactions)?d.transactions:[];txId=typeof d.txId==='number'?d.txId:1;
+    saveState();startApp();closeModal('setupModal');
+    _sbStatus('Donnees chargees — '+transactions.length+' transaction(s)','ok');
+    toast('Données cloud chargées ✓');
+  }catch(e){_sbStatus('Erreur: '+e.message,'err');toast('Erreur chargement','err');}
+}
+
+function initSbOnStartup(){
+  const email=localStorage.getItem('cp_email');
+  if(!email)return;
+  window._userEmail=email;
+  _emailSetupCloud(email);
+}
+
+
+// ── Pré-initialiser le client Supabase UNE SEULE FOIS ──
 
 // ── Keyboard shortcuts ──
 document.addEventListener('keydown',e=>{

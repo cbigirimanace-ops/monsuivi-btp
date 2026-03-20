@@ -1445,20 +1445,36 @@ function submitLockCode(){
   const expectedBase = cpCodeBase(cpMakeCode(fp, packFromCode));
 
   if(baseFromCode===expectedBase){
-    // Stocker avec le code complet incluant le suffix pack
-    localStorage.setItem('cp_pack_max', packFromCode);
-    window._packMax = packFromCode;
-    localStorage.setItem('cp_auth3',JSON.stringify({fp,code:val,ts:Date.now()}));
-    localStorage.removeItem('cp_tries3');
-    localStorage.removeItem('cp_lockout');
-    btn.textContent='✓ Activé !';
-    btn.style.background='var(--success)';
-    inp.style.borderColor='rgba(13,148,136,.7)';
-    setTimeout(()=>{
-      const ls=document.getElementById('lockScreen');
-      ls.style.transition='opacity .4s';ls.style.opacity='0';
-      setTimeout(cpUnlock,420);
-    },700);
+    // Vérifier usage unique dans Supabase avant d'activer
+    btn.textContent='⏳ Vérification...';
+    btn.disabled=true;
+    _checkLicenseUsage(val, fp, packFromCode).then(result => {
+      if(result.ok){
+        localStorage.setItem('cp_pack_max', packFromCode);
+        window._packMax = packFromCode;
+        localStorage.setItem('cp_auth3',JSON.stringify({fp,code:val,ts:Date.now()}));
+        localStorage.setItem('cp_last_activated_code', val); // Pour lier email à licence
+        localStorage.removeItem('cp_tries3');
+        localStorage.removeItem('cp_lockout');
+        btn.textContent='✓ Activé !';
+        btn.style.background='var(--success)';
+        inp.style.borderColor='rgba(13,148,136,.7)';
+        setTimeout(()=>{
+          const ls=document.getElementById('lockScreen');
+          if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
+          cpUnlock();
+        },700);
+      } else {
+        // Licence déjà utilisée
+        btn.textContent='Activer';
+        btn.disabled=false;
+        cpShake();
+        const sub=document.getElementById('lockSub');
+        if(sub) sub.innerHTML='<span style="color:#FFA8A8;font-weight:700">🚫 '+result.msg+'</span>';
+        setTimeout(()=>{if(sub) sub.textContent='Saisissez votre code activation.';},4000);
+      }
+    });
+    return; // Attendre la promesse
   } else {
     const t=(parseInt(localStorage.getItem('cp_tries3')||'0'))+1;
     localStorage.setItem('cp_tries3',String(t));
@@ -1531,14 +1547,18 @@ function generateLicense(){
   localStorage.setItem('cp_pack_max',packMax);
   window._packMax=packMax;
   const code=cpMakeCode(fp,packMax);
+  const packInfo=_PACK_DEFS[packMax]||_PACK_DEFS[1];
   document.getElementById('generatedCode').textContent=code;
   document.getElementById('generatedCodeWrap').style.display='block';
+  // Sauvegarder localement
   const list=cpGetLicenses();
   const idx=list.findIndex(l=>l.fp===fp);
-  const entry={name,fp,code,date:new Date().toLocaleDateString('fr-FR'),active:true};
+  const entry={name,fp,code,pack:packMax,packName:packInfo.name,date:new Date().toLocaleDateString('fr-FR'),active:true,used:false};
   if(idx>=0)list[idx]=entry;else list.push(entry);
   cpSaveLicenses(list);
   cpRenderLicenses();
+  // Enregistrer dans Supabase (usage unique)
+  _registerLicenseInCloud(code, fp, name, packMax);
 }
 
 function copyCode(){
@@ -3647,6 +3667,118 @@ function _autoSyncDebounced(){
     }catch(e){console.warn('[AutoSync]',e.message);}
   },3000);
 }
+
+// ══════════════════════════════════════════════════════════════
+// LICENCES USAGE UNIQUE — Supabase btp_licenses
+// ══════════════════════════════════════════════════════════════
+
+// Hash du code licence pour l'ID Supabase
+function _licenseToId(code) {
+  return 'lic_' + _fnvHash(code.trim().toUpperCase()) + _fnvHash('BTPCIVIL_' + code.trim().toUpperCase());
+}
+
+// Enregistrer une nouvelle licence dans Supabase (admin)
+async function _registerLicenseInCloud(code, fp, clientName, packMax) {
+  try {
+    const licId = _licenseToId(code);
+    const body = JSON.stringify({
+      id: licId,
+      fp_hash: _fnvHash(fp),          // Empreinte hashée (pas en clair)
+      client_name: clientName,
+      pack_max: packMax,
+      used: false,
+      created_at: new Date().toISOString(),
+      used_at: null,
+      used_email: null,
+    });
+    const res = await fetch(_SB_REST_URL + '/btp_licenses', {
+      method: 'POST',
+      headers: { ..._sbHeaders(), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body
+    });
+    if(res.ok) {
+      console.log('[Admin] Licence enregistrée dans Supabase:', code);
+    } else {
+      console.warn('[Admin] Licence non enregistree:', await res.text());
+    }
+  } catch(e) {
+    console.warn('[Admin] Erreur enregistrement:', e.message);
+  }
+}
+
+// Vérifier si une licence est valide et non utilisée
+async function _checkLicenseUsage(code, fp, packMax) {
+  try {
+    const licId = _licenseToId(code);
+    const res = await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId + '&select=id,used,used_email,fp_hash,pack_max&limit=1', {
+      method: 'GET', headers: _sbHeaders()
+    });
+
+    if(!res.ok) {
+      // Supabase indisponible → autoriser (fallback local)
+      console.warn('[License] Supabase indisponible');
+      return { ok: true };
+    }
+
+    const data = await res.json();
+
+    if(!data || data.length === 0) {
+      // Licence pas encore dans Supabase (ancienne licence ou offline)
+      // Vérifier localement
+      return { ok: true };
+    }
+
+    const lic = data[0];
+
+    // Licence déjà utilisée ?
+    if(lic.used) {
+      const msg = lic.used_email
+        ? 'Clé déjà utilisée par ' + lic.used_email.substring(0,4) + '***. Contactez administrateur.'
+        : 'Cle deja utilisee. Demandez une nouvelle cle a l\'administrateur.';
+      return { ok: false, msg };
+    }
+
+    // Marquer comme utilisée immédiatement
+    await _markLicenseUsed(licId, fp, packMax);
+    return { ok: true };
+
+  } catch(e) {
+    console.warn('[License] Erreur verification:', e.message);
+    // En cas d'erreur réseau → autoriser (pas bloquer le client)
+    return { ok: true };
+  }
+}
+
+// Marquer la licence comme utilisée dans Supabase
+async function _markLicenseUsed(licId, fp, packMax) {
+  try {
+    await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId, {
+      method: 'PATCH',
+      headers: _sbHeaders(),
+      body: JSON.stringify({
+        used: true,
+        used_at: new Date().toISOString(),
+        used_fp_hash: _fnvHash(fp),
+      })
+    });
+  } catch(e) {
+    console.warn('[License] Erreur marquage:', e.message);
+  }
+}
+
+// Quand l'email est lié → mettre à jour la licence avec l'email
+async function _updateLicenseWithEmail(code, email) {
+  if(!code || !email) return;
+  try {
+    const licId = _licenseToId(code);
+    await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId, {
+      method: 'PATCH',
+      headers: _sbHeaders(),
+      body: JSON.stringify({ used_email: email })
+    });
+  } catch(e) {}
+}
+
 
 function initSbOnStartup(){
   const email=localStorage.getItem('cp_email');

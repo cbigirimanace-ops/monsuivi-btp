@@ -1771,21 +1771,24 @@ let _autoSyncTimer=null;
 function _autoSyncDebounced(){
   clearTimeout(_autoSyncTimer);
   _autoSyncTimer=setTimeout(async function(){
-    if(!_sbClient||!project) return; // Pas connecté ou pas de projet
+    // ── Utilise l'API REST (plus le SDK) + _sbPinHash = emailId ──
+    if(!_sbPinHash || !project) return;
     try{
-      const fp=cpFingerprint();
       const payload={project,tasks,transactions,txId,synced:new Date().toISOString(),version:'4.0'};
-      const {error}=await _sbClient.from('btp_data')
-        .upsert({id:fp,project_data:payload,updated_at:new Date().toISOString()},{onConflict:'id'});
-      if(!error){
-        // Afficher un petit indicateur discret
+      const body=JSON.stringify({id:_sbPinHash,project_data:payload,updated_at:new Date().toISOString()});
+      const res=await fetch(_SB_REST_URL+'/btp_data',{
+        method:'POST',
+        headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
+        body
+      });
+      if(res.ok){
         _showSyncIndicator();
+        console.log('[AutoSync] Sauvegarde automatique OK');
       }
     }catch(e){
-      // Silencieux — ne pas déranger l'utilisateur pour un échec de sync en arrière-plan
       console.warn('[AutoSync] Erreur silencieuse:',e.message);
     }
-  },3000); // 3 secondes de délai pour regrouper les actions rapides
+  },3000); // 3 secondes après la dernière action
 }
 
 // Petit indicateur de sync discret (coin supérieur droit)

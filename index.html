@@ -392,6 +392,7 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
 /* ── LOCK SCREEN ───────────────────────────────────── */
 #lockScreen{position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0C1222 0%,#1A2742 50%,#151030 100%);display:flex;align-items:center;justify-content:center;font-family:var(--font)}
+#lockScreen[style*="display:none"]{pointer-events:none!important}
 .lock-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:var(--r-xl);padding:44px 40px;max-width:400px;width:100%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.5);backdrop-filter:blur(20px);animation:lockIn .5s cubic-bezier(.4,0,.2,1)}
 @keyframes lockIn{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
 .lock-title{font-size:22px;font-weight:800;color:#fff;letter-spacing:-.5px;margin-bottom:8px}
@@ -462,7 +463,7 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 <!-- ══════════════════════════════════════════════════════════ -->
 <!-- ÉCRAN D'ACCUEIL UNIFIÉ — Nouvelle connexion / Déjà un compte -->
 <!-- ══════════════════════════════════════════════════════════ -->
-<div id="lockScreen" style="display:flex;position:fixed;inset:0;z-index:99999;background:linear-gradient(160deg,#0C1222 0%,#1A2742 50%,#151030 100%);align-items:center;justify-content:center;font-family:var(--font)">
+<div id="lockScreen">
   <div class="lock-card" id="lockCard" style="max-width:460px;width:100%">
 
     <!-- Logo & Titre -->
@@ -1808,7 +1809,7 @@ function appInit(){
   const mfd=document.getElementById('mfDate');if(mfd)mfd.value=today();
   const sd=document.getElementById('sDate');if(sd)sd.value=today();
   const ls=document.getElementById('lockScreen');
-  if(ls)ls.style.display='none';
+  if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
   if(loadState()&&project){startApp();}
   else{
     document.getElementById('setupScreen').style.display='block';
@@ -1921,7 +1922,7 @@ function startApp(){
     }
     buildDashLotFilter();
   },100);
-  const ls=document.getElementById('lockScreen');if(ls)ls.style.display='none';
+  const ls=document.getElementById('lockScreen');if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
   document.getElementById('navPills').style.display='flex';
@@ -2837,6 +2838,18 @@ function doImportTasksCSVModal(e){
   });
 }
 
+// ── Prévisualisation montant imprévus ──
+function updateImpPreview(prefix){
+  const budgetEl = document.getElementById(prefix==='s'?'sBudget':'rnBudget');
+  const pctEl    = document.getElementById(prefix==='s'?'sImpPct':'rnImpPct');
+  const prevEl   = document.getElementById(prefix==='s'?'sImpMontant':'rnImpMontant');
+  if(!budgetEl||!pctEl||!prevEl) return;
+  const budget = parseFloat(budgetEl.value)||0;
+  const pct    = parseFloat(pctEl.value)||0;
+  const montant = budget * pct / 100;
+  prevEl.textContent = pct>0 && budget>0 ? fmt(montant)+' max' : '—';
+}
+
 // ── SETUP MODAL CONTROLS ──
 function openSetup(){
   if(project){
@@ -3167,9 +3180,9 @@ async function _grantAccess(email, emailId, localOnly) {
   window._userEmail = email;
   _sbPinHash = emailId;
   _emailSetupCloud(email);
-  // Fermer l'écran de licence
+  // Fermer l'écran de licence immédiatement
   const ls = document.getElementById('lockScreen');
-  if(ls){ ls.style.transition='opacity .4s'; ls.style.opacity='0'; setTimeout(()=>ls.style.display='none',420); }
+  if(ls){ ls.style.display='none'; ls.style.pointerEvents='none'; ls.style.opacity='0'; }
   localStorage.removeItem('cp_tries3');
   toast('Bienvenue ' + email + (localOnly?' (mode local)':' ✓'));
   appInit();
@@ -3298,6 +3311,449 @@ function initSbOnStartup(){
 
 
 // ── Pré-initialiser le client Supabase UNE SEULE FOIS ──
+
+// PAGE RAPPORTS — Filtres, KPI, Graphiques, PDF, CSV
+// ══════════════════════════════════════════════════
+
+let rptCharts = {};
+
+function buildRptFilters(){
+  // Lots
+  const lots = [...new Set(tasks.map(t=>t.lot))];
+  const lotSel = document.getElementById('rptLot');
+  if(lotSel){ lotSel.innerHTML='<option value="">Tous les lots</option>'; lots.forEach(l=>{ const o=document.createElement('option');o.value=l;o.textContent=l;lotSel.appendChild(o); }); }
+  // Désignations
+  const desigSel = document.getElementById('rptDesig');
+  if(desigSel){ desigSel.innerHTML='<option value="">Toutes</option>'; tasks.forEach(t=>{ const o=document.createElement('option');o.value=t.num;o.textContent=t.num+' — '+t.desig.slice(0,40);desigSel.appendChild(o); }); }
+}
+
+function resetRptFilters(){
+  ['rptDateFrom','rptDateTo','rptLot','rptDesig','rptCat','rptType'].forEach(id=>{ const el=document.getElementById(id); if(el)el.value=''; });
+  renderRapport();
+}
+
+function getFilteredTxRpt(){
+  const fDateFrom = (document.getElementById('rptDateFrom')||{}).value||'';
+  const fDateTo   = (document.getElementById('rptDateTo')||{}).value||'';
+  const fLot      = (document.getElementById('rptLot')||{}).value||'';
+  const fDesig    = (document.getElementById('rptDesig')||{}).value||'';
+  const fCat      = (document.getElementById('rptCat')||{}).value||'';
+  const fType     = (document.getElementById('rptType')||{}).value||'';
+  let tx = [...transactions];
+  if(fDateFrom) tx=tx.filter(t=>t.date>=fDateFrom);
+  if(fDateTo)   tx=tx.filter(t=>t.date<=fDateTo);
+  if(fLot)      tx=tx.filter(t=>t.lot===fLot);
+  if(fDesig)    tx=tx.filter(t=>t.nprix===fDesig);
+  if(fCat)      tx=tx.filter(t=>t.categorie===fCat);
+  if(fType)     tx=tx.filter(t=>t.type===fType);
+  return tx.sort((a,b)=>a.date>b.date?-1:1);
+}
+
+function renderRapport(){
+  if(!project) return;
+  const tx = getFilteredTxRpt();
+  const dep = tx.filter(t=>t.type==='depense').reduce((s,t)=>s+t.montant,0);
+  const rec = tx.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
+  const mo  = tx.filter(t=>t.categorie==='MO').reduce((s,t)=>s+t.montant,0);
+  const mat = tx.filter(t=>t.categorie==='MAT').reduce((s,t)=>s+t.montant,0);
+  const mtr = tx.filter(t=>t.categorie==='MTR').reduce((s,t)=>s+t.montant,0);
+  const imp = tx.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+  const sol = rec-dep;
+  const pct = project.budget>0?(dep/project.budget)*100:0;
+
+  // Nom projet
+  const pn=document.getElementById('rptProjectName');
+  if(pn) pn.textContent=project.nom+(project.lieu?' — '+project.lieu:'');
+  // Mettre à jour le label de période
+  const fdf=(document.getElementById('rptDateFrom')||{}).value||'';
+  const fdt=(document.getElementById('rptDateTo')||{}).value||'';
+  const pl=document.getElementById('rptPeriodLabel');
+  if(pl){
+    if(fdf||fdt){
+      const debut=fdf||'debut';
+      const fin=fdt||'fin';
+      pl.textContent='Periode : '+debut+' -> '+fin;
+    } else if(transactions.length){
+      const dates=transactions.map(t=>t.date).sort();
+      pl.textContent='Du '+dates[0]+' au '+dates[dates.length-1];
+    } else {
+      pl.textContent='Aucune transaction';
+    }
+  }
+
+  // KPI
+  const kpiEl=document.getElementById('rptKpi');
+  if(kpiEl) kpiEl.innerHTML=[
+    {i:'💸',l:'Dépenses',v:fmt(dep),c:'var(--danger)'},
+    {i:'💰',l:'Entrées',v:fmt(rec),c:'var(--success)'},
+    {i:'📊',l:'Solde net',v:fmt(sol),c:sol>=0?'var(--success)':'var(--danger)'},
+    {i:'👷',l:"Main d'oeuvre",v:fmt(mo),c:'var(--accent)'},
+    {i:'🧱',l:'Matériaux',v:fmt(mat),c:'var(--cyan)'},
+    {i:'⚙️',l:'Matériels',v:fmt(mtr),c:'var(--amber)'},
+    {i:'⚠️',l:'Imprévus',v:fmt(imp),c:'var(--warning)'},
+    {i:'🔢',l:'Transactions',v:tx.length,c:'var(--text)'},
+  ].map(k=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;box-shadow:var(--shadow-sm)"><div style="font-size:18px;margin-bottom:4px">${k.i}</div><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px">${k.l}</div><div style="font-weight:800;font-size:15px;color:${k.c}">${k.v}</div></div>`).join('');
+
+  // Avancement budget
+  const bb=document.getElementById('rptBudgetBody');
+  if(bb){
+    const colCss=pct>90?'var(--danger)':pct>60?'var(--amber)':'var(--success)';
+    // Calcul montant imprévus max
+  const impPct = project.impPct||0;
+  const impMax = impPct>0 ? (project.budget*impPct/100) : 0;
+  const impDep = tx.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+  const impPctUsed = impMax>0?(impDep/impMax)*100:0;
+  const impCol = impPctUsed>100?'var(--danger)':impPctUsed>80?'var(--warning)':'var(--amber)';
+
+  bb.innerHTML=`
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:14px">
+        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">BUDGET TOTAL</div>
+          <div style="font-size:15px;font-weight:800;color:var(--accent);margin-top:2px">${fmt(project.budget)}</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">CONSOMMÉ</div>
+          <div style="font-size:15px;font-weight:800;color:${colCss};margin-top:2px">${fmt(dep)}</div>
+          <div style="font-size:10px;color:${colCss};font-weight:700">${pct.toFixed(1)}% du budget</div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--r-sm);padding:10px;text-align:center">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">RESTANT</div>
+          <div style="font-size:15px;font-weight:800;color:var(--success);margin-top:2px">${fmt(project.budget-dep)}</div>
+        </div>
+        ${impMax>0?`<div style="background:var(--warning-l);border-radius:var(--r-sm);padding:10px;text-align:center;border:1px solid rgba(var(--accent-rgb),.1)">
+          <div style="font-size:10px;font-weight:600;color:var(--text3)">IMPRÉVUS (${impPct}%)</div>
+          <div style="font-size:15px;font-weight:800;color:${impCol};margin-top:2px">${fmt(impDep)}</div>
+          <div style="font-size:10px;color:${impCol};font-weight:700">${impPctUsed.toFixed(0)}% / max ${fmt(impMax)}</div>
+        </div>`:''}
+      </div>
+      <div style="margin-bottom:6px">
+        <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+          <span style="font-size:11px;font-weight:700;color:var(--text2)">Consommation budget</span>
+          <span style="font-size:12px;font-weight:800;color:${colCss}">${pct.toFixed(1)}% — ${fmt(dep)} / ${fmt(project.budget)}</span>
+        </div>
+        <div style="height:20px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
+          <div style="height:100%;width:${Math.min(pct,100)}%;background:${colCss};border-radius:var(--r-full);transition:width .8s;display:flex;align-items:center;justify-content:center">
+            <span style="font-size:10px;font-weight:700;color:#fff">${pct>8?pct.toFixed(1)+'%':''}</span>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
+          <span style="color:${colCss};font-weight:600">${fmt(dep)} consommé</span><span>Restant : ${fmt(project.budget-dep)}</span><span>${fmt(project.budget)}</span>
+        </div>
+      </div>
+      ${(impMax>0||impDep>0)?`<div style="margin-top:12px;padding-top:10px;border-top:1px solid var(--border)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:4px">
+          <span style="font-size:12px;font-weight:700;color:var(--text2)">⚠️ Imprévus${impPct>0?' ('+impPct+'% du budget)':''}</span>
+          ${impMax>0
+            ?`<span style="font-size:12px;font-weight:800;color:${impCol}">${impPctUsed.toFixed(1)}% — ${fmt(impDep)} / ${fmt(impMax)}</span>`
+            :`<span style="font-size:12px;font-weight:700;color:var(--warning)">${fmt(impDep)} — aucun plafond défini</span>`}
+        </div>
+        ${impMax>0?`
+        <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
+          <div class="progress-fill amber" id="rptImpFill2" style="background:${impCol};width:${Math.min(impPctUsed,100)}%"></div>
+        </div>
+        <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
+          <span style="color:${impCol};font-weight:600">${fmt(impDep)} consommé</span>
+          <span>Disponible : ${fmt(Math.max(0,impMax-impDep))}</span>
+          <span>Plafond : ${fmt(impMax)}</span>
+        </div>
+        ${impPctUsed>100?`<div style="margin-top:6px;background:var(--danger-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--danger);font-weight:600">🔴 Dépassement du plafond imprévus : +${fmt(impDep-impMax)}</div>`:''}`:''}
+        ${impPct===0?`<div style="margin-top:6px;background:var(--amber-l);border-radius:var(--r-sm);padding:6px 10px;font-size:11px;color:var(--amber);font-weight:600">💡 Définissez un % d'imprévus dans Paramètres pour activer le suivi</div>`:''}
+      </div>`:''}
+      <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--text3);margin-top:10px">
+        <span>🟢 0—60% : Dans les limites</span>
+        <span>🟡 60—90% : Surveiller</span>
+        <span>🔴 90%+ : Dépassement imminent</span>
+      </div>`;
+  }
+
+  // Graphiques
+  const isDark=document.documentElement.getAttribute('data-theme')==='dark';
+  const chartTextColor=isDark?'#B8C4D6':'#4A5568';
+  const chartGridColor=isDark?'#222E45':'#E8ECF4';
+
+  // Pie chart
+  if(rptCharts.pie){try{rptCharts.pie.destroy();}catch(e){}}
+  const pieCanvas=document.getElementById('rptChartPie');
+  if(pieCanvas&&dep>0){
+    const pieData=[mo,mat,mtr,imp].filter(v=>v>0);
+    const pieLabels=["MO","Matériaux","Matériels","Imprévus"].filter((_,i)=>[mo,mat,mtr,imp][i]>0);
+    const pieColors=isDark?['#818CF8','#34D399','#FBBF24','#FB7185']:['#4F46E5','#059669','#D97706','#DC2626'];
+    const pieTotal=pieData.reduce((a,b)=>a+b,0);
+    const rptPieLegendEl=document.getElementById('rptPieLegend');
+    // Pie chart avec étiquettes inline sur les segments
+  rptCharts.pie=new Chart(pieCanvas,{
+    type:'doughnut',
+    data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors,borderWidth:2,borderColor:'rgba(255,255,255,.6)',hoverOffset:8,borderRadius:4}]},
+    options:{
+      responsive:true,
+      cutout:'60%',
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:isDark?'rgba(20,28,47,.9)':'rgba(255,255,255,.95)',
+          titleColor:isDark?'#F2F4F8':'#1C1C1E',
+          bodyColor:isDark?'#B8C4D6':'#636366',
+          borderColor:isDark?'rgba(108,138,255,.2)':'rgba(200,210,255,.4)',
+          borderWidth:1,
+          padding:10,
+          callbacks:{label:function(ctx){return' '+ctx.label+': '+fmt(ctx.raw)+' ('+((ctx.raw/pieTotal)*100).toFixed(0)+'%)';}}
+        }
+      }
+    }
+  });
+  // Légende HTML enrichie avec montants
+  if(rptPieLegendEl){
+    rptPieLegendEl.innerHTML=pieLabels.map((label,i)=>{
+      if(pieData[i]<=0)return'';
+      const pctv=((pieData[i]/pieTotal)*100).toFixed(1);
+      return`<div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text2);background:rgba(255,255,255,.5);padding:6px 12px;border-radius:var(--r-full);border:1px solid rgba(255,255,255,.6);backdrop-filter:blur(4px)">
+        <span style="width:12px;height:12px;border-radius:4px;background:${pieColors[i]};flex-shrink:0;box-shadow:0 2px 4px rgba(0,0,0,.15)"></span>
+        <span>${label}</span>
+        <span style="color:var(--text);font-weight:700">${pctv}%</span>
+        <span style="color:var(--text3);font-size:11px">${fmt(pieData[i])}</span>
+      </div>`;
+    }).join('');
+  }
+  }
+
+  // Bar chart par LOT
+  if(rptCharts.bar){try{rptCharts.bar.destroy();}catch(e){}}
+  const barCanvas=document.getElementById('rptChartBar');
+  const lotMap={};
+  tasks.forEach(t=>{ if(!lotMap[t.lot])lotMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0}; lotMap[t.lot].budget+=t.budget||0; });
+  tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!lotMap[lot])lotMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')lotMap[lot].rec+=t.montant; else lotMap[lot].dep+=t.montant; });
+  const lotData=Object.values(lotMap).filter(r=>r.budget>0||r.dep>0).sort((a,b)=>b.budget-a.budget);
+  if(barCanvas&&lotData.length){
+    rptCharts.bar=new Chart(barCanvas,{type:'bar',data:{labels:lotData.map(r=>r.lot.length>15?r.lot.slice(0,15)+'…':r.lot),datasets:[{label:'Budget',data:lotData.map(r=>r.budget),backgroundColor:isDark?'rgba(108,138,255,.7)':'rgba(59,91,219,.7)',borderRadius:3},{label:'Dépenses',data:lotData.map(r=>r.dep),backgroundColor:isDark?'rgba(251,113,133,.7)':'rgba(224,49,49,.7)',borderRadius:3}]},options:{responsive:true,plugins:{legend:{labels:{color:chartTextColor,font:{size:10}}}},scales:{x:{ticks:{color:chartTextColor,font:{size:9}},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:9}},grid:{display:false}}}}});
+  }
+
+  // Synthèse par LOT
+  const lotBody=document.getElementById('rptLotBody');
+  const lotFoot=document.getElementById('rptLotFoot');
+  if(lotBody){
+    const synMap={};
+    tasks.forEach(t=>{ if(!synMap[t.lot])synMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0}; synMap[t.lot].budget+=t.budget||0; });
+    tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!synMap[lot])synMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')synMap[lot].rec+=t.montant; else synMap[lot].dep+=t.montant; });
+    const synRows=Object.values(synMap).filter(r=>r.budget>0||r.dep>0).sort((a,b)=>b.dep-a.dep);
+    const frag=document.createDocumentFragment();
+    synRows.forEach((r,i)=>{
+      const pct2=r.budget>0?(r.dep/r.budget)*100:0;
+      const col=pct2>100?'var(--danger)':pct2>80?'var(--warning)':pct2>50?'var(--amber)':'var(--success)';
+      const al=pct2>100?'🔴 Dépassé':pct2>80?'🟠 Attention':pct2>50?'🟡 En cours':r.dep>0?'🟢 OK':'—';
+      const lc=getLotColor(r.lot);
+      const tr=document.createElement('tr');
+      if(i%2)tr.style.background='var(--surface2)';
+      tr.innerHTML=`
+        <td><span style="font-weight:700;color:${lc};font-size:12px">${_sanitize(r.lot)}</span></td>
+        <td style="text-align:right;font-weight:600">${r.budget>0?fmt(r.budget):'—'}</td>
+        <td style="text-align:right;font-weight:700;color:${pct2>100?'var(--danger)':'var(--text)'}">${r.dep>0?fmt(r.dep):'—'}</td>
+        <td style="text-align:right;color:var(--success)">${r.rec>0?fmt(r.rec):'—'}</td>
+        <td style="text-align:right;font-weight:700;color:${(r.rec-r.dep)>=0?'var(--success)':'var(--danger)'}">${fmt(r.rec-r.dep)}</td>
+        <td>${r.budget>0&&r.dep>0?`<div style="display:flex;align-items:center;gap:6px"><div style="width:60px;height:6px;background:var(--surface3);border-radius:3px;overflow:hidden"><div style="height:100%;width:${Math.min(pct2,100)}%;background:${col}"></div></div><span style="font-size:11px;font-weight:700;color:${col}">${pct2.toFixed(0)}%</span></div>`:'—'}</td>
+        <td style="font-size:12px">${al}</td>`;
+      frag.appendChild(tr);
+    });
+    lotBody.innerHTML='';
+    lotBody.appendChild(frag);
+    if(lotFoot) lotFoot.innerHTML=`<td style="color:var(--text2);font-size:12px;font-weight:700">TOTAL</td><td style="text-align:right;font-weight:700">${fmt(synRows.reduce((s,r)=>s+r.budget,0))}</td><td style="text-align:right;font-weight:700">${fmt(synRows.reduce((s,r)=>s+r.dep,0))}</td><td style="text-align:right;font-weight:700">${fmt(synRows.reduce((s,r)=>s+r.rec,0))}</td><td style="text-align:right;font-weight:700">${fmt(synRows.reduce((s,r)=>s+(r.rec-r.dep),0))}</td><td colspan="2"></td>`;
+  }
+
+  // Transactions
+  const txBody=document.getElementById('rptTxBody');
+  const txEmpty=document.getElementById('rptTxEmpty');
+  const txCount=document.getElementById('rptTxCount');
+  const txTotal=document.getElementById('rptTxTotal');
+  if(txCount) txCount.textContent=tx.length;
+  if(!tx.length){ if(txBody)txBody.innerHTML=''; if(txEmpty)txEmpty.style.display='block'; if(txTotal)txTotal.textContent='—'; return; }
+  if(txEmpty) txEmpty.style.display='none';
+  const catLabel={MO:'👷 MO',MAT:'🧱 MAT',MTR:'⚙️ MTR',IMP:'⚠️ IMP'};
+  const frag2=document.createDocumentFragment();
+  tx.forEach((t,i)=>{
+    const lc=getLotColor(t.lot);
+    const tr=document.createElement('tr');
+    if(i%2)tr.style.background='var(--surface2)';
+    tr.innerHTML=`
+      <td style="font-size:12px;color:var(--text2);white-space:nowrap">${t.date}</td>
+      <td style="font-weight:700;color:${lc};font-size:12px;font-family:var(--mono)">${_sanitize(t.nprix)}</td>
+      <td style="font-size:12px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${_sanitize(t.desig)}">${_sanitize(t.desig)}</td>
+      <td><span style="font-size:11px;font-weight:600;background:${lc}18;color:${lc};padding:2px 8px;border-radius:var(--r-full)">${_sanitize(t.lot||'—')}</span></td>
+      <td style="font-size:12px">${catLabel[t.categorie]||t.categorie}</td>
+      <td><span style="font-size:11px;font-weight:700;color:${t.type==='entree'?'var(--success)':'var(--danger)'}">${t.type==='entree'?'↑ Entrée':'↓ Dépense'}</span></td>
+      <td style="text-align:right;font-weight:700;color:${t.type==='entree'?'var(--success)':'var(--text)'};white-space:nowrap">${t.type==='entree'?'+':'-'}${fmt(t.montant)}</td>
+      <td style="font-size:11px;color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_sanitize(t.description||'—')}</td>`;
+    frag2.appendChild(tr);
+  });
+  txBody.innerHTML='';
+  txBody.appendChild(frag2);
+  const total=tx.reduce((s,t)=>s+(t.type==='entree'?t.montant:-t.montant),0);
+  if(txTotal){ txTotal.textContent=fmt(total); txTotal.style.color=total>=0?'var(--success)':'var(--danger)'; }
+}
+
+// ── EXPORT CSV ──
+function exportRapportCSV(){
+  const tx=getFilteredTxRpt();
+  if(!tx.length){toast('Aucune transaction à exporter','warn');return;}
+  const sep=';';
+  const headers=['Date','N° Prix','Désignation','LOT','Catégorie','Type','Montant ('+curSym()+')','Note'];
+  const rows=tx.map(t=>[
+    t.date,t.nprix,
+    '"'+(t.desig||'').replace(/"/g,'""')+'"',
+    t.lot||'',t.categorie,t.type,
+    t.type==='entree'?t.montant:-t.montant,
+    '"'+(t.description||'').replace(/"/g,'""')+'"'
+  ].join(sep));
+  // Ajouter entête rapport
+  const info=[
+    ['RAPPORT MONSUIVI BTP — '+project.nom],
+    ['Projet:',project.nom,'Lieu:',project.lieu||'—'],
+    ['Budget:',project.budget,'MO:',project.mo||'—'],
+    ['Exporté le:',new Date().toLocaleDateString('fr-FR')],
+    [''],
+    [headers.join(sep)],
+    ...rows.map(r=>[r]),
+    [''],
+    ['TOTAL DÉPENSES',tx.filter(t=>t.type==='depense').reduce((s,t)=>s+t.montant,0)],
+    ['TOTAL ENTRÉES',tx.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0)],
+    ['SOLDE',tx.reduce((s,t)=>s+(t.type==='entree'?t.montant:-t.montant),0)],
+  ];
+  const csv='\uFEFF'+info.map(r=>Array.isArray(r)?r.join(sep):r).join('\n');
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  a.download='rapport_'+project.nom.replace(/\s/g,'_')+'_'+today()+'.csv';
+  a.click();URL.revokeObjectURL(a.href);
+  toast('CSV exporté ✓');
+}
+
+// ── EXPORT PDF (via impression navigateur) ──
+function exportRapportPDF(){
+  const tx=getFilteredTxRpt();
+  if(!tx.length){toast('Aucune transaction','warn');return;}
+  const dep=tx.filter(t=>t.type==='depense').reduce((s,t)=>s+t.montant,0);
+  const rec=tx.filter(t=>t.type==='entree').reduce((s,t)=>s+t.montant,0);
+  const pct=project.budget>0?(dep/project.budget)*100:0;
+  const col=pct>90?'#E03131':pct>60?'#E8590C':'#0D9488';
+
+  // Synthèse par LOT
+  const synMap={};
+  tasks.forEach(t=>{ if(!synMap[t.lot])synMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0}; synMap[t.lot].budget+=t.budget||0; });
+  tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!synMap[lot])synMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')synMap[lot].rec+=t.montant; else synMap[lot].dep+=t.montant; });
+  const synRows=Object.values(synMap).filter(r=>r.budget>0||r.dep>0);
+
+  const _impPctPdf=project?project.impPct||0:0;
+  const _impMaxPdf=_impPctPdf>0?(project.budget*_impPctPdf/100):0;
+  const _impDepPdf=tx.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+  const _impPctUsedPdf=_impMaxPdf>0?(_impDepPdf/_impMaxPdf)*100:0;
+  const _impColPdf=_impPctUsedPdf>100?'#E03131':_impPctUsedPdf>80?'#E8590C':'#F59F00';
+  const fDateFrom=(document.getElementById('rptDateFrom')||{}).value||'';
+  const fDateTo=(document.getElementById('rptDateTo')||{}).value||'';
+  const periodeTxt=fDateFrom||fDateTo?`Période : ${fDateFrom||'début'} → ${fDateTo||'aujourd\'hui'}`:'Toutes les dates';
+
+  const printWin=window.open('','_blank','width=900,height=700');
+  printWin.document.write(`<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">
+<title>Rapport BTP — ${project.nom}</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;font-size:12px;color:#1a1a2e;background:#fff;padding:30px}
+  h1{font-size:22px;font-weight:800;color:#3B5BDB;margin-bottom:4px}
+  .subtitle{color:#636366;font-size:13px;margin-bottom:20px}
+  .meta{display:flex;gap:24px;flex-wrap:wrap;background:#F5F5F7;border-radius:8px;padding:14px;margin-bottom:20px}
+  .meta-item{flex:1;min-width:120px}.meta-label{font-size:10px;font-weight:700;color:#636366;text-transform:uppercase;letter-spacing:.5px}.meta-value{font-size:14px;font-weight:800;margin-top:2px}
+  .section-title{font-size:14px;font-weight:700;margin:20px 0 8px;padding-bottom:4px;border-bottom:2px solid #3B5BDB;color:#3B5BDB}
+  table{width:100%;border-collapse:collapse;font-size:11px}
+  th{background:#3B5BDB;color:#fff;padding:7px 8px;text-align:left;font-weight:600}
+  td{padding:6px 8px;border-bottom:1px solid #e5e5ea}
+  tr:nth-child(even) td{background:#F5F5F7}
+  tfoot td{background:#EDF2FF;font-weight:700;border-top:2px solid #3B5BDB}
+  .badge{padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+  .dep{background:#FFF5F5;color:#E03131}.ent{background:#F0FDFA;color:#0D9488}
+  .progress-bg{background:#e5e5ea;border-radius:6px;height:14px;overflow:hidden;margin:4px 0}
+  .progress-fill{height:100%;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff}
+  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+  .kpi{background:#F5F5F7;border-radius:8px;padding:12px;text-align:center}
+  .kpi-label{font-size:9px;font-weight:700;color:#636366;text-transform:uppercase}
+  .kpi-val{font-size:15px;font-weight:800;margin-top:2px}
+  .footer{margin-top:30px;text-align:center;font-size:10px;color:#AEAEB2;border-top:1px solid #e5e5ea;padding-top:12px}
+  @media print{body{padding:15px}.no-print{display:none}button{display:none}}
+</style></head><body>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:16px">
+  <div>
+    <h1>📊 Rapport Financier BTP</h1>
+    <div class="subtitle">${_sanitize(project.nom)}${project.lieu?' — '+_sanitize(project.lieu):''} &nbsp;|&nbsp; ${periodeTxt}</div>
+  </div>
+  <div style="text-align:right;font-size:11px;color:#636366">
+    Généré le ${new Date().toLocaleDateString('fr-FR')}<br>
+    MonSuivi Financier BTP
+  </div>
+</div>
+
+<div class="kpi-grid">
+  <div class="kpi"><div class="kpi-label">Budget</div><div class="kpi-val" style="color:#3B5BDB">${fmt(project.budget)}</div></div>
+  <div class="kpi"><div class="kpi-label">Dépenses</div><div class="kpi-val" style="color:#E03131">${fmt(dep)}</div></div>
+  <div class="kpi"><div class="kpi-label">Entrées</div><div class="kpi-val" style="color:#0D9488">${fmt(rec)}</div></div>
+  <div class="kpi"><div class="kpi-label">Solde net</div><div class="kpi-val" style="color:${(rec-dep)>=0?'#0D9488':'#E03131'}">${fmt(rec-dep)}</div></div>
+</div>
+
+<div class="section-title">🎯 Avancement du budget</div>
+<div style="background:#F5F5F7;border-radius:8px;padding:14px;margin-bottom:16px">
+  <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+    <span>Consommation : <b style="color:${col}">${pct.toFixed(1)}% — ${fmt(dep)}</b></span>
+    <span>Restant : <b style="color:#0D9488">${fmt(project.budget-dep)}</b></span>
+    ${_impMaxPdf>0?`<span>Imprévus : <b style="color:${_impColPdf}">${fmt(_impDepPdf)} / ${fmt(_impMaxPdf)} (${_impPctPdf.toFixed(0)}%)</b></span>`:''}
+  </div>
+  <div class="progress-bg"><div class="progress-fill" style="width:${Math.min(pct,100)}%;background:${col}">${pct.toFixed(1)}%</div></div>
+</div>
+
+<div class="section-title">📋 Synthèse par LOT</div>
+<table style="margin-bottom:16px">
+  <thead><tr><th>LOT</th><th style="text-align:right">Budget</th><th style="text-align:right">Dépenses</th><th style="text-align:right">Entrées</th><th style="text-align:right">Solde</th><th>Avancement</th><th>Statut</th></tr></thead>
+  <tbody>${synRows.map(r=>{const p2=r.budget>0?(r.dep/r.budget)*100:0;const c2=p2>100?'#E03131':p2>80?'#E8590C':p2>50?'#F59F00':'#0D9488';return`<tr><td><b>${_sanitize(r.lot)}</b></td><td style="text-align:right">${r.budget>0?fmt(r.budget):'—'}</td><td style="text-align:right;color:#E03131;font-weight:700">${r.dep>0?fmt(r.dep):'—'}</td><td style="text-align:right;color:#0D9488">${r.rec>0?fmt(r.rec):'—'}</td><td style="text-align:right;font-weight:700;color:${(r.rec-r.dep)>=0?'#0D9488':'#E03131'}">${fmt(r.rec-r.dep)}</td><td><div class="progress-bg" style="width:80px"><div class="progress-fill" style="width:${Math.min(p2,100)}%;background:${c2}">${p2>10?p2.toFixed(0)+'%':''}</div></div></td><td style="font-size:11px">${p2>100?'🔴 Dépassé':p2>80?'🟠 Attention':p2>50?'🟡 En cours':r.dep>0?'🟢 OK':'—'}</td></tr>`}).join('')}</tbody>
+  <tfoot><tr><td><b>TOTAL</b></td><td style="text-align:right"><b>${fmt(synRows.reduce((s,r)=>s+r.budget,0))}</b></td><td style="text-align:right"><b>${fmt(synRows.reduce((s,r)=>s+r.dep,0))}</b></td><td style="text-align:right"><b>${fmt(synRows.reduce((s,r)=>s+r.rec,0))}</b></td><td style="text-align:right"><b>${fmt(synRows.reduce((s,r)=>s+(r.rec-r.dep),0))}</b></td><td colspan="2"></td></tr></tfoot>
+</table>
+
+<div class="section-title">📝 Transactions détaillées (${tx.length})</div>
+<table>
+  <thead><tr><th>Date</th><th>N° Prix</th><th>Désignation</th><th>LOT</th><th>Cat.</th><th>Type</th><th style="text-align:right">Montant</th><th>Note</th></tr></thead>
+  <tbody>${tx.map((t,i)=>`<tr style="${i%2?'background:#F5F5F7':''}"><td style="white-space:nowrap">${t.date}</td><td style="font-weight:700;font-size:11px">${_sanitize(t.nprix)}</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${_sanitize(t.desig)}</td><td style="font-size:10px">${_sanitize(t.lot||'—')}</td><td style="font-size:10px">${t.categorie}</td><td><span class="badge ${t.type==='entree'?'ent':'dep'}">${t.type==='entree'?'↑ Entrée':'↓ Dépense'}</span></td><td style="text-align:right;font-weight:700;color:${t.type==='entree'?'#0D9488':'#1a1a2e'};white-space:nowrap">${t.type==='entree'?'+':'-'}${fmt(t.montant)}</td><td style="font-size:10px;color:#636366">${_sanitize(t.description||'—')}</td></tr>`).join('')}</tbody>
+  <tfoot><tr><td colspan="6">TOTAL FILTRÉ</td><td style="text-align:right">${fmt(tx.reduce((s,t)=>s+(t.type==='entree'?t.montant:-t.montant),0))}</td><td></td></tr></tfoot>
+</table>
+
+<div class="footer">MonSuivi Financier BTP — CIVIL+ &nbsp;|&nbsp; ${project.nom} &nbsp;|&nbsp; Rapport généré le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</div>
+
+<div style="text-align:center;margin-top:20px" class="no-print">
+  <button onclick="window.print()" style="background:#3B5BDB;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;margin-right:10px">🖨️ Imprimer / Sauvegarder PDF</button>
+  <button onclick="window.close()" style="background:#F2F2F7;color:#1a1a2e;border:none;padding:12px 20px;border-radius:8px;font-size:14px;cursor:pointer">✕ Fermer</button>
+</div>
+</body></html>`);
+  printWin.document.close();
+  toast('Rapport PDF prêt — cliquez Imprimer ✓');
+}
+
+// Hook: charger les filtres quand on arrive sur la page rapports
+const _origGoPage = goPage;
+goPage = function(page, btn){
+  _origGoPage(page, btn);
+  if(page==='rapports'){
+    buildRptFilters();
+    // Auto-remplir les dates avec 1ère et dernière transaction
+    if(transactions.length){
+      const dates = transactions.map(t=>t.date).sort();
+      const fromEl = document.getElementById('rptDateFrom');
+      const toEl   = document.getElementById('rptDateTo');
+      if(fromEl && !fromEl.value) fromEl.value = dates[0];
+      if(toEl   && !toEl.value)   toEl.value   = dates[dates.length-1];
+    }
+    renderRapport();
+  }
+};
+
+// ── IMPRÉVUS — Calcul prévisualisation ──
+function updateImpPreview(prefix){
+  const budget = parseFloat(document.getElementById(prefix+'Budget').value)||0;
+  const pct    = parseFloat(document.getElementById(prefix+'ImpPct').value)||0;
+  const montant= budget*pct/100;
+  const el     = document.getElementById(prefix+'ImpMontant');
+  if(el) el.value = pct>0&&budget>0 ? fmt(montant)+' max' : '';
+}
 
 // ── Keyboard shortcuts ──
 document.addEventListener('keydown',e=>{

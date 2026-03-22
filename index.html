@@ -708,6 +708,7 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
         <h1>Nouveau Projet BTP</h1>
         <p>Configurez votre projet pour commencer le suivi budgétaire</p>
       </div>
+      <div id="setupWelcomeMsg" style="display:none;margin-bottom:0"></div>
       <div class="step-indicator">
         <div class="step active" id="stepDot1"><div class="step-dot" id="sd1">1</div><div class="step-label">Projet</div></div>
         <div class="step" id="stepDot2"><div class="step-dot">2</div><div class="step-label">Tâches</div></div>
@@ -2156,12 +2157,24 @@ function appInit(){
   if(loadState()&&project){
     startApp();
   } else {
-    // Pas de données locales — si email connu, tenter cloud
+    // Pas de données locales
     if(knownEmail){
+      // Email connu → montrer le setup (nouveau projet ou import)
+      // Tenter d'abord de charger depuis le cloud en arrière-plan
       document.getElementById('mainApp').style.display='none';
-      document.getElementById('setupScreen').style.display='block';
+      const ss=document.getElementById('setupScreen');
+      ss.style.display='block';
+      // Ajouter message de bienvenue dans le setup si premier accès
+      const welcomeMsg=document.getElementById('setupWelcomeMsg');
+      if(welcomeMsg && knownEmail) {
+        welcomeMsg.style.display='block';
+        welcomeMsg.innerHTML='<div style="background:var(--accent-l);border:1px solid rgba(var(--accent-rgb),.15);border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--accent);margin-bottom:16px">👋 Bienvenue <b>'+knownEmail+'</b> — Créez votre premier projet ou importez une sauvegarde.</div>';
+      }
+      // Tentative silencieuse de restauration cloud
+      const emailId2 = localStorage.getItem('cp_email_id') || _emailToId(knownEmail);
+      _tryRestoreFromCloud(knownEmail, emailId2);
     } else {
-      // Pas d'email → retour à l'écran de connexion
+      // Pas d'email → écran de connexion
       document.getElementById('mainApp').style.display='none';
       document.getElementById('setupScreen').style.display='none';
       if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';}
@@ -2169,6 +2182,19 @@ function appInit(){
     }
   }
   setTimeout(initSbOnStartup, 500);
+}
+
+// Tentative silencieuse de restauration cloud au démarrage
+async function _tryRestoreFromCloud(email, emailId) {
+  try {
+    const loaded = await _autoLoadFromCloud(emailId);
+    if(loaded && project) {
+      toast('✓ Données restaurées depuis le cloud');
+      startApp();
+    }
+  } catch(e) {
+    console.warn('[CloudRestore silencieux]', e.message);
+  }
 }
 
 window.onload=function(){cpCheck();};
@@ -2262,6 +2288,9 @@ function finishSetup(){
 }
 
 function startApp(){
+  // S'assurer que le lockScreen est caché
+  const ls=document.getElementById('lockScreen');
+  if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
   // Auto-connect Supabase au démarrage
   if(!_sbClient){
     _loadSbSDK(()=>{
@@ -3577,20 +3606,37 @@ function _sbHeaders() {
   return h;
 }
 
-// Wrapper fetch proxy : traduit les appels REST Supabase → /api/supabase-proxy
-// Signature identique à fetch() pour compatibilité maximale
+// Wrapper fetch proxy sécurisé — toutes les requêtes Supabase passent ici
 async function _proxyFetch(sbPath, options={}) {
   const match = sbPath.match(/^\/([a-zA-Z_]+)(\?(.*))?$/);
   if(!match) throw new Error('Chemin proxy invalide: '+sbPath);
   const table = match[1];
   const query = match[3]||'';
   const method = (options.method||'GET').toUpperCase();
+
+  // Construire l'URL proxy avec paramètres
   let proxyUrl = _PROXY_URL+'?table='+encodeURIComponent(table)+'&method='+method;
   const filterMatch = query.match(/^([a-zA-Z_]+=(?:eq|neq|like|ilike|is|in|gt|gte|lt|lte)\.[^&]+)/);
   if(filterMatch) proxyUrl += '&filter='+encodeURIComponent(filterMatch[1]);
-  const fetchOpts = { method:'POST', headers:_sbHeaders() };
-  if(options.body && method!=='GET') fetchOpts.body = options.body;
-  return fetch(proxyUrl, fetchOpts);
+
+  // En-têtes
+  const headers = { 'Content-Type':'application/json' };
+  const session = localStorage.getItem('cp_session_token');
+  if(session) headers['X-Civil-Session'] = session;
+
+  const fetchOpts = { method:'POST', headers };
+  // Pour PATCH/POST, transmettre le body
+  if(options.body && ['PATCH','POST','PUT'].includes(method)){
+    fetchOpts.body = options.body;
+  }
+
+  try {
+    const res = await fetch(proxyUrl, fetchOpts);
+    return res;
+  } catch(e) {
+    // En cas d'erreur réseau → retourner une réponse vide valide
+    return new Response('[]', { status: 200, headers: { 'Content-Type':'application/json' } });
+  }
 }
 
 // ── Hash utilitaires ──
@@ -3884,12 +3930,21 @@ async function _grantAccess(email,emailId,localOnly) {
 
   if(!localOnly && !hasLocalData){
     _showCloudLoadingScreen(email);
-    const loaded=await _autoLoadFromCloud(emailId);
+    const loaded = await _autoLoadFromCloud(emailId);
     _hideCloudLoadingScreen();
-    toast(loaded?'Données restaurées depuis le cloud ✓':'Bienvenue '+email+' — aucune donnée cloud');
+    if(loaded && project){
+      toast('✓ Données restaurées depuis le cloud');
+    } else {
+      toast('Bienvenue '+email+' — démarrez votre premier projet !');
+    }
+  } else if(hasLocalData && !project) {
+    // Données locales présentes mais non déchiffrées encore
+    await loadStateAsync();
+    toast('Bienvenue '+email+' ✓');
   } else {
     toast('Bienvenue '+email+(localOnly?' (mode local)':' ✓'));
   }
+  // Toujours appeler appInit — il gère l'affichage correct
   appInit();
 }
 

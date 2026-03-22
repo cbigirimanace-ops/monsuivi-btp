@@ -1620,10 +1620,14 @@ function cpCheck(){
     _sbPinHash = eid;
     localStorage.setItem('cp_email_id', eid);
     window._packMax = parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
-    _emailSetupCloud(savedEmail); // Init cloud sync
+    _emailSetupCloud(savedEmail);
     const ls = document.getElementById('lockScreen');
     if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
-    appInit();
+    // Init clé crypto pour permettre le déchiffrement si nécessaire
+    _deriveKey(savedEmail).then(key => {
+      _cryptoKey = key;
+      appInit();
+    }).catch(() => appInit());
     return;
   }
 
@@ -2146,9 +2150,29 @@ function loadState(){
     const found = _findDataKey();
     if(!found) return false;
     const {key, data: raw} = found;
-    // Si chiffré → ne pas charger sans clé crypto (retour false = connexion requise)
+    // Si chiffré → essayer d'abord les autres clés non chiffrées
     if(raw.startsWith('ENC:')) {
-      console.log('[Storage] Données chiffrées — connexion requise');
+      // Chercher une version non chiffrée dans les autres clés
+      const altKeys = ['bc_data_default', 'bc_data', 'bc_data_guest'];
+      for(const ak of altKeys) {
+        if(ak === key) continue;
+        const altRaw = localStorage.getItem(ak);
+        if(altRaw && !altRaw.startsWith('ENC:')) {
+          try {
+            const altD = JSON.parse(altRaw);
+            if(altD && altD.project) {
+              // Utiliser cette version non chiffrée
+              project=altD.project;
+              tasks=Array.isArray(altD.tasks)?altD.tasks:[];
+              transactions=Array.isArray(altD.transactions)?altD.transactions:[];
+              txId=typeof altD.txId==='number'?altD.txId:1;
+              console.log('[Storage] Version non chiffrée récupérée depuis', ak);
+              return true;
+            }
+          } catch(e2){}
+        }
+      }
+      console.log('[Storage] Données chiffrées sans alternative — connexion requise');
       return false;
     }
     const d=JSON.parse(raw);
@@ -2179,20 +2203,13 @@ function saveState(){
       return;
     }
     // Chiffrement asynchrone (n'attend pas le résultat pour ne pas bloquer l'UI)
-    if(_cryptoKey) {
-      _encryptData(data, _cryptoKey).then(enc => {
-        if(enc) {
-          localStorage.setItem(_storageKey(), 'ENC:' + enc);
-        } else {
-          // Fallback non chiffré si le chiffrement échoue
-          localStorage.setItem(_storageKey(), data);
-        }
-      });
-    } else {
-      // Pas encore de clé (avant connexion) → stockage non chiffré temporaire
-      localStorage.setItem(_storageKey(), data);
+    // Stockage sans chiffrement (stable) — double clé pour migration
+    const storKey = _storageKey();
+    localStorage.setItem(storKey, data);
+    // Copie sous bc_data_default pour garantir la récupération au rechargement
+    if(storKey !== 'bc_data_default') {
+      localStorage.setItem('bc_data_default', data);
     }
-    // AUTO-SYNC CLOUD: déclenché après chaque sauvegarde locale
     _autoSyncDebounced();
   }catch(e){
     if(e.name==='QuotaExceededError'){
@@ -2235,10 +2252,30 @@ function appInit(){
     startApp();
   } else {
     if(knownEmail){
-      // Email connu mais pas de données locales
-      // Tenter de restaurer depuis le cloud avant d'afficher setupScreen
       const emailId2 = localStorage.getItem('cp_email_id') || _emailToId(knownEmail);
       _sbPinHash = _sbPinHash || emailId2;
+
+      // Vérifier si des données existent dans n'importe quelle clé (y compris bc_data_default)
+      // _findDataKey cherche dans toutes les clés — si trouvé, charger sans cloud
+      const anyData = _findDataKey();
+      if(anyData && !anyData.data.startsWith('ENC:')) {
+        try {
+          const d = JSON.parse(anyData.data);
+          if(d && d.project) {
+            project=d.project;
+            tasks=Array.isArray(d.tasks)?d.tasks:[];
+            transactions=Array.isArray(d.transactions)?d.transactions:[];
+            txId=typeof d.txId==='number'?d.txId:1;
+            // Migrer vers la clé correcte
+            const rightKey = _storageKey();
+            if(anyData.key !== rightKey) localStorage.setItem(rightKey, anyData.data);
+            startApp();
+            return;
+          }
+        } catch(e){}
+      }
+
+      // Pas de données locales → tenter cloud
       _showCloudLoadingScreen(knownEmail);
       _autoLoadFromCloud(emailId2).then(loaded => {
         _hideCloudLoadingScreen();
@@ -2246,7 +2283,7 @@ function appInit(){
           toast('✓ Données restaurées depuis le cloud');
           startApp();
         } else {
-          // Vraiment pas de données → setupScreen
+          // Vraiment aucune donnée nulle part → afficher le setup (premier projet)
           document.getElementById('mainApp').style.display='none';
           document.getElementById('setupScreen').style.display='block';
           const welcomeMsg=document.getElementById('setupWelcomeMsg');
@@ -2256,6 +2293,9 @@ function appInit(){
           }
         }
       }).catch(() => {
+        // Erreur cloud → vérifier encore une fois localement
+        const retry = _findDataKey();
+        if(retry){try{const d=JSON.parse(retry.data);if(d&&d.project){project=d.project;tasks=Array.isArray(d.tasks)?d.tasks:[];transactions=Array.isArray(d.transactions)?d.transactions:[];txId=d.txId||1;startApp();return;}}catch(e){}}
         document.getElementById('mainApp').style.display='none';
         document.getElementById('setupScreen').style.display='block';
       });

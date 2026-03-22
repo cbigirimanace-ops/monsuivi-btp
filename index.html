@@ -1339,10 +1339,15 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
           <!-- Zone non connectée -->
           <div id="sbPinEntryRow" style="background:var(--surface2);border-radius:var(--r-md);padding:14px">
-            <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px">
+            <div style="font-size:12px;color:var(--text2);display:flex;align-items:center;gap:8px;margin-bottom:10px">
               <span style="font-size:18px">☁️</span>
-              <span>Votre email cloud sera demandé à la prochaine ouverture de l'application.</span>
+              <div>
+                <div style="font-weight:600">Synchronisation cloud</div>
+                <div style="font-size:11px;color:var(--text3)">Connectez-vous pour activer la sync</div>
+              </div>
             </div>
+            <button class="btn btn-primary btn-full btn-sm" onclick="syncToCloud()" style="margin-bottom:6px">☁️ ↑ Sauvegarder mes données</button>
+            <button class="btn btn-ghost btn-full btn-sm" onclick="syncFromCloud()">☁️ ↓ Restaurer depuis le cloud</button>
           </div>
           <div id="sbPinStatus" style="display:none"></div>
           <div id="sbPinInfo" style="display:none"></div>
@@ -1353,9 +1358,18 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
       <!-- TAB 5 : Membres -->
       <div id="ptabContent5" style="display:none">
-        <div style="background:var(--surface2);border-radius:var(--r-md);padding:16px;margin-bottom:14px">
-          <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:6px">👥 Conducteurs du projet</div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Invitez d'autres conducteurs à accéder à ce projet. Chaque membre partage les mêmes données via la sync cloud.</div>
+        <!-- Étape 1 : Vérifier la sync cloud -->
+        <div id="membersCloudCheck" style="background:var(--warning-l);border:1px solid rgba(245,159,0,.25);border-radius:var(--r-md);padding:12px 14px;margin-bottom:12px;font-size:12px;color:var(--warning);line-height:1.6">
+          ⚠️ <b>Prérequis :</b> Vos données doivent être sur le cloud avant d'inviter un membre.<br>
+          <button class="btn btn-sm" style="margin-top:8px;background:var(--accent);color:#fff;border:none" onclick="syncToCloud().then(()=>{document.getElementById('membersCloudCheck').style.background='var(--success-l)';document.getElementById('membersCloudCheck').style.color='var(--success)';document.getElementById('membersCloudCheck').innerHTML='✅ Données synchronisées — vous pouvez inviter des membres.';})">
+            ☁️ Synchroniser maintenant
+          </button>
+        </div>
+
+        <!-- Liste des membres -->
+        <div style="background:var(--surface2);border-radius:var(--r-md);padding:16px;margin-bottom:12px">
+          <div style="font-weight:700;font-size:14px;margin-bottom:4px">👥 Conducteurs du projet</div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:12px">Chaque membre accède aux mêmes données via son email. Données partagées en lecture/écriture via le cloud.</div>
           <div id="membersList" style="margin-bottom:12px;min-height:20px"></div>
           <div style="display:flex;gap:8px">
             <input id="memberEmailInput" type="email" placeholder="email@conducteur.com"
@@ -1364,12 +1378,31 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
           </div>
           <div id="memberStatus" style="font-size:12px;margin-top:8px;min-height:16px;color:var(--success)"></div>
         </div>
-        <div style="background:var(--accent-l);border:1px solid rgba(var(--accent-rgb),.15);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--accent);line-height:1.6">
-          💡 <b>Comment ça marche ?</b><br>
-          1. Ajoutez l'email d'un autre conducteur de travaux<br>
-          2. Il entre cet email au démarrage de son application<br>
-          3. Ses données se synchronisent avec les vôtres via le cloud<br>
-          <span style="color:var(--text3);margin-top:4px;display:block">⚠️ Nécessite que les deux appareils aient fait au moins une sync cloud.</span>
+
+        <!-- Guide utilisation -->
+        <div style="background:var(--surface2);border-radius:var(--r-md);padding:14px;font-size:12px;line-height:1.8">
+          <div style="font-weight:700;margin-bottom:8px;font-size:13px">📋 Guide d'utilisation</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:11px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">1</div>
+              <div><b>Vous</b> : Cliquer "☁️ Synchroniser maintenant" ci-dessus</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:11px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">2</div>
+              <div><b>Vous</b> : Entrer l'email du conducteur → cliquer "+ Inviter"</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:11px;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">3</div>
+              <div><b>Le membre</b> : Ouvre l'app → entre <b>son email</b> → les données se chargent automatiquement</div>
+            </div>
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <div style="width:22px;height:22px;border-radius:11px;background:var(--success);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">4</div>
+              <div><b>Chaque appareil</b> : Sync régulière → ☁️ Sauvegarder après chaque session</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;padding:8px 10px;background:var(--amber-l);border-radius:var(--r-sm);font-size:11px;color:var(--warning)">
+            ⚠️ Le dernier à sauvegarder écrase les données précédentes. Coordonnez-vous pour éviter les conflits.
+          </div>
         </div>
       </div>
 </div>
@@ -2711,26 +2744,6 @@ function renderJournal(){
   requestAnimationFrame(()=>{requestAnimationFrame(()=>{
     const rptImp=document.getElementById('rptImpFill');
     if(rptImp){rptImp.classList.add('animate');}
-    // Animer toutes les jauges du rapport
-    setTimeout(()=>{
-      // Jauge budget rapport
-      const rptBudgFill = document.querySelector('#rptBudgetBody .progress-fill');
-      if(rptBudgFill && !rptBudgFill.classList.contains('animate')){
-        const w = rptBudgFill.style.width;
-        rptBudgFill.style.width = '0%';
-        setTimeout(()=>{ rptBudgFill.classList.add('animate'); rptBudgFill.style.width=w; },50);
-      }
-      // Jauge imprévus rapport
-      const rptImp2=document.getElementById('rptImpFill2');
-      if(rptImp2){
-        const impPct2=project.impPct||0;
-        const impMax2=impPct2>0?(project.budget*impPct2/100):0;
-        const impDep2=transactions.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
-        const used2=impMax2>0?(impDep2/impMax2)*100:0;
-        rptImp2.style.width='0%';
-        setTimeout(()=>{ rptImp2.classList.add('animate'); rptImp2.style.width=Math.min(used2,100)+'%'; },150);
-      }
-    },100);
   });});
   document.getElementById('txCount').innerText=transactions.length;
   const body=document.getElementById('journalBody');
@@ -3002,7 +3015,7 @@ function renderDashboard(){
         <span style="font-size:13px;font-weight:800;color:${impCol2}">${impPctUsed2.toFixed(1)}% — ${fmt(imp)} / ${fmt(impMax2)}</span>
       </div>
       <div class="progress-bar">
-        <div class="progress-fill ${impPctUsed2>100?'danger':impPctUsed2>80?'amber':'green'}" id="impFill" style="width:0%"></div>
+        <div class="progress-fill" id="impFill" style="width:0%;background:${impPctUsed2>100?'var(--danger)':impPctUsed2>80?'var(--warning)':'linear-gradient(90deg,#7048E8,#9C6FE4,#B794F4)'};background-size:300% 100%;animation:gradientShift 3s ease infinite"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px">
         <span style="color:${impCol2};font-weight:600">${fmt(imp)} consommé</span><span>Max prévu: ${fmt(impMax2)}</span>
@@ -4038,15 +4051,21 @@ function _updatePackBadge(){
 }
 
 function _updatePrefPackCard(){
-  const email=window._userEmail||localStorage.getItem('cp_email')||'—';
+  const email=window._userEmail||localStorage.getItem('cp_email')||'';
+  if(!email) return;
   const maxDev=window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
   const pack=_PACK_DEFS[maxDev]||_PACK_DEFS[1];
-  // Màj icone/nom/email
   const pi=document.getElementById('prefPackIcon');if(pi)pi.textContent=pack.icon;
   const pn=document.getElementById('prefPackName');if(pn){pn.textContent='Pack '+pack.name;pn.style.color=pack.color;}
   const pe=document.getElementById('prefPackEmail');if(pe)pe.textContent=email;
   const pb=document.getElementById('prefPackBadge');if(pb){pb.style.background=pack.bg;pb.style.color=pack.color;}
-  // Afficher les appareils depuis Supabase
+  // Afficher la zone connectée immédiatement (sans attendre Supabase)
+  const conn=document.getElementById('sbConnectedZone');if(conn)conn.style.display='block';
+  const row=document.getElementById('sbPinEntryRow');if(row)row.style.display='none';
+  const syncInfo=document.getElementById('syncLastTime');
+  const lastSync=localStorage.getItem('cp_last_sync');
+  if(syncInfo) syncInfo.textContent=lastSync?'Dernière sync : '+lastSync:'Jamais synchronisé';
+  // Charger les appareils en arrière-plan
   _loadDevicesForPrefCard();
 }
 
@@ -4180,7 +4199,13 @@ async function syncFromCloud(){
 
 let _autoSyncTimer=null;
 function _autoSyncDebounced(){
-  if(!window._userEmail && !localStorage.getItem('cp_email')) return; // Pas connecté
+  const email = window._userEmail || localStorage.getItem('cp_email');
+  if(!email) return; // Pas connecté
+  // S'assurer que _sbPinHash est initialisé
+  if(!_sbPinHash) {
+    const eid = localStorage.getItem('cp_email_id') || _emailToId(email);
+    _sbPinHash = eid;
+  }
   clearTimeout(_autoSyncTimer);
   _autoSyncTimer=setTimeout(async function(){
     if(!_sbPinHash||!project) return;
@@ -4247,8 +4272,16 @@ async function _checkLicenseUsage(code, fp, packMax) {
     const data = await res.json();
 
     if(!data || data.length === 0) {
-      // Licence pas encore dans Supabase (ancienne licence ou offline)
-      // Vérifier localement
+      // Licence pas encore enregistrée dans Supabase
+      // Vérifier si déjà utilisée localement
+      const localUsed = localStorage.getItem('cp_lic_used_' + licId);
+      if(localUsed) {
+        return { ok: false, msg: 'Clé déjà activée sur cet appareil. Utilisez "J\'ai déjà un compte".' };
+      }
+      // Première utilisation → créer l'entrée dans Supabase
+      await _registerLicenseInCloud(code, fp, '', packMax);
+      await _markLicenseUsed(licId, fp, packMax);
+      localStorage.setItem('cp_lic_used_' + licId, '1');
       return { ok: true };
     }
 
@@ -4262,13 +4295,21 @@ async function _checkLicenseUsage(code, fp, packMax) {
       return { ok: false, msg };
     }
 
-    // Marquer comme utilisée immédiatement
+    // Marquer comme utilisée immédiatement (cloud + local)
     await _markLicenseUsed(licId, fp, packMax);
+    localStorage.setItem('cp_lic_used_' + licId, '1');
     return { ok: true };
 
   } catch(e) {
     console.warn('[License] Erreur verification:', e.message);
-    // En cas d'erreur réseau → autoriser (pas bloquer le client)
+    // En cas d'erreur réseau → vérifier localement
+    const licId2 = _licenseToId(code);
+    const localUsed2 = localStorage.getItem('cp_lic_used_' + licId2);
+    if(localUsed2) {
+      return { ok: false, msg: 'Clé déjà activée sur cet appareil. Utilisez "J\'ai déjà un compte".' };
+    }
+    // Jamais utilisée localement → autoriser + marquer
+    localStorage.setItem('cp_lic_used_' + licId2, '1');
     return { ok: true };
   }
 }
@@ -4604,6 +4645,23 @@ function renderRapport(){
   txBody.appendChild(frag2);
   const total=tx.reduce((s,t)=>s+(t.type==='entree'?t.montant:-t.montant),0);
   if(txTotal){ txTotal.textContent=fmt(total); txTotal.style.color=total>=0?'var(--success)':'var(--danger)'; }
+
+  // ── Animer les jauges du rapport ──
+  requestAnimationFrame(()=>{
+    // Jauge budget
+    const rptBudgFill = document.querySelector('#rptBudgetBody .progress-fill');
+    if(rptBudgFill){ rptBudgFill.style.width='0%'; setTimeout(()=>{ rptBudgFill.classList.add('animate'); rptBudgFill.style.width=rptBudgFill.getAttribute('data-w')||rptBudgFill.style.width; },50); }
+    // Jauge imprévus
+    const rptImp2 = document.getElementById('rptImpFill2');
+    if(rptImp2){
+      const impPct2 = project.impPct||0;
+      const impMax2 = impPct2>0?(project.budget*impPct2/100):0;
+      const impDep2 = transactions.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+      const used2 = impMax2>0?(impDep2/impMax2)*100:0;
+      rptImp2.style.width='0%';
+      setTimeout(()=>{ rptImp2.classList.add('animate'); rptImp2.style.width=Math.min(used2,100)+'%'; },150);
+    }
+  });
 }
 
 // ── EXPORT CSV ──

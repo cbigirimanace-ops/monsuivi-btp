@@ -7,6 +7,11 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta http-equiv="X-Frame-Options" content="SAMEORIGIN">
 <meta name="referrer" content="strict-origin-when-cross-origin">
+<meta name="theme-color" content="#3B5BDB">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="MonSuivi BTP">
+<link rel="manifest" href="/manifest.json">
 <title>MonSuivi Financier BTP — Suivi Budgétaire</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -119,12 +124,23 @@ html.theme-transition,html.theme-transition *,html.theme-transition *::before,ht
 }
 
 .currency-card{
-  padding:14px 16px;border-radius:var(--r-md);border:2px solid var(--border);
-  background:var(--surface);cursor:pointer;transition:.2s;
+  padding:14px 16px;border-radius:var(--r-md);border:2px solid transparent;
+  cursor:pointer;transition:.25s;
   display:flex;align-items:center;gap:12px;
+  background:var(--surface);
 }
-.currency-card:hover{border-color:var(--accent);background:var(--accent-l)}
-.currency-card.selected{border-color:var(--accent);background:var(--accent-l);box-shadow:0 0 0 3px rgba(var(--accent-rgb),.1)}
+.currency-card[data-currency="XAF"]{background:linear-gradient(135deg,#1B8F4E,#2BAE6A);color:#fff}
+.currency-card[data-currency="EUR"]{background:linear-gradient(135deg,#003399,#0052CC);color:#fff}
+.currency-card[data-currency="USD"]{background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff}
+.currency-card[data-currency="GBP"]{background:linear-gradient(135deg,#B71C1C,#C62828);color:#fff}
+.currency-card[data-currency="CHF"]{background:linear-gradient(135deg,#7B1FA2,#9C27B0);color:#fff}
+.currency-card[data-currency="MAD"]{background:linear-gradient(135deg,#E65100,#F57C00);color:#fff}
+.currency-card .currency-name{color:#fff;font-weight:700}
+.currency-card .currency-code{color:rgba(255,255,255,.75);font-weight:600}
+.currency-card:hover{filter:brightness(1.1);transform:translateY(-1px);box-shadow:0 4px 12px rgba(0,0,0,.2)}
+.currency-card.selected{border:2px solid #fff;box-shadow:0 0 0 3px rgba(255,255,255,.3),0 4px 14px rgba(0,0,0,.25);transform:translateY(-1px)}
+.currency-check{width:22px;height:22px;border-radius:11px;border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-size:12px;transition:.2s}
+.currency-card.selected .currency-check{border-color:#fff;background:rgba(255,255,255,.25);color:#fff}
 .currency-flag{font-size:28px;line-height:1}
 .currency-info{flex:1}
 .currency-name{font-weight:700;font-size:13px}
@@ -326,10 +342,10 @@ textarea{resize:vertical;min-height:60px;line-height:1.5}
 .progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
 .progress-title{font-weight:700;font-size:14px}
 .progress-pct{font-weight:800;font-size:20px}
-.progress-bar{height:16px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:8px;box-shadow:inset 0 2px 4px rgba(0,0,0,.08)}
-.progress-fill{height:100%;border-radius:var(--r-full);width:0%;transition:none;position:relative;background-size:200% 100%;box-shadow:0 2px 8px rgba(0,0,0,.15);overflow:hidden}
-.progress-fill.animate{transition:width 1.4s cubic-bezier(.4,0,.2,1)}
-.progress-fill::after{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.25) 50%,transparent 100%);animation:waveShine 2.2s ease-in-out infinite}
+.progress-bar{height:18px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:8px;box-shadow:inset 0 3px 6px rgba(0,0,0,.12),inset 0 1px 2px rgba(0,0,0,.08)}
+.progress-fill{height:100%;border-radius:var(--r-full);width:0%;transition:none;position:relative;background-size:300% 100%;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.progress-fill.animate{transition:width 1.6s cubic-bezier(.4,0,.2,1)}
+.progress-fill::after{content:'';position:absolute;top:0;left:-100%;width:200%;height:100%;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.3) 50%,transparent 100%);animation:waveShine 2.5s ease-in-out infinite}
 @keyframes waveShine{0%{transform:translateX(-50%)}100%{transform:translateX(100%)}}
 .progress-fill.green{background:linear-gradient(90deg,#059669,#0D9488,#06B6D4,#0D9488);background-size:300% 100%;animation:gradientShift 3s ease infinite}
 .progress-fill.amber{background:linear-gradient(90deg,#D97706,#F59F00,#FBBF24,#F59F00);background-size:300% 100%;animation:gradientShift 3s ease infinite}
@@ -659,7 +675,11 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
       </a>
       <div class="topbar-sep"></div>
-      <button class="topbar-btn" id="btnTheme" onclick="toggleTheme()" title="Changer de thème">🌙</button>
+      <button class="topbar-btn" id="btnTheme" onclick="toggleTheme()" title="Changer le thème" style="padding:3px 4px;border-radius:var(--r-full);width:44px;height:30px;overflow:hidden">
+        <div id="topbarThemeTrack" style="width:100%;height:100%;border-radius:15px;background:#888;transition:background .4s;position:relative;display:flex;align-items:center;padding:3px;box-shadow:inset 0 2px 4px rgba(0,0,0,.2)">
+          <div id="topbarThemeThumb" style="width:20px;height:20px;border-radius:10px;background:linear-gradient(135deg,#FBBF24,#F59F00);box-shadow:0 2px 4px rgba(0,0,0,.3);transition:transform .4s cubic-bezier(.4,0,.2,1),background .4s;display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0">☀️</div>
+        </div>
+      </button>
       <div id="packBadge" style="display:none;align-items:center;gap:5px;padding:5px 10px;border-radius:var(--r-full);font-size:11px;font-weight:700;border:1.5px solid;cursor:pointer;position:relative" onclick="toggleUpgradeMenu()" title="Votre pack — cliquez pour changer"></div>
       <div id="upgradeMenuTopbar" style="display:none;position:absolute;top:56px;right:16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:8px;z-index:9999;min-width:210px;box-shadow:0 8px 24px rgba(0,0,0,.15)">
         <div style="font-size:10px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.5px;padding:4px 8px;margin-bottom:4px">Changer de pack — via WhatsApp</div>
@@ -1101,6 +1121,7 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
         <button class="modal-pill" id="ptab2" onclick="switchPTab(2)">Import CSV</button>
         <button class="modal-pill" id="ptab3" onclick="switchPTab(3)">Données</button>
         <button class="modal-pill" id="ptab4" onclick="switchPTab(4)">Préférences</button>
+        <button class="modal-pill" id="ptab5" onclick="switchPTab(5)">👥 Membres</button>
       </div>
       <!-- TAB 1 -->
       <div id="ptabContent1">
@@ -1328,6 +1349,28 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
       </div>
     </div>
   </div>
+
+      <!-- TAB 5 : Membres -->
+      <div id="ptabContent5" style="display:none">
+        <div style="background:var(--surface2);border-radius:var(--r-md);padding:16px;margin-bottom:14px">
+          <div style="font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;margin-bottom:6px">👥 Conducteurs du projet</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">Invitez d'autres conducteurs à accéder à ce projet. Chaque membre partage les mêmes données via la sync cloud.</div>
+          <div id="membersList" style="margin-bottom:12px;min-height:20px"></div>
+          <div style="display:flex;gap:8px">
+            <input id="memberEmailInput" type="email" placeholder="email@conducteur.com"
+              style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:var(--r-sm);background:var(--surface);color:var(--text);font-size:13px;font-family:var(--font)">
+            <button class="btn btn-primary btn-sm" onclick="addProjectMember()">+ Inviter</button>
+          </div>
+          <div id="memberStatus" style="font-size:12px;margin-top:8px;min-height:16px;color:var(--success)"></div>
+        </div>
+        <div style="background:var(--accent-l);border:1px solid rgba(var(--accent-rgb),.15);border-radius:var(--r-sm);padding:12px 14px;font-size:12px;color:var(--accent);line-height:1.6">
+          💡 <b>Comment ça marche ?</b><br>
+          1. Ajoutez l'email d'un autre conducteur de travaux<br>
+          2. Il entre cet email au démarrage de son application<br>
+          3. Ses données se synchronisent avec les vôtres via le cloud<br>
+          <span style="color:var(--text3);margin-top:4px;display:block">⚠️ Nécessite que les deux appareils aient fait au moins une sync cloud.</span>
+        </div>
+      </div>
 </div>
 
 <!-- ADD MODAL (FAB) -->
@@ -1606,9 +1649,10 @@ function submitLockCode(){
         btn.style.background='var(--success)';
         inp.style.borderColor='rgba(13,148,136,.7)';
         setTimeout(()=>{
-          const ls=document.getElementById('lockScreen');
-          if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
-          cpUnlock();
+          // Aller directement à la saisie email sans recharger
+          lockGoStep('email');
+          const sub2=document.getElementById('lockSub');
+          if(sub2) sub2.textContent='Super ! Liez maintenant votre email pour accéder.';
         },700);
       } else {
         // Licence déjà utilisée
@@ -1811,9 +1855,18 @@ function updateThemeUI(){
   if(icon) icon.textContent=dark?'🌙':'☀️';
   const label=document.getElementById('themeLabel');
   if(label) label.textContent=dark?'Mode sombre activé':'Mode clair activé';
-  // Icône dans le bouton toggle
+  // Icône dans le bouton toggle settings
   const toggleIcon=document.getElementById('themeToggleIcon');
   if(toggleIcon) toggleIcon.textContent=dark?'🌙':'☀️';
+  // Topbar toggle
+  const topTrack=document.getElementById('topbarThemeTrack');
+  const topThumb=document.getElementById('topbarThemeThumb');
+  if(topTrack) topTrack.style.background=dark?'linear-gradient(135deg,#3B5BDB,#7048E8)':'#888';
+  if(topThumb){
+    topThumb.style.transform=dark?'translateX(12px)':'translateX(0)';
+    topThumb.style.background=dark?'linear-gradient(135deg,#C7D2FE,#EDE9FE)':'linear-gradient(135deg,#FBBF24,#F59F00)';
+    topThumb.textContent=dark?'🌙':'☀️';
+  }
 }
 
 // Apply theme immediately
@@ -2091,13 +2144,30 @@ function appInit(){
   const mfd=document.getElementById('mfDate');if(mfd)mfd.value=today();
   const sd=document.getElementById('sDate');if(sd)sd.value=today();
   const ls=document.getElementById('lockScreen');
-  if(ls)ls.style.display='none';
-  if(loadState()&&project){startApp();}
-  else{
-    document.getElementById('setupScreen').style.display='block';
-    document.getElementById('mainApp').style.display='none';
+  if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
+
+  // Si email connu → clé de stockage correcte, charger les données
+  const knownEmail=localStorage.getItem('cp_email');
+  if(knownEmail && !window._userEmail){
+    window._userEmail=knownEmail;
+    _sbPinHash=localStorage.getItem('cp_email_id')||_emailToId(knownEmail);
   }
-  // Init Supabase if previously configured
+
+  if(loadState()&&project){
+    startApp();
+  } else {
+    // Pas de données locales — si email connu, tenter cloud
+    if(knownEmail){
+      document.getElementById('mainApp').style.display='none';
+      document.getElementById('setupScreen').style.display='block';
+    } else {
+      // Pas d'email → retour à l'écran de connexion
+      document.getElementById('mainApp').style.display='none';
+      document.getElementById('setupScreen').style.display='none';
+      if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';}
+      lockGoStep('choice');
+    }
+  }
   setTimeout(initSbOnStartup, 500);
 }
 
@@ -2874,7 +2944,11 @@ function renderDashboard(){
   const pieData=[mo,mat,mtr,imp];
   const pieLabels=["Main d'oeuvre","Matériaux","Matériels","Imprévus"];
   const pieFiltered=pieLabels.map((l,i)=>({l,v:pieData[i],c:pieColors[i]})).filter(x=>x.v>0);
-  if(dep>0&&pieEl){
+    // Badge total dépenses — coin supérieur droit
+    let totalBadge=document.getElementById('pieTotalBadge');
+    if(!totalBadge){totalBadge=document.createElement('div');totalBadge.id='pieTotalBadge';totalBadge.style.cssText='position:absolute;top:8px;right:8px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:4px 10px;font-size:11px;font-weight:700;color:var(--text2);z-index:10;pointer-events:none';const pieParent=(document.getElementById('chartPie')||{}).parentElement;if(pieParent){pieParent.style.position='relative';pieParent.appendChild(totalBadge);}}
+    if(totalBadge) totalBadge.innerHTML='Total : <span style="color:var(--danger);font-weight:800">'+fmt(dep)+'</span>';
+    if(dep>0&&pieEl){
     charts.pie=new ApexCharts(pieEl,{
       series:pieFiltered.map(x=>x.v),
       labels:pieFiltered.map(x=>x.l),
@@ -2883,7 +2957,7 @@ function renderDashboard(){
       theme:{mode:isDark?'dark':'light'},
       stroke:{width:3,colors:[isDark?'#141C2F':'#FFFFFF']},
       dataLabels:{enabled:true,formatter:(v)=>v.toFixed(1)+'%',style:{fontSize:'13px',fontFamily:'Inter',fontWeight:'700'},dropShadow:{enabled:true,blur:3,opacity:.5}},
-      plotOptions:{pie:{donut:{size:'62%',labels:{show:true,total:{show:true,label:'Total dépenses',fontSize:'11px',fontFamily:'Inter',color:isDark?'#8696B0':'#AEAEB2',formatter:()=>fmt(dep)},value:{show:true,fontSize:'18px',fontWeight:'800',fontFamily:'Inter',color:isDark?'#F2F4F8':'#1C1C1E',formatter:(v)=>fmt(Number(v))}}}}}
+      plotOptions:{pie:{donut:{size:'62%',labels:{show:false}}}}
       ,legend:{show:false},
       tooltip:{y:{formatter:(v)=>fmt(v)}},
     });
@@ -2989,6 +3063,72 @@ function switchPTab(n){
     const el=document.getElementById('syncLastTime');
     if(el) el.textContent=lastSync?'Dernière sync : '+lastSync:'Pas encore synchronisé';
   }
+  if(n===5) renderMembersList();
+}
+
+// ── Gestion des membres du projet ──
+function getProjectMembers(){
+  try{return JSON.parse(localStorage.getItem('cp_project_members')||'[]');}catch(e){return[];}
+}
+function saveProjectMembers(m){localStorage.setItem('cp_project_members',JSON.stringify(m));}
+
+function renderMembersList(){
+  const el=document.getElementById('membersList');
+  if(!el) return;
+  const members=getProjectMembers();
+  const myEmail=window._userEmail||localStorage.getItem('cp_email')||'';
+  if(!members.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px 0">Aucun membre invité — vous êtes seul sur ce projet.</div>';
+    return;
+  }
+  el.innerHTML=members.map((m,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 12px;background:var(--surface);border-radius:var(--r-sm);margin-bottom:6px;border:1px solid var(--border)">
+      <div style="width:32px;height:32px;border-radius:16px;background:linear-gradient(135deg,var(--accent),#7C3AED);display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0">${m.email[0].toUpperCase()}</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.email}</div>
+        <div style="font-size:10px;color:var(--text3)">${m.email===myEmail?'Vous (propriétaire)':'Conducteur invité'}</div>
+      </div>
+      ${m.email!==myEmail?`<button onclick="removeProjectMember(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:16px;padding:2px 6px" title="Retirer">✕</button>`:''}
+    </div>`).join('');
+}
+
+function addProjectMember(){
+  const input=document.getElementById('memberEmailInput');
+  const status=document.getElementById('memberStatus');
+  const email=(input?input.value:'').trim().toLowerCase();
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+    if(status){status.textContent='Adresse email invalide';status.style.color='var(--danger)';}
+    return;
+  }
+  const members=getProjectMembers();
+  const myEmail=window._userEmail||localStorage.getItem('cp_email')||'';
+  // Ajouter le propriétaire s'il n'y est pas
+  if(myEmail && !members.find(m=>m.email===myEmail)){
+    members.unshift({email:myEmail,role:'owner',added:Date.now()});
+  }
+  if(members.find(m=>m.email===email)){
+    if(status){status.textContent='Cet email est déjà membre';status.style.color='var(--warning)';} return;
+  }
+  members.push({email,role:'member',added:Date.now()});
+  saveProjectMembers(members);
+  if(input) input.value='';
+  if(status){status.textContent='✓ '+email+' ajouté — il doit utiliser cet email au démarrage';status.style.color='var(--success)';}
+  renderMembersList();
+  toast('Membre invité : '+email);
+  // Sauvegarder les membres dans le projet
+  if(project) project.members=members;
+  saveState();
+  setTimeout(()=>{if(status)status.textContent='';},4000);
+}
+
+function removeProjectMember(idx){
+  const members=getProjectMembers();
+  if(idx<0||idx>=members.length)return;
+  const removed=members[idx];
+  members.splice(idx,1);
+  saveProjectMembers(members);
+  renderMembersList();
+  toast('Membre retiré : '+removed.email);
 }
 
 function renderDataStats(){
@@ -3200,12 +3340,26 @@ function confirmReset(){
   const modal=document.createElement('div');modal.id='resetModal';
   modal.style.cssText='position:fixed;inset:0;background:rgba(12,18,34,.45);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
   const card=document.createElement('div');
-  card.style.cssText='background:var(--surface);border-radius:var(--r-lg);padding:28px 24px;max-width:400px;width:100%;box-shadow:var(--shadow-lg);text-align:center';
-  card.innerHTML=`<div style="font-size:36px;margin-bottom:8px">⚠️</div><h2 style="font-size:17px;font-weight:800;margin-bottom:8px">Effacer toutes les données ?</h2><p style="color:var(--text2);font-size:14px;line-height:1.6;margin-bottom:16px">Projet, tâches et transactions seront supprimés.<br><span style="color:var(--danger);font-weight:600">Irréversible.</span></p><div style="background:var(--danger-l);border-radius:var(--r-sm);padding:10px;margin-bottom:16px;font-size:12px;color:var(--danger);font-weight:600">Pensez à exporter vos données avant.</div>`;
-  const btns=document.createElement('div');btns.style.cssText='display:flex;gap:10px';
-  const cancelBtn=document.createElement('button');cancelBtn.className='btn btn-ghost';cancelBtn.style.flex='1';cancelBtn.textContent='Annuler';cancelBtn.onclick=()=>modal.remove();
-  const delBtn=document.createElement('button');delBtn.className='btn btn-danger';delBtn.style.flex='1';delBtn.textContent='Tout effacer';delBtn.onclick=()=>doReset();
-  btns.append(cancelBtn,delBtn);card.appendChild(btns);modal.appendChild(card);
+  card.style.cssText='background:var(--surface);border-radius:var(--r-xl);padding:28px 24px;max-width:420px;width:100%;box-shadow:var(--shadow-lg);backdrop-filter:blur(20px)';
+  card.innerHTML=`
+    <div style="text-align:center;margin-bottom:20px">
+      <div style="width:52px;height:52px;background:linear-gradient(135deg,var(--accent),#7C3AED);border-radius:var(--r-md);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px">🏗️</div>
+      <div style="font-size:17px;font-weight:800;margin-bottom:6px">Nouveau projet</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.5">Démarrez un projet BTP vierge.<br>Vos données actuelles seront effacées.</div>
+    </div>
+    <div style="background:var(--amber-l);border:1px solid rgba(245,159,0,.25);border-radius:var(--r-sm);padding:10px 14px;margin-bottom:16px;font-size:12px;color:var(--warning);line-height:1.5">
+      💡 <b>Conseil :</b> Exportez vos données actuelles avant de continuer pour ne rien perdre.
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button id="exportBeforeReset" class="btn btn-primary btn-full" style="justify-content:center" onclick="exportData();document.getElementById('exportBeforeReset').textContent='✓ Exporté — vous pouvez continuer'">
+        📥 Exporter mes données d'abord
+      </button>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost" style="flex:1" onclick="document.getElementById('resetModal').remove()">Annuler</button>
+        <button class="btn btn-danger" style="flex:1" onclick="doReset()">🗑️ Nouveau projet</button>
+      </div>
+    </div>`;
+  modal.appendChild(card);
   modal.addEventListener('click',e=>{if(e.target===modal)modal.remove();});
   document.body.appendChild(modal);
 }
@@ -3969,6 +4123,7 @@ async function syncFromCloud(){
 
 let _autoSyncTimer=null;
 function _autoSyncDebounced(){
+  if(!window._userEmail && !localStorage.getItem('cp_email')) return; // Pas connecté
   clearTimeout(_autoSyncTimer);
   _autoSyncTimer=setTimeout(async function(){
     if(!_sbPinHash||!project) return;
@@ -4226,7 +4381,7 @@ function renderRapport(){
           <span style="font-size:11px;font-weight:700;color:var(--text2)">Consommation budget</span>
           <span style="font-size:12px;font-weight:800;color:${colCss}">${pct.toFixed(1)}% — ${fmt(dep)} / ${fmt(project.budget)}</span>
         </div>
-        <div style="height:20px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
+        <div class="progress-bar" style="height:20px;margin-bottom:4px">
           <div style="height:100%;width:${Math.min(pct,100)}%;background:${colCss};border-radius:var(--r-full);transition:width .8s;display:flex;align-items:center;justify-content:center">
             <span style="font-size:10px;font-weight:700;color:#fff">${pct>8?pct.toFixed(1)+'%':''}</span>
           </div>
@@ -4243,7 +4398,7 @@ function renderRapport(){
             :`<span style="font-size:12px;font-weight:700;color:var(--warning)">${fmt(impDep)} — aucun plafond défini</span>`}
         </div>
         ${impMax>0?`
-        <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
+        <div class="progress-bar" style="margin-bottom:4px">
           <div class="progress-fill amber" id="rptImpFill2" style="background:${impCol};width:0%;transition:width 1.2s cubic-bezier(.4,0,.2,1)"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
@@ -4283,10 +4438,14 @@ function renderRapport(){
       theme:{mode:isDark?'dark':'light'},
       stroke:{width:2,colors:[isDark?'#141C2F':'#FFFFFF']},
       dataLabels:{enabled:true,formatter:v=>v.toFixed(0)+'%',style:{fontSize:'12px',fontFamily:'Inter',fontWeight:'700'}},
-      plotOptions:{pie:{donut:{size:'60%',labels:{show:true,total:{show:true,label:'Total',fontSize:'10px',fontFamily:'Inter',formatter:()=>fmt(dep)}}}}},
+      plotOptions:{pie:{donut:{size:'60%',labels:{show:false}}}},
       legend:{show:false},tooltip:{y:{formatter:v=>fmt(v)}},
     });
     rptCharts.pie.render();
+    // Badge total rapport
+    let rptTotalBadge=document.getElementById('rptPieTotalBadge');
+    if(!rptTotalBadge){rptTotalBadge=document.createElement('div');rptTotalBadge.id='rptPieTotalBadge';rptTotalBadge.style.cssText='position:absolute;top:6px;right:6px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r-sm);padding:3px 8px;font-size:11px;font-weight:700;color:var(--text2);z-index:10;pointer-events:none';const rptParent=(document.getElementById('rptChartPie')||{}).parentElement;if(rptParent){rptParent.style.position='relative';rptParent.appendChild(rptTotalBadge);}}
+    if(rptTotalBadge) rptTotalBadge.innerHTML='Total : <span style="color:var(--danger);font-weight:800">'+fmt(dep)+'</span>';
   // Légende HTML enrichie avec montants
   if(rptPieLegendEl){
     rptPieLegendEl.innerHTML=pieLabels.map((label,i)=>{
@@ -4586,6 +4745,15 @@ function updateImpPreview(prefix){
   const montant= budget*pct/100;
   const el     = document.getElementById(prefix+'ImpMontant');
   if(el) el.value = pct>0&&budget>0 ? fmt(montant)+' max' : '';
+}
+
+// ── PWA Service Worker ──
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('/sw.js')
+      .then(r=>console.log('[SW] Enregistré:',r.scope))
+      .catch(e=>console.warn('[SW] Erreur:',e));
+  });
 }
 
 // ── Keyboard shortcuts ──

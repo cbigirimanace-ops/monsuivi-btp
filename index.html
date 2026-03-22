@@ -1600,8 +1600,8 @@ function cpCheck(){
 
   // Si email connu mais session expirée → montrer l'écran email directement
   if(savedEmail){
-    const ls=document.getElementById('lockScreen');
-    if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';}
+    const ls2=document.getElementById('lockScreen');
+    if(ls2){ls2.style.display='flex';ls2.style.pointerEvents='auto';}
     lockGoStep('existing');
     const inp=document.getElementById('existingEmailInput');
     if(inp){inp.value=savedEmail;existingEmailValidate();}
@@ -2329,7 +2329,7 @@ function startApp(){
     }
     buildDashLotFilter();
   },100);
-  const ls=document.getElementById('lockScreen');if(ls)ls.style.display='none';
+  document.getElementById('lockScreen').style.display='none';
   document.getElementById('setupScreen').style.display='none';
   document.getElementById('mainApp').style.display='block';
   document.getElementById('navPills').style.display='flex';

@@ -99,17 +99,24 @@ html.theme-transition,html.theme-transition *,html.theme-transition *::before,ht
 
 /* ── Settings modal styles ── */
 .theme-toggle-track{
-  width:52px;height:28px;border-radius:14px;padding:3px;cursor:pointer;
-  background:var(--surface3);border:1px solid var(--border);
-  transition:.3s;position:relative;display:inline-flex;align-items:center;
+  width:56px;height:30px;border-radius:15px;padding:3px;cursor:pointer;
+  background:#888;border:none;
+  transition:background .4s cubic-bezier(.4,0,.2,1);
+  position:relative;display:inline-flex;align-items:center;
+  box-shadow:inset 0 2px 4px rgba(0,0,0,.2);
 }
-.theme-toggle-track.active{background:var(--accent)}
+.theme-toggle-track.active{background:linear-gradient(135deg,#3B5BDB,#7048E8)}
 .theme-toggle-thumb{
-  width:22px;height:22px;border-radius:11px;background:#fff;
-  box-shadow:0 1px 4px rgba(0,0,0,.2);
-  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  width:24px;height:24px;border-radius:12px;
+  background:linear-gradient(135deg,#FBBF24,#F59F00);
+  box-shadow:0 2px 6px rgba(0,0,0,.3);
+  transition:transform .4s cubic-bezier(.4,0,.2,1),background .4s;
+  display:flex;align-items:center;justify-content:center;
 }
-.theme-toggle-track.active .theme-toggle-thumb{transform:translateX(24px)}
+.theme-toggle-track.active .theme-toggle-thumb{
+  transform:translateX(26px);
+  background:linear-gradient(135deg,#C7D2FE,#EDE9FE);
+}
 
 .currency-card{
   padding:14px 16px;border-radius:var(--r-md);border:2px solid var(--border);
@@ -716,6 +723,41 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
           <div class="field"><label>Budget global <span class="cur-label">FCFA</span> *</label><input id="sBudget" type="number" min="0" placeholder="50 000 000"></div>
           <div class="field"><label>Date de début</label><input id="sDate" type="date"></div>
         </div>
+        <div class="field">
+          <label>Devise du projet</label>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:4px" id="setupCurrencyGrid">
+            <div class="currency-card selected" data-currency="XAF" onclick="setCurrencySetup('XAF',this)" style="padding:8px 10px">
+              <span class="currency-flag" style="font-size:18px">🇨🇲</span>
+              <div class="currency-info"><div class="currency-name" style="font-size:12px">Franc CFA</div><div class="currency-code">XAF</div></div>
+              <div class="currency-check">✓</div>
+            </div>
+            <div class="currency-card" data-currency="EUR" onclick="setCurrencySetup('EUR',this)" style="padding:8px 10px">
+              <span class="currency-flag" style="font-size:18px">🇪🇺</span>
+              <div class="currency-info"><div class="currency-name" style="font-size:12px">Euro</div><div class="currency-code">EUR</div></div>
+              <div class="currency-check">✓</div>
+            </div>
+            <div class="currency-card" data-currency="USD" onclick="setCurrencySetup('USD',this)" style="padding:8px 10px">
+              <span class="currency-flag" style="font-size:18px">🇺🇸</span>
+              <div class="currency-info"><div class="currency-name" style="font-size:12px">Dollar US</div><div class="currency-code">USD</div></div>
+              <div class="currency-check">✓</div>
+            </div>
+            <div class="currency-card" data-currency="GBP" onclick="setCurrencySetup('GBP',this)" style="padding:8px 10px">
+              <span class="currency-flag" style="font-size:18px">🇬🇧</span>
+              <div class="currency-info"><div class="currency-name" style="font-size:12px">Livre Sterling</div><div class="currency-code">GBP</div></div>
+              <div class="currency-check">✓</div>
+            </div>
+            <div class="currency-card" data-currency="MAD" onclick="setCurrencySetup('MAD',this)" style="padding:8px 10px">
+              <span class="currency-flag" style="font-size:18px">🇲🇦</span>
+              <div class="currency-info"><div class="currency-name" style="font-size:12px">Dirham</div><div class="currency-code">MAD</div></div>
+              <div class="currency-check">✓</div>
+            </div>
+            <div class="currency-card" data-currency="CHF" onclick="setCurrencySetup('CHF',this)" style="padding:8px 10px">
+              <span class="currency-flag" style="font-size:18px">🇨🇭</span>
+              <div class="currency-info"><div class="currency-name" style="font-size:12px">Franc Suisse</div><div class="currency-code">CHF</div></div>
+              <div class="currency-check">✓</div>
+            </div>
+          </div>
+        </div>
         <div class="grid2">
           <div class="field"><label>% Imprévus <span style="color:var(--text3);font-weight:400">(sur le budget)</span></label><input id="sImpPct" type="number" min="0" max="30" step="0.5" placeholder="Ex: 5" oninput="updateImpPreview('s')"></div>
           <div class="field"><label>Montant max imprévus</label><input id="sImpMontant" type="text" readonly style="background:var(--surface2);color:var(--warning);font-weight:700" placeholder="Calculé auto"></div>
@@ -795,7 +837,7 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
             </span>
           </div>
           <div id="impExplain" style="display:none;margin-top:6px;padding:8px 12px;background:var(--warning-l);border-radius:var(--r-sm);font-size:11px;color:var(--warning);line-height:1.6">
-            Les <b>imprévus</b> sont des dépenses non planifiées, hors des tâches définies. Ils sont imputés sur le budget imprévus du projet (${project?project.impPct||0:0}% du budget global). Quand ce budget est dépassé, une alerte rouge apparaît.
+            Les <b>imprévus</b> sont des dépenses non planifiées, hors des tâches définies (pannes, accidents, travaux supplémentaires imprévus). Ils sont imputés sur une enveloppe dédiée définie dans les paramètres du projet. Une alerte rouge s'affiche dès que cette enveloppe est dépassée.
           </div>
           <div id="nprixFieldWrap">
             <div class="field"><label id="nprixLabel">N° Prix</label><select id="fNprix"><option value="">— Sélectionner —</option></select></div>
@@ -947,10 +989,10 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
   <div id="kpiGrid" class="kpi-grid"></div>
   <div id="progressWrap"></div>
   <div class="charts-grid">
-    <div class="card" style="display:flex;flex-direction:column"><div class="card-header"><div class="card-title">Répartition des dépenses</div></div><div class="card-body" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px"><div style="width:100%;max-width:380px;margin:0 auto"><canvas id="chartPie"></canvas></div><div id="pieLegend" style="display:flex;flex-wrap:wrap;justify-content:center;gap:14px 20px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"></div></div></div>
+    <div class="card" style="display:flex;flex-direction:column"><div class="card-header"><div class="card-title">Répartition des dépenses</div></div><div class="card-body" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px"><div style="width:100%;max-width:380px;margin:0 auto" id="chartPie"></div><div id="pieLegend" style="display:flex;flex-wrap:wrap;justify-content:center;gap:14px 20px;margin-top:16px;padding-top:14px;border-top:1px solid var(--border)"></div></div></div>
     <div style="display:flex;flex-direction:column;gap:14px">
-      <div class="card" style="flex:1"><div class="card-header"><div class="card-title">Évolution cumulative</div></div><div class="card-body"><canvas id="chartLine" height="140"></canvas></div></div>
-      <div class="card" style="flex:1"><div class="card-header"><div class="card-title">Budget vs Dépenses par LOT</div></div><div class="card-body"><canvas id="chartBar" height="140"></canvas></div></div>
+      <div class="card" style="flex:1"><div class="card-header"><div class="card-title">Évolution cumulative</div></div><div class="card-body"><div id="chartLine"></div></div></div>
+      <div class="card" style="flex:1"><div class="card-header"><div class="card-title">Budget vs Dépenses par LOT</div></div><div class="card-body"><div id="chartBar"></div></div></div>
     </div>
   </div>
   <div class="card"><div class="card-header"><div class="card-title">Alertes budgétaires</div></div><div class="card-body" id="alertsContainer"><div class="empty"><div class="icon">✅</div><p>Aucune alerte</p></div></div></div>
@@ -1004,8 +1046,8 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
   <!-- GRAPHIQUES -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px" id="rptChartsGrid">
-    <div class="card" style="display:flex;flex-direction:column"><div class="card-header"><div class="card-title">Répartition des dépenses</div></div><div class="card-body" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px"><div style="width:100%;max-width:280px;margin:0 auto"><canvas id="rptChartPie"></canvas></div><div id="rptPieLegend" style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px 16px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"></div></div></div>
-    <div class="card"><div class="card-header"><div class="card-title">Budget vs Dépenses par LOT</div></div><div class="card-body"><canvas id="rptChartBar" height="200"></canvas></div></div>
+    <div class="card" style="display:flex;flex-direction:column"><div class="card-header"><div class="card-title">Répartition des dépenses</div></div><div class="card-body" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px 24px"><div style="width:100%;max-width:280px;margin:0 auto" id="rptChartPie"></div><div id="rptPieLegend" style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px 16px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)"></div></div></div>
+    <div class="card"><div class="card-header"><div class="card-title">Budget vs Dépenses par LOT</div></div><div class="card-body"><div id="rptChartBar"></div></div></div>
   </div>
 
   <!-- SYNTHÈSE PAR LOT -->
@@ -1160,8 +1202,10 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
               </div>
               <div style="font-size:12px;color:var(--text3);margin-top:2px" id="themeLabel">Mode sombre</div>
             </div>
-            <div class="theme-toggle-track" id="themeTrack" onclick="toggleTheme()">
-              <div class="theme-toggle-thumb"></div>
+            <div class="theme-toggle-track" id="themeTrack" onclick="toggleTheme()" title="Changer le thème">
+              <div class="theme-toggle-thumb">
+                <span id="themeToggleIcon" style="font-size:12px;line-height:1;display:flex;align-items:center;justify-content:center">☀️</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1324,8 +1368,8 @@ window._chartReady = true; // ApexCharts chargé synchroniquement
 </script>
 
 <!-- Indicateur hors-ligne -->
-<div id="offlineBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#E8590C;color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:600;letter-spacing:.2px">
-  ⚡ Mode hors-ligne — vos données sont sauvegardées localement et se synchroniseront au retour de la connexion
+<div id="offlineBanner" style="display:none;position:fixed;bottom:16px;right:16px;z-index:9998;background:#E8590C;color:#fff;padding:6px 14px;border-radius:var(--r-full);font-size:11px;font-weight:700;letter-spacing:.3px;box-shadow:0 4px 14px rgba(232,89,12,.4);cursor:pointer;transition:.3s" onclick="syncToCloud()" title="Cliquez pour synchroniser">
+  ⚡ Hors-ligne — sync auto au retour
 </div>
 <script>
 function _updateOfflineBanner(){
@@ -1447,20 +1491,31 @@ const MAX_ATTEMPTS = 10;
 const LOCKOUT_MS = 5 * 60 * 1000; // 5 min lockout
 
 function cpCheck(){
-  // Utiliser le fingerprint déjà calculé inline
   let fp = window._cachedFp || cpFingerprint();
   window._cachedFp = fp;
 
-  // Afficher (déjà fait inline mais on confirme)
-  const _showFp=()=>{
-    const el=document.getElementById('lockFpShort');
-    if(el && el.innerText!==fp) el.innerText=fp;
-  };
-  _showFp();
-  setTimeout(_showFp,100);
-  setTimeout(_showFp,500);
+  const _showFp=()=>{const el=document.getElementById('lockFpShort');if(el&&el.innerText!==fp)el.innerText=fp;};
+  _showFp();setTimeout(_showFp,100);setTimeout(_showFp,500);
 
-  // Check lockout
+  // ── SESSION PERSISTANTE 3 JOURS ──
+  // Si l'email et le token de session sont valides → accès direct sans re-saisie
+  const savedEmail = localStorage.getItem('cp_email');
+  const sessionToken = localStorage.getItem('cp_session_token');
+  const sessionExpiry = parseInt(localStorage.getItem('cp_session_expiry')||'0');
+
+  if(savedEmail && sessionToken && Date.now() < sessionExpiry) {
+    // Session encore valide → accès direct
+    window._userEmail = savedEmail;
+    _sbPinHash = localStorage.getItem('cp_email_id') || _emailToId(savedEmail);
+    window._packMax = parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
+    _cryptoKey = null; // Sera initialisé au besoin
+    const ls = document.getElementById('lockScreen');
+    if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
+    appInit();
+    return;
+  }
+
+  // ── Vérification lockout ──
   const lockoutUntil=parseInt(localStorage.getItem('cp_lockout')||'0');
   if(Date.now()<lockoutUntil){
     cpShowBlocked();
@@ -1469,6 +1524,7 @@ function cpCheck(){
     return;
   }
 
+  // ── Vérification ancienne auth (code d'activation) ──
   const raw=localStorage.getItem('cp_auth3');
   if(raw){
     try{
@@ -1479,8 +1535,19 @@ function cpCheck(){
         window._packMax=cpExtractPack(d.code);
         localStorage.setItem('cp_pack_max',window._packMax);cpUnlock();return;}
       cpShowBlocked();return;
-    }catch(e){/* corrupted data */}
+    }catch(e){}
   }
+
+  // Si email connu mais session expirée → montrer l'écran email directement
+  if(savedEmail){
+    const ls=document.getElementById('lockScreen');
+    if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';}
+    lockGoStep('existing');
+    const inp=document.getElementById('existingEmailInput');
+    if(inp){inp.value=savedEmail;existingEmailValidate();}
+    return;
+  }
+
   cpShowForm();
 }
 
@@ -1736,16 +1803,17 @@ function toggleTheme(){
 
 function updateThemeUI(){
   const dark=_isDark();
-  // Topbar button
   const btn=document.getElementById('btnTheme');
   if(btn) btn.innerHTML=dark?'☀️':'🌙';
-  // Settings panel toggle
   const track=document.getElementById('themeTrack');
   if(track) track.classList.toggle('active',dark);
   const icon=document.getElementById('themeIcon');
   if(icon) icon.textContent=dark?'🌙':'☀️';
   const label=document.getElementById('themeLabel');
   if(label) label.textContent=dark?'Mode sombre activé':'Mode clair activé';
+  // Icône dans le bouton toggle
+  const toggleIcon=document.getElementById('themeToggleIcon');
+  if(toggleIcon) toggleIcon.textContent=dark?'🌙':'☀️';
 }
 
 // Apply theme immediately
@@ -2492,6 +2560,17 @@ function renderJournal(){
   requestAnimationFrame(()=>{requestAnimationFrame(()=>{
     const rptImp=document.getElementById('rptImpFill');
     if(rptImp){rptImp.classList.add('animate');}
+    // Animer la jauge imprévus
+    setTimeout(()=>{
+      const rptImp2=document.getElementById('rptImpFill2');
+      if(rptImp2){
+        const impPct2=project.impPct||0;
+        const impMax2=impPct2>0?(project.budget*impPct2/100):0;
+        const impDep2=transactions.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+        const used2=impMax2>0?(impDep2/impMax2)*100:0;
+        rptImp2.style.width=Math.min(used2,100)+'%';
+      }
+    },100);
   });});
   document.getElementById('txCount').innerText=transactions.length;
   const body=document.getElementById('journalBody');
@@ -3627,6 +3706,8 @@ async function _grantAccess(email,emailId,localOnly) {
   localStorage.setItem('cp_email',email);
   localStorage.setItem('cp_email_fp',fp);
   localStorage.setItem('cp_email_id',emailId);
+  // Session persistante 3 jours
+  localStorage.setItem('cp_session_expiry', String(Date.now() + 3*24*60*60*1000));
   window._userEmail=email;
   _sbPinHash=emailId;
   _emailSetupCloud(email);
@@ -4101,7 +4182,12 @@ function renderRapport(){
     {i:'⚙️',l:'Matériels',v:fmt(mtr),c:'var(--amber)'},
     {i:'⚠️',l:'Imprévus',v:fmt(imp),c:'var(--warning)'},
     {i:'🔢',l:'Transactions',v:tx.length,c:'var(--text)'},
-  ].map(k=>`<div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r-md);padding:14px;box-shadow:var(--shadow-sm)"><div style="font-size:18px;margin-bottom:4px">${k.i}</div><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px">${k.l}</div><div style="font-weight:800;font-size:15px;color:${k.c}">${k.v}</div></div>`).join('');
+  ].map(k=>{
+    // Fond coloré semi-transparent basé sur la couleur du KPI
+    const bg = k.c.replace('var(--danger)','rgba(224,49,49,.08)').replace('var(--success)','rgba(13,148,136,.08)').replace('var(--accent)','rgba(59,91,219,.08)').replace('var(--cyan)','rgba(16,152,173,.08)').replace('var(--amber)','rgba(245,159,0,.08)').replace('var(--warning)','rgba(232,89,12,.08)').replace('var(--text)','var(--surface2)');
+    const border = k.c.replace('var(--danger)','rgba(224,49,49,.2)').replace('var(--success)','rgba(13,148,136,.2)').replace('var(--accent)','rgba(59,91,219,.2)').replace('var(--cyan)','rgba(16,152,173,.2)').replace('var(--amber)','rgba(245,159,0,.2)').replace('var(--warning)','rgba(232,89,12,.2)').replace('var(--text)','var(--border)');
+    return `<div style="background:${bg};border:1px solid ${border};border-radius:var(--r-md);padding:14px;box-shadow:var(--shadow-sm)"><div style="font-size:20px;margin-bottom:4px">${k.i}</div><div style="font-size:10px;font-weight:600;color:var(--text3);margin-bottom:2px">${k.l}</div><div style="font-weight:800;font-size:15px;color:${k.c}">${k.v}</div></div>`;
+  }).join('');
 
   // Avancement budget
   const bb=document.getElementById('rptBudgetBody');
@@ -4158,7 +4244,7 @@ function renderRapport(){
         </div>
         ${impMax>0?`
         <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden;margin-bottom:4px">
-          <div class="progress-fill amber" id="rptImpFill2" style="background:${impCol};width:${Math.min(impPctUsed,100)}%"></div>
+          <div class="progress-fill amber" id="rptImpFill2" style="background:${impCol};width:0%;transition:width 1.2s cubic-bezier(.4,0,.2,1)"></div>
         </div>
         <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3)">
           <span style="color:${impCol};font-weight:600">${fmt(impDep)} consommé</span>
@@ -4487,6 +4573,13 @@ goPage = function(page, btn){
 };
 
 // ── IMPRÉVUS — Calcul prévisualisation ──
+// Sélection devise dans le setup
+function setCurrencySetup(code, el) {
+  document.querySelectorAll('#setupCurrencyGrid .currency-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');
+  setCurrency(code);
+}
+
 function updateImpPreview(prefix){
   const budget = parseFloat(document.getElementById(prefix+'Budget').value)||0;
   const pct    = parseFloat(document.getElementById(prefix+'ImpPct').value)||0;

@@ -790,7 +790,12 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
           </div>
           <div class="imp-toggle" id="impToggle" onclick="toggleImp()" style="margin-top:14px">
             <input type="checkbox" id="fImp" onclick="event.stopPropagation()">
-            <span>⚠️ Imprévu (hors tâche)</span>
+            <span>⚠️ Imprévu (hors tâche)
+              <span id="impBudgetHint" style="display:inline-block;margin-left:6px;font-size:10px;font-weight:600;color:var(--warning);background:var(--warning-l);padding:2px 7px;border-radius:var(--r-full)">Budget : —</span>
+            </span>
+          </div>
+          <div id="impExplain" style="display:none;margin-top:6px;padding:8px 12px;background:var(--warning-l);border-radius:var(--r-sm);font-size:11px;color:var(--warning);line-height:1.6">
+            Les <b>imprévus</b> sont des dépenses non planifiées, hors des tâches définies. Ils sont imputés sur le budget imprévus du projet (${project?project.impPct||0:0}% du budget global). Quand ce budget est dépassé, une alerte rouge apparaît.
           </div>
           <div id="nprixFieldWrap">
             <div class="field"><label id="nprixLabel">N° Prix</label><select id="fNprix"><option value="">— Sélectionner —</option></select></div>
@@ -1249,10 +1254,19 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
               </button>
             </div>
             <!-- Sync buttons -->
-            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:8px">☁️ Synchronisation</div>
+            <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px">☁️ Synchronisation cloud</div>
+            <div style="font-size:11px;color:var(--text3);margin-bottom:10px;line-height:1.6">
+              Vos données sont <b>sauvegardées localement</b> en continu. La sync cloud vous permet de les retrouver sur un autre appareil.<br>
+              <span id="syncLastTime" style="color:var(--text2)"></span>
+            </div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-              <button class="btn btn-success btn-sm" onclick="syncToCloud()">☁️ ↑ Sauvegarder</button>
-              <button class="btn btn-ghost btn-sm" onclick="syncFromCloud()">☁️ ↓ Charger</button>
+              <button class="btn btn-success btn-sm" onclick="syncToCloud()" title="Envoyer vos données locales vers le cloud">☁️ ↑ Sauvegarder</button>
+              <button class="btn btn-ghost btn-sm" onclick="syncFromCloud()" title="Charger les données cloud sur cet appareil">☁️ ↓ Restaurer</button>
+            </div>
+            <div style="font-size:11px;color:var(--text3);padding:8px 10px;background:var(--surface2);border-radius:var(--r-sm);margin-bottom:8px">
+              💡 <b>Quand utiliser ?</b><br>
+              ↑ Sauvegarder : après chaque session importante<br>
+              ↓ Restaurer : sur un nouvel appareil ou après réinstallation
             </div>
             <div id="sbStatus" style="font-size:12px;padding:8px 12px;border-radius:var(--r-sm);background:var(--surface2);display:none"></div>
           </div>
@@ -1303,15 +1317,24 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
 <input type="file" id="fileImport" accept=".json" onchange="doImport(event)" style="display:none">
 
-<!-- Chart.js loaded async for performance -->
+<!-- ApexCharts — graphiques avancés -->
+<script src="https://cdn.jsdelivr.net/npm/apexcharts@3.49.0/dist/apexcharts.min.js"></script>
 <script>
-(function(){
-  const s=document.createElement('script');
-  s.src='https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
-  s.async=true;
-  s.onload=function(){window._chartReady=true;};
-  document.head.appendChild(s);
-})();
+window._chartReady = true; // ApexCharts chargé synchroniquement
+</script>
+
+<!-- Indicateur hors-ligne -->
+<div id="offlineBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9998;background:#E8590C;color:#fff;text-align:center;padding:8px 16px;font-size:13px;font-weight:600;letter-spacing:.2px">
+  ⚡ Mode hors-ligne — vos données sont sauvegardées localement et se synchroniseront au retour de la connexion
+</div>
+<script>
+function _updateOfflineBanner(){
+  const b=document.getElementById('offlineBanner');
+  if(b) b.style.display=navigator.onLine?'none':'block';
+}
+window.addEventListener('online', _updateOfflineBanner);
+window.addEventListener('offline', _updateOfflineBanner);
+_updateOfflineBanner();
 </script>
 
 <script>
@@ -1892,7 +1915,8 @@ async function initCryptoKey() {
 async function loadStateAsync(){
   try{
     await initCryptoKey();
-    const raw=localStorage.getItem('bc_data');
+    const key = _storageKey();
+    const raw=localStorage.getItem(key);
     if(!raw)return false;
 
     let plaintext = raw;
@@ -1926,7 +1950,8 @@ async function loadStateAsync(){
 // Version synchrone pour compatibilité (données non chiffrées uniquement — avant connexion)
 function loadState(){
   try{
-    const raw=localStorage.getItem('bc_data');
+    const key = _storageKey();
+    const raw=localStorage.getItem(key);
     if(!raw)return false;
     // Si les données sont chiffrées, on ne peut pas les lire sans la clé
     // → retourner false pour forcer la connexion
@@ -1958,15 +1983,15 @@ function saveState(){
     if(_cryptoKey) {
       _encryptData(data, _cryptoKey).then(enc => {
         if(enc) {
-          localStorage.setItem('bc_data', 'ENC:' + enc);
+          localStorage.setItem(_storageKey(), 'ENC:' + enc);
         } else {
           // Fallback non chiffré si le chiffrement échoue
-          localStorage.setItem('bc_data', data);
+          localStorage.setItem(_storageKey(), data);
         }
       });
     } else {
       // Pas encore de clé (avant connexion) → stockage non chiffré temporaire
-      localStorage.setItem('bc_data',data);
+      localStorage.setItem(_storageKey(), data);
     }
     // AUTO-SYNC CLOUD: déclenché après chaque sauvegarde locale
     _autoSyncDebounced();
@@ -2249,6 +2274,19 @@ function toggleImp(){
   const cb=document.getElementById('fImp');cb.checked=!cb.checked;
   document.getElementById('impToggle').classList.toggle('on',cb.checked);
   document.getElementById('nprixFieldWrap').style.display=cb.checked?'none':'block';
+  // Afficher explication + budget restant
+  const expEl=document.getElementById('impExplain');
+  const hintEl=document.getElementById('impBudgetHint');
+  if(expEl) expEl.style.display=cb.checked?'block':'none';
+  if(hintEl && project && project.impPct>0){
+    const impMax=project.budget*project.impPct/100;
+    const impDep=transactions.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
+    const restant=impMax-impDep;
+    hintEl.textContent='Restant : '+fmt(restant);
+    hintEl.style.color=restant<0?'var(--danger)':restant<impMax*0.2?'var(--warning)':'var(--success)';
+    hintEl.style.background=restant<0?'var(--danger-l)':restant<impMax*0.2?'var(--warning-l)':'var(--success-l)';
+    hintEl.style.display='inline-block';
+  }
 }
 function toggleMImp(){
   const cb=document.getElementById('mfImp');cb.checked=!cb.checked;
@@ -2625,7 +2663,7 @@ function buildDashLotFilter(){
 }
 
 function renderDashboard(){
-  if(!window._chartReady){setTimeout(renderDashboard,200);return;}
+  if(typeof ApexCharts==='undefined'){setTimeout(renderDashboard,200);return;}
 
   // ── Filtres ──
   const fDateFrom=(document.getElementById('dashDateFrom')||{}).value||'';
@@ -2747,125 +2785,100 @@ function renderDashboard(){
     if(impF){impF.classList.add('animate');impF.style.width=Math.min(impPctUsed2,100)+'%';}
   });});
 
-  // ── DOUGHNUT CHART ──
-  if(charts.pie){try{charts.pie.destroy();}catch(e){}}
-  const cv=document.getElementById('chartPie');
-  const pieLegendEl=document.getElementById('pieLegend');
-  if(dep>0&&cv){
-    cv.style.display='block';
-    const pieColors=isDark
-      ?['#818CF8','#34D399','#FBBF24','#FB7185']
-      :['#4F46E5','#059669','#D97706','#DC2626'];
-    const pieData=[mo,mat,mtr,imp];
-    const pieLabels=["Main d'oeuvre","Matériaux","Matériels","Imprévus"];
-    const pieTotal=pieData.reduce((a,b)=>a+b,0);
 
-    // Build HTML legend
+  // ── DOUGHNUT — ApexCharts ──
+  if(charts.pie){try{charts.pie.destroy();}catch(e){}}
+  const pieLegendEl=document.getElementById('pieLegend');
+  const pieEl=document.getElementById('chartPie');
+  if(pieEl) pieEl.innerHTML='';
+  const pieColors=isDark?['#818CF8','#34D399','#FBBF24','#FB7185']:['#4F46E5','#059669','#D97706','#DC2626'];
+  const pieData=[mo,mat,mtr,imp];
+  const pieLabels=["Main d'oeuvre","Matériaux","Matériels","Imprévus"];
+  const pieFiltered=pieLabels.map((l,i)=>({l,v:pieData[i],c:pieColors[i]})).filter(x=>x.v>0);
+  if(dep>0&&pieEl){
+    charts.pie=new ApexCharts(pieEl,{
+      series:pieFiltered.map(x=>x.v),
+      labels:pieFiltered.map(x=>x.l),
+      colors:pieFiltered.map(x=>x.c),
+      chart:{type:'donut',height:280,background:'transparent',animations:{enabled:true,speed:600}},
+      theme:{mode:isDark?'dark':'light'},
+      stroke:{width:3,colors:[isDark?'#141C2F':'#FFFFFF']},
+      dataLabels:{enabled:true,formatter:(v)=>v.toFixed(1)+'%',style:{fontSize:'13px',fontFamily:'Inter',fontWeight:'700'},dropShadow:{enabled:true,blur:3,opacity:.5}},
+      plotOptions:{pie:{donut:{size:'62%',labels:{show:true,total:{show:true,label:'Total dépenses',fontSize:'11px',fontFamily:'Inter',color:isDark?'#8696B0':'#AEAEB2',formatter:()=>fmt(dep)},value:{show:true,fontSize:'18px',fontWeight:'800',fontFamily:'Inter',color:isDark?'#F2F4F8':'#1C1C1E',formatter:(v)=>fmt(Number(v))}}}}}
+      ,legend:{show:false},
+      tooltip:{y:{formatter:(v)=>fmt(v)}},
+    });
+    charts.pie.render();
     if(pieLegendEl){
-      pieLegendEl.innerHTML=pieLabels.map((label,i)=>{
-        if(pieData[i]<=0)return'';
-        const pctv=((pieData[i]/pieTotal)*100).toFixed(1);
+      pieLegendEl.innerHTML=pieFiltered.map(x=>{
+        const pctv=((x.v/dep)*100).toFixed(1);
         return`<div style="display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text2);background:rgba(255,255,255,.5);padding:5px 12px;border-radius:var(--r-full);border:1px solid rgba(255,255,255,.6)">
-          <span style="width:10px;height:10px;border-radius:3px;background:${pieColors[i]};flex-shrink:0"></span>
-          <span>${label}</span>
+          <span style="width:10px;height:10px;border-radius:3px;background:${x.c};flex-shrink:0"></span>
+          <span>${x.l}</span>
           <span style="color:var(--text);font-weight:700">${pctv}%</span>
-          <span style="color:var(--text3);font-size:11px">${fmt(pieData[i])}</span>
+          <span style="color:var(--text3);font-size:11px">${fmt(x.v)}</span>
         </div>`;
       }).join('');
     }
-
-    charts.pie=new Chart(cv,{type:'doughnut',
-      data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors,borderWidth:3,borderColor:isDark?'#141C2F':'#FFFFFF',borderRadius:6,hoverOffset:12,hoverBorderWidth:0}]},
-      options:{responsive:true,maintainAspectRatio:true,cutout:'62%',
-        layout:{padding:8},
-        plugins:{
-          legend:{display:false},
-          tooltip:{backgroundColor:isDark?'#1B2540':'#fff',titleColor:isDark?'#F2F4F8':'#1C1C1E',bodyColor:isDark?'#B8C4D6':'#636366',borderColor:isDark?'#3A4A6A':'#D1D1D6',borderWidth:1,padding:12,cornerRadius:10,
-            callbacks:{label:function(ctx){return ' '+ctx.label+': '+fmt(ctx.raw)+' ('+((ctx.raw/dep)*100).toFixed(1)+'%)';}}
-          },
-        }
-      },
-      plugins:[{
-        id:'doughnutLabelsAndCenter',
-        afterDraw(chart){
-          const{ctx,width,height}=chart;
-          const meta=chart.getDatasetMeta(0);
-          if(!pieTotal)return;
-          // Draw % on arcs
-          meta.data.forEach((arc,i)=>{
-            const val=pieData[i];
-            if(val<=0)return;
-            const pctVal=((val/pieTotal)*100).toFixed(0);
-            if(pctVal<4)return;
-            const{startAngle,endAngle,innerRadius,outerRadius}=arc;
-            const midAngle=(startAngle+endAngle)/2;
-            const midRadius=(innerRadius+outerRadius)/2;
-            const x=arc.x+Math.cos(midAngle)*midRadius;
-            const y=arc.y+Math.sin(midAngle)*midRadius;
-            ctx.save();
-            ctx.font='700 13px Inter,sans-serif';
-            ctx.fillStyle='#FFFFFF';
-            ctx.textAlign='center';ctx.textBaseline='middle';
-            ctx.shadowColor='rgba(0,0,0,.55)';ctx.shadowBlur=4;
-            ctx.fillText(pctVal+'%',x,y);
-            ctx.restore();
-          });
-          // Center text
-          const cx=width/2, cy=height/2;
-          ctx.save();
-          ctx.font='800 20px Inter,sans-serif';
-          ctx.fillStyle=isDark?'#F2F4F8':'#1C1C1E';
-          ctx.textAlign='center';ctx.textBaseline='middle';
-          ctx.fillText(fmt(dep),cx,cy-8);
-          ctx.font='500 11px Inter,sans-serif';
-          ctx.fillStyle=isDark?'#8696B0':'#AEAEB2';
-          ctx.fillText('Total dépenses',cx,cy+12);
-          ctx.restore();
-        }
-      }]
-    });
   } else if(pieLegendEl){pieLegendEl.innerHTML='';}
 
-  // ── LINE CHART (Evolution cumulative) ──
+  // ── LINE CHART — ApexCharts évolution cumulative ──
   if(charts.line){try{charts.line.destroy();}catch(e){}}
+  const lvEl=document.getElementById('chartLine');
+  if(lvEl) lvEl.innerHTML='';
   const byDate={};
   transactions.forEach(t=>{if(!byDate[t.date])byDate[t.date]={e:0,d:0};if(t.type==='entree')byDate[t.date].e+=t.montant;else byDate[t.date].d+=t.montant;});
   let ce=0,cd=0;
   const trend=Object.entries(byDate).sort(([a],[b])=>a.localeCompare(b)).map(([date,v])=>{ce+=v.e;cd+=v.d;return{date,ce,cd};});
-  const lv=document.getElementById('chartLine');
-  if(trend.length&&lv){
-    lv.style.display='block';
-    charts.line=new Chart(lv,{type:'line',data:{labels:trend.map(t=>t.date),datasets:[{label:'Entrées cumulées',data:trend.map(t=>t.ce),borderColor:isDark?'#34D399':'#0D9488',backgroundColor:isDark?'rgba(52,211,153,.08)':'rgba(13,148,136,.06)',borderWidth:2,pointRadius:0,fill:true,tension:.4},{label:'Dépenses cumulées',data:trend.map(t=>t.cd),borderColor:isDark?'#FB7185':'#E03131',backgroundColor:isDark?'rgba(251,113,133,.08)':'rgba(224,49,49,.06)',borderWidth:2,pointRadius:0,fill:true,tension:.4}]},options:{responsive:true,plugins:{legend:{labels:{color:chartLegendColor,font:{size:11,family:'Inter'},usePointStyle:true,pointStyle:'line'}}},scales:{x:{ticks:{color:chartTextColor,font:{size:10}},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:10}},grid:{display:false}}}}});
+  if(trend.length&&lvEl){
+    charts.line=new ApexCharts(lvEl,{
+      series:[
+        {name:'Entrées cumulées',data:trend.map(t=>({x:t.date,y:t.ce}))},
+        {name:'Dépenses cumulées',data:trend.map(t=>({x:t.date,y:t.cd}))}
+      ],
+      chart:{type:'area',height:180,background:'transparent',toolbar:{show:false},animations:{enabled:true,speed:600},zoom:{enabled:false}},
+      theme:{mode:isDark?'dark':'light'},
+      colors:[isDark?'#34D399':'#0D9488',isDark?'#FB7185':'#E03131'],
+      stroke:{curve:'smooth',width:2},
+      fill:{type:'gradient',gradient:{opacityFrom:.25,opacityTo:.03}},
+      dataLabels:{enabled:false},
+      xaxis:{type:'datetime',labels:{style:{colors:chartTextColor,fontSize:'10px'},datetimeUTC:false},axisBorder:{show:false},axisTicks:{show:false}},
+      yaxis:{labels:{style:{colors:chartTextColor,fontSize:'10px'},formatter:v=>fmtK(v)}},
+      grid:{borderColor:chartGridColor,strokeDashArray:3,xaxis:{lines:{show:false}}},
+      legend:{labels:{colors:chartLegendColor},fontSize:'11px',fontFamily:'Inter'},
+      tooltip:{x:{format:'dd/MM/yyyy'},y:{formatter:v=>fmt(v)}},
+    });
+    charts.line.render();
   }
 
-  // ── BAR CHART (Budget vs Dépenses par LOT) ──
+  // ── BAR CHART — ApexCharts Budget vs Dépenses par LOT ──
   if(charts.bar){try{charts.bar.destroy();}catch(e){}}
-  const bv=document.getElementById('chartBar');
-  // Aggregate by LOT
+  const bvEl=document.getElementById('chartBar');
+  if(bvEl) bvEl.innerHTML='';
   const lotMap={};
-  tasks.forEach(t=>{
-    if(!lotMap[t.lot])lotMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0};
-    lotMap[t.lot].budget+=t.budget||0;
-  });
-  txFiltered.forEach(t=>{
-    const lot=t.lot||'GENERAL';
-    if(lot==='IMPREVUS'||lot==='PROJET')return;
-    if(!lotMap[lot])lotMap[lot]={lot,budget:0,dep:0,rec:0};
-    if(t.type==='entree')lotMap[lot].rec+=t.montant;
-    else lotMap[lot].dep+=t.montant;
-  });
+  tasks.forEach(t=>{if(!lotMap[t.lot])lotMap[t.lot]={lot:t.lot,budget:0,dep:0,rec:0};lotMap[t.lot].budget+=t.budget||0;});
+  txFiltered.forEach(t=>{const lot=t.lot||'GENERAL';if(lot==='IMPREVUS'||lot==='PROJET')return;if(!lotMap[lot])lotMap[lot]={lot,budget:0,dep:0,rec:0};if(t.type==='entree')lotMap[lot].rec+=t.montant;else lotMap[lot].dep+=t.montant;});
   const lotData=Object.values(lotMap).filter(r=>r.budget>0||r.dep>0).sort((a,b)=>b.budget-a.budget);
-  if(lotData.length&&bv){
-    bv.style.display='block';
-    const labels=lotData.map(r=>r.lot.length>20?r.lot.slice(0,20)+'…':r.lot);
-    charts.bar=new Chart(bv,{type:'bar',data:{
-      labels,
-      datasets:[
-        {label:'Budget',data:lotData.map(r=>r.budget),backgroundColor:isDark?'rgba(108,138,255,.65)':'rgba(59,91,219,.6)',borderRadius:3,barPercentage:.7},
-        {label:'Dépenses',data:lotData.map(r=>r.dep),backgroundColor:isDark?'rgba(251,113,133,.65)':'rgba(224,49,49,.6)',borderRadius:3,barPercentage:.7},
-        {label:'Entrées',data:lotData.map(r=>r.rec),backgroundColor:isDark?'rgba(52,211,153,.65)':'rgba(13,148,136,.6)',borderRadius:3,barPercentage:.7}
-      ]
-    },options:{responsive:true,plugins:{legend:{labels:{color:chartLegendColor,font:{size:10,family:'Inter'},usePointStyle:true,pointStyle:'rect',padding:12}},tooltip:{backgroundColor:isDark?'#1A2438':'#fff',titleColor:isDark?'#F1F4F9':'#0C1222',bodyColor:isDark?'#B8C4D6':'#4A5568',borderColor:isDark?'#384868':'#E2E7F0',borderWidth:1,callbacks:{label:function(ctx){return' '+ctx.dataset.label+': '+fmt(ctx.raw);}}}},scales:{x:{ticks:{color:chartTextColor,font:{size:9,weight:'600'},maxRotation:45,minRotation:15},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:10}},grid:{display:false}}}}});
+  if(lotData.length&&bvEl){
+    charts.bar=new ApexCharts(bvEl,{
+      series:[
+        {name:'Budget',data:lotData.map(r=>r.budget)},
+        {name:'Dépenses',data:lotData.map(r=>r.dep)},
+        {name:'Entrées',data:lotData.map(r=>r.rec)}
+      ],
+      labels:lotData.map(r=>r.lot.length>20?r.lot.slice(0,20)+'…':r.lot),
+      chart:{type:'bar',height:200,background:'transparent',toolbar:{show:false},animations:{enabled:true,speed:500}},
+      theme:{mode:isDark?'dark':'light'},
+      colors:[isDark?'#6C8AFF':'#3B5BDB',isDark?'#FB7185':'#E03131',isDark?'#34D399':'#0D9488'],
+      plotOptions:{bar:{borderRadius:4,columnWidth:'65%',dataLabels:{position:'top'}}},
+      dataLabels:{enabled:false},
+      xaxis:{categories:lotData.map(r=>r.lot.length>14?r.lot.slice(0,14)+'…':r.lot),labels:{style:{colors:chartTextColor,fontSize:'9px'},rotate:-30},axisBorder:{show:false}},
+      yaxis:{labels:{style:{colors:chartTextColor,fontSize:'10px'},formatter:v=>fmtK(v)}},
+      grid:{borderColor:chartGridColor,strokeDashArray:3,xaxis:{lines:{show:false}}},
+      legend:{labels:{colors:chartLegendColor},fontSize:'10px',fontFamily:'Inter'},
+      tooltip:{y:{formatter:v=>fmt(v)}},
+    });
+    charts.bar.render();
   }
 
   // Alerts
@@ -2891,7 +2904,12 @@ function switchPTab(n){
     if(tab) tab.classList.toggle('active',i===n);
   });
   if(n===3)renderDataStats();
-  if(n===4){updateThemeUI();updateCurrencyUI();}
+  if(n===4){
+    updateThemeUI();updateCurrencyUI();
+    const lastSync=localStorage.getItem('cp_last_sync');
+    const el=document.getElementById('syncLastTime');
+    if(el) el.textContent=lastSync?'Dernière sync : '+lastSync:'Pas encore synchronisé';
+  }
 }
 
 function renderDataStats(){
@@ -3114,7 +3132,7 @@ function confirmReset(){
 }
 
 function doReset(){
-  localStorage.removeItem('bc_data');
+  const _rKey=_storageKey();localStorage.removeItem(_rKey);localStorage.removeItem('bc_data');
   project=null;tasks=[];transactions=[];txId=1;
   const m=document.getElementById('resetModal');if(m)m.remove();
   document.getElementById('mainApp').style.display='none';
@@ -3238,7 +3256,11 @@ async function syncToCloud() {
     const { error } = await _sbClient.from('btp_data')
       .upsert({ id: fp, project_data: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
     if (error) throw error;
-    _sbStatus('✅ Sauvegardé le ' + new Date().toLocaleString('fr-FR'), 'ok');
+    const syncDate = new Date().toLocaleString('fr-FR');
+    _sbStatus('✅ Sauvegardé le ' + syncDate, 'ok');
+    localStorage.setItem('cp_last_sync', syncDate);
+    const el = document.getElementById('syncLastTime');
+    if(el) el.textContent = 'Dernière sync : ' + syncDate;
     toast('Données sauvegardées sur le cloud ✓');
   } catch(e) {
     _sbStatus('❌ Erreur de sauvegarde: ' + e.message, 'err');
@@ -3579,13 +3601,15 @@ async function disconnectCurrentDevice() {
       }
     }
   } catch(e){console.warn('[Disconnect] Erreur:',e.message);}
-  // Nettoyer localement
+  // Nettoyer la SESSION uniquement — les données projet restent sous bc_data_[emailId]
   localStorage.removeItem('cp_email');
   localStorage.removeItem('cp_email_fp');
   localStorage.removeItem('cp_email_id');
   localStorage.removeItem('cp_pack_max');
   localStorage.removeItem('cp_auth3');
-  _sbPinHash=null; window._userEmail=null; window._packMax=null;
+  localStorage.removeItem('cp_session_token');
+  _sbPinHash=null; window._userEmail=null; window._packMax=null; _cryptoKey=null;
+  project=null; tasks=[]; transactions=[]; txId=1;
   // Retour à l'écran d'accueil
   const ls=document.getElementById('lockScreen');
   const ma=document.getElementById('mainApp');
@@ -3614,7 +3638,7 @@ async function _grantAccess(email,emailId,localOnly) {
   // Les données locales seront chiffrées/déchiffrées avec cette clé
   _cryptoKey = await _deriveKey(email);
 
-  const rawData = localStorage.getItem('bc_data');
+  const rawData = localStorage.getItem(_storageKey());
   const hasLocalData = !!rawData;
   const hasEncryptedData = rawData && rawData.startsWith('ENC:');
 
@@ -4165,27 +4189,18 @@ function renderRapport(){
     const pieColors=isDark?['#818CF8','#34D399','#FBBF24','#FB7185']:['#4F46E5','#059669','#D97706','#DC2626'];
     const pieTotal=pieData.reduce((a,b)=>a+b,0);
     const rptPieLegendEl=document.getElementById('rptPieLegend');
-    // Pie chart avec étiquettes inline sur les segments
-  rptCharts.pie=new Chart(pieCanvas,{
-    type:'doughnut',
-    data:{labels:pieLabels,datasets:[{data:pieData,backgroundColor:pieColors,borderWidth:2,borderColor:'rgba(255,255,255,.6)',hoverOffset:8,borderRadius:4}]},
-    options:{
-      responsive:true,
-      cutout:'60%',
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:isDark?'rgba(20,28,47,.9)':'rgba(255,255,255,.95)',
-          titleColor:isDark?'#F2F4F8':'#1C1C1E',
-          bodyColor:isDark?'#B8C4D6':'#636366',
-          borderColor:isDark?'rgba(108,138,255,.2)':'rgba(200,210,255,.4)',
-          borderWidth:1,
-          padding:10,
-          callbacks:{label:function(ctx){return' '+ctx.label+': '+fmt(ctx.raw)+' ('+((ctx.raw/pieTotal)*100).toFixed(0)+'%)';}}
-        }
-      }
-    }
-  });
+    // Pie chart — ApexCharts
+    if(pieCanvas) pieCanvas.innerHTML='';
+    rptCharts.pie=new ApexCharts(pieCanvas,{
+      series:pieData,labels:pieLabels,colors:pieColors,
+      chart:{type:'donut',height:240,background:'transparent',toolbar:{show:false}},
+      theme:{mode:isDark?'dark':'light'},
+      stroke:{width:2,colors:[isDark?'#141C2F':'#FFFFFF']},
+      dataLabels:{enabled:true,formatter:v=>v.toFixed(0)+'%',style:{fontSize:'12px',fontFamily:'Inter',fontWeight:'700'}},
+      plotOptions:{pie:{donut:{size:'60%',labels:{show:true,total:{show:true,label:'Total',fontSize:'10px',fontFamily:'Inter',formatter:()=>fmt(dep)}}}}},
+      legend:{show:false},tooltip:{y:{formatter:v=>fmt(v)}},
+    });
+    rptCharts.pie.render();
   // Légende HTML enrichie avec montants
   if(rptPieLegendEl){
     rptPieLegendEl.innerHTML=pieLabels.map((label,i)=>{
@@ -4209,7 +4224,22 @@ function renderRapport(){
   tx.forEach(t=>{ const lot=t.lot||'GENERAL'; if(!lotMap[lot])lotMap[lot]={lot,budget:0,dep:0,rec:0}; if(t.type==='entree')lotMap[lot].rec+=t.montant; else lotMap[lot].dep+=t.montant; });
   const lotData=Object.values(lotMap).filter(r=>r.budget>0||r.dep>0).sort((a,b)=>b.budget-a.budget);
   if(barCanvas&&lotData.length){
-    rptCharts.bar=new Chart(barCanvas,{type:'bar',data:{labels:lotData.map(r=>r.lot.length>15?r.lot.slice(0,15)+'…':r.lot),datasets:[{label:'Budget',data:lotData.map(r=>r.budget),backgroundColor:isDark?'rgba(108,138,255,.7)':'rgba(59,91,219,.7)',borderRadius:3},{label:'Dépenses',data:lotData.map(r=>r.dep),backgroundColor:isDark?'rgba(251,113,133,.7)':'rgba(224,49,49,.7)',borderRadius:3}]},options:{responsive:true,plugins:{legend:{labels:{color:chartTextColor,font:{size:10}}}},scales:{x:{ticks:{color:chartTextColor,font:{size:9}},grid:{display:false}},y:{ticks:{color:chartTextColor,callback:v=>fmtK(v),font:{size:9}},grid:{display:false}}}}});
+    if(barCanvas) barCanvas.innerHTML='';
+    rptCharts.bar=new ApexCharts(barCanvas,{
+      series:[{name:'Budget',data:lotData.map(r=>r.budget)},{name:'Dépenses',data:lotData.map(r=>r.dep)}],
+      labels:lotData.map(r=>r.lot.length>14?r.lot.slice(0,14)+'…':r.lot),
+      chart:{type:'bar',height:220,background:'transparent',toolbar:{show:false}},
+      theme:{mode:isDark?'dark':'light'},
+      colors:[isDark?'#6C8AFF':'#3B5BDB',isDark?'#FB7185':'#E03131'],
+      plotOptions:{bar:{borderRadius:3,columnWidth:'60%'}},
+      dataLabels:{enabled:false},
+      xaxis:{categories:lotData.map(r=>r.lot.length>12?r.lot.slice(0,12)+'…':r.lot),labels:{style:{colors:chartTextColor,fontSize:'9px'},rotate:-30}},
+      yaxis:{labels:{style:{colors:chartTextColor,fontSize:'9px'},formatter:v=>fmtK(v)}},
+      grid:{borderColor:chartGridColor,strokeDashArray:3},
+      legend:{labels:{colors:chartTextColor},fontSize:'10px',fontFamily:'Inter'},
+      tooltip:{y:{formatter:v=>fmt(v)}},
+    });
+    rptCharts.bar.render();
   }
 
   // Synthèse par LOT
@@ -4383,10 +4413,35 @@ function exportRapportPDF(){
   <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
     <span>Consommation : <b style="color:${col}">${pct.toFixed(1)}% — ${fmt(dep)}</b></span>
     <span>Restant : <b style="color:#0D9488">${fmt(project.budget-dep)}</b></span>
-    ${_impMaxPdf>0?`<span>Imprévus : <b style="color:${_impColPdf}">${fmt(_impDepPdf)} / ${fmt(_impMaxPdf)} (${_impPctPdf.toFixed(0)}%)</b></span>`:''}
+    <span>Budget total : <b style="color:#3B5BDB">${fmt(project.budget)}</b></span>
   </div>
   <div class="progress-bg"><div class="progress-fill" style="width:${Math.min(pct,100)}%;background:${col}">${pct.toFixed(1)}%</div></div>
 </div>
+
+${_impMaxPdf>0?`
+<div class="section-title">⚠️ Imprévus de chantier</div>
+<div style="background:#FFF4E6;border-radius:8px;padding:14px;margin-bottom:16px;border:1px solid rgba(232,89,12,.2)">
+  <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:10px">
+    <div style="text-align:center;background:#fff;border-radius:6px;padding:10px">
+      <div style="font-size:9px;font-weight:700;color:#636366;text-transform:uppercase;margin-bottom:2px">Budget alloué (${_impPctPdf}%)</div>
+      <div style="font-size:14px;font-weight:800;color:#E8590C">${fmt(_impMaxPdf)}</div>
+    </div>
+    <div style="text-align:center;background:#fff;border-radius:6px;padding:10px">
+      <div style="font-size:9px;font-weight:700;color:#636366;text-transform:uppercase;margin-bottom:2px">Dépenses imprévus</div>
+      <div style="font-size:14px;font-weight:800;color:${_impColPdf}">${fmt(_impDepPdf)}</div>
+    </div>
+    <div style="text-align:center;background:#fff;border-radius:6px;padding:10px">
+      <div style="font-size:9px;font-weight:700;color:#636366;text-transform:uppercase;margin-bottom:2px">Solde imprévus</div>
+      <div style="font-size:14px;font-weight:800;color:${_impDepPdf<=_impMaxPdf?'#0D9488':'#E03131'}">${fmt(_impMaxPdf-_impDepPdf)}</div>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+    <span>Consommation des imprévus</span>
+    <span style="font-weight:700;color:${_impColPdf}">${_impPctUsedPdf.toFixed(1)}%</span>
+  </div>
+  <div class="progress-bg"><div class="progress-fill" style="width:${Math.min(_impPctUsedPdf,100)}%;background:${_impColPdf}">${_impPctUsedPdf.toFixed(0)}%</div></div>
+  ${_impDepPdf>_impMaxPdf?'<div style="margin-top:8px;padding:6px 10px;background:rgba(224,49,49,.1);border-radius:6px;color:#E03131;font-size:11px;font-weight:700">🔴 Budget imprévus dépassé de '+fmt(_impDepPdf-_impMaxPdf)+'</div>':''}
+</div>`:''}
 
 <div class="section-title">📋 Synthèse par LOT</div>
 <table style="margin-bottom:16px">

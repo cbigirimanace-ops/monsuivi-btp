@@ -1447,9 +1447,25 @@ function _emailToId(email) {
 }
 // Clé de stockage isolée par utilisateur
 function _storageKey() {
-  const emailId = localStorage.getItem('cp_email_id') || 'guest';
-  return 'bc_data_' + emailId;
+  // Toujours lier les données à l'email connecté
+  const emailId = localStorage.getItem('cp_email_id');
+  if(emailId) return 'bc_data_' + emailId;
+  return 'bc_data_default'; // Clé temporaire avant connexion
 }
+
+// Chercher les données dans toutes les clés possibles (migration)
+function _findDataKey() {
+  const emailId = localStorage.getItem('cp_email_id');
+  const candidates = [];
+  if(emailId) candidates.push('bc_data_' + emailId);
+  candidates.push('bc_data_default', 'bc_data', 'bc_data_guest');
+  for(const k of candidates) {
+    const v = localStorage.getItem(k);
+    if(v) return {key: k, data: v};
+  }
+  return null;
+}
+
 
 const _CP_SEED = new Uint8Array([67,80,50,48,50,52,88]); // Obfuscated seed
 
@@ -1567,8 +1583,11 @@ function cpCheck(){
   // Session valide = email + expiry non dépassé (token optionnel)
   if(savedEmail && Date.now() < sessionExpiry) {
     window._userEmail = savedEmail;
-    _sbPinHash = localStorage.getItem('cp_email_id') || _emailToId(savedEmail);
+    const eid = localStorage.getItem('cp_email_id') || _emailToId(savedEmail);
+    _sbPinHash = eid;
+    localStorage.setItem('cp_email_id', eid);
     window._packMax = parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
+    _emailSetupCloud(savedEmail); // Init cloud sync
     const ls = document.getElementById('lockScreen');
     if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
     appInit();
@@ -2087,11 +2106,11 @@ async function loadStateAsync(){
 // Version synchrone pour compatibilité (données non chiffrées uniquement — avant connexion)
 function loadState(){
   try{
-    const key = _storageKey();
-    const raw=localStorage.getItem(key);
-    if(!raw)return false;
-    // Si les données sont chiffrées, on ne peut pas les lire sans la clé
-    // → retourner false pour forcer la connexion
+    // Chercher dans toutes les clés possibles (gère la migration)
+    const found = _findDataKey();
+    if(!found) return false;
+    const {key, data: raw} = found;
+    // Si chiffré → ne pas charger sans clé crypto (retour false = connexion requise)
     if(raw.startsWith('ENC:')) {
       console.log('[Storage] Données chiffrées — connexion requise');
       return false;
@@ -2102,6 +2121,13 @@ function loadState(){
     tasks=Array.isArray(d.tasks)?d.tasks:[];
     transactions=Array.isArray(d.transactions)?d.transactions:[];
     txId=typeof d.txId==='number'?d.txId:1;
+    // Migration: si données trouvées sous une ancienne clé, les déplacer
+    const rightKey = _storageKey();
+    if(key !== rightKey) {
+      localStorage.setItem(rightKey, raw);
+      if(key !== 'bc_data') localStorage.removeItem(key); // Garder bc_data legacy
+      console.log('[Storage] Migration:', key, '→', rightKey);
+    }
     return true;
   }catch(e){
     console.error('[Storage] Corruption:',e);
@@ -2172,24 +2198,32 @@ function appInit(){
   if(loadState()&&project){
     startApp();
   } else {
-    // Pas de données locales
     if(knownEmail){
-      // Email connu → montrer le setup (nouveau projet ou import)
-      // Tenter d'abord de charger depuis le cloud en arrière-plan
-      document.getElementById('mainApp').style.display='none';
-      const ss=document.getElementById('setupScreen');
-      ss.style.display='block';
-      // Ajouter message de bienvenue dans le setup si premier accès
-      const welcomeMsg=document.getElementById('setupWelcomeMsg');
-      if(welcomeMsg && knownEmail) {
-        welcomeMsg.style.display='block';
-        welcomeMsg.innerHTML='<div style="background:var(--accent-l);border:1px solid rgba(var(--accent-rgb),.15);border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--accent);margin-bottom:16px">👋 Bienvenue <b>'+knownEmail+'</b> — Créez votre premier projet ou importez une sauvegarde.</div>';
-      }
-      // Tentative silencieuse de restauration cloud
+      // Email connu mais pas de données locales
+      // Tenter de restaurer depuis le cloud avant d'afficher setupScreen
       const emailId2 = localStorage.getItem('cp_email_id') || _emailToId(knownEmail);
-      _tryRestoreFromCloud(knownEmail, emailId2);
+      _sbPinHash = _sbPinHash || emailId2;
+      _showCloudLoadingScreen(knownEmail);
+      _autoLoadFromCloud(emailId2).then(loaded => {
+        _hideCloudLoadingScreen();
+        if(loaded && project) {
+          toast('✓ Données restaurées depuis le cloud');
+          startApp();
+        } else {
+          // Vraiment pas de données → setupScreen
+          document.getElementById('mainApp').style.display='none';
+          document.getElementById('setupScreen').style.display='block';
+          const welcomeMsg=document.getElementById('setupWelcomeMsg');
+          if(welcomeMsg){
+            welcomeMsg.style.display='block';
+            welcomeMsg.innerHTML='<div style="background:var(--accent-l);border:1px solid rgba(var(--accent-rgb),.15);border-radius:var(--r-sm);padding:10px 14px;font-size:12px;color:var(--accent);margin-bottom:16px">👋 Bienvenue <b>'+knownEmail+'</b> — Créez votre premier projet ou importez une sauvegarde.</div>';
+          }
+        }
+      }).catch(() => {
+        document.getElementById('mainApp').style.display='none';
+        document.getElementById('setupScreen').style.display='block';
+      });
     } else {
-      // Pas d'email → écran de connexion
       document.getElementById('mainApp').style.display='none';
       document.getElementById('setupScreen').style.display='none';
       if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';}
@@ -2677,15 +2711,24 @@ function renderJournal(){
   requestAnimationFrame(()=>{requestAnimationFrame(()=>{
     const rptImp=document.getElementById('rptImpFill');
     if(rptImp){rptImp.classList.add('animate');}
-    // Animer la jauge imprévus
+    // Animer toutes les jauges du rapport
     setTimeout(()=>{
+      // Jauge budget rapport
+      const rptBudgFill = document.querySelector('#rptBudgetBody .progress-fill');
+      if(rptBudgFill && !rptBudgFill.classList.contains('animate')){
+        const w = rptBudgFill.style.width;
+        rptBudgFill.style.width = '0%';
+        setTimeout(()=>{ rptBudgFill.classList.add('animate'); rptBudgFill.style.width=w; },50);
+      }
+      // Jauge imprévus rapport
       const rptImp2=document.getElementById('rptImpFill2');
       if(rptImp2){
         const impPct2=project.impPct||0;
         const impMax2=impPct2>0?(project.budget*impPct2/100):0;
         const impDep2=transactions.filter(t=>t.categorie==='IMP').reduce((s,t)=>s+t.montant,0);
         const used2=impMax2>0?(impDep2/impMax2)*100:0;
-        rptImp2.style.width=Math.min(used2,100)+'%';
+        rptImp2.style.width='0%';
+        setTimeout(()=>{ rptImp2.classList.add('animate'); rptImp2.style.width=Math.min(used2,100)+'%'; },150);
       }
     },100);
   });});
@@ -2958,8 +3001,8 @@ function renderDashboard(){
         <span style="font-size:12px;font-weight:700;color:var(--text2)">Imprévus (${impPct2}% = ${fmt(impMax2)} max)</span>
         <span style="font-size:13px;font-weight:800;color:${impCol2}">${impPctUsed2.toFixed(1)}% — ${fmt(imp)} / ${fmt(impMax2)}</span>
       </div>
-      <div style="height:12px;background:var(--surface2);border-radius:var(--r-full);overflow:hidden">
-        <div class="progress-fill amber" id="impFill" style="background:${impCol2}"></div>
+      <div class="progress-bar">
+        <div class="progress-fill ${impPctUsed2>100?'danger':impPctUsed2>80?'amber':'green'}" id="impFill" style="width:0%"></div>
       </div>
       <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text3);margin-top:4px">
         <span style="color:${impCol2};font-weight:600">${fmt(imp)} consommé</span><span>Max prévu: ${fmt(impMax2)}</span>
@@ -2978,7 +3021,13 @@ function renderDashboard(){
     const fill=document.getElementById('progressFill');
     if(fill){fill.classList.add('animate');fill.style.width=Math.min(pct,100)+'%';}
     const impF=document.getElementById('impFill');
-    if(impF){impF.classList.add('animate');impF.style.width=Math.min(impPctUsed2,100)+'%';}
+    if(impF){
+      impF.style.width='0%';
+      setTimeout(()=>{
+        impF.classList.add('animate');
+        impF.style.width=Math.min(impPctUsed2,100)+'%';
+      },100);
+    }
   });});
 
 
@@ -3159,12 +3208,20 @@ function addProjectMember(){
   members.push({email,role:'member',added:Date.now()});
   saveProjectMembers(members);
   if(input) input.value='';
-  if(status){status.textContent='✓ '+email+' ajouté — il doit utiliser cet email au démarrage';status.style.color='var(--success)';}
+  if(status){
+    status.textContent='✓ '+email+' ajouté avec succès !';
+    status.style.color='var(--success)';
+  }
   renderMembersList();
-  toast('Membre invité : '+email);
-  // Sauvegarder les membres dans le projet
+  // Sauvegarder dans le projet et synchroniser
   if(project) project.members=members;
   saveState();
+  // Sync cloud immédiate pour que le membre puisse accéder
+  syncToCloud().then(()=>{
+    toast('Membre ajouté et synchronisé ✓');
+  }).catch(()=>{
+    toast('Membre ajouté — sync cloud pour partage','warn');
+  });
   setTimeout(()=>{if(status)status.textContent='';},4000);
 }
 

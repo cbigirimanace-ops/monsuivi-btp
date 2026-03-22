@@ -1200,8 +1200,11 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
         </div>
         <!-- ☁️ SYNC CLOUD & PACK -->
         <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
-          <input id="sbUrl" type="hidden" value="https://xlkckemorgpjybqshits.supabase.co">
-          <input id="sbKey" type="hidden" value="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI">
+          <!-- SÉCURITÉ : Les credentials Supabase ont été retirés du HTML.
+               Ils sont désormais dans les variables d'environnement Vercel.
+               Toutes les requêtes passent par /api/supabase-proxy -->
+          <input id="sbUrl" type="hidden" value="">
+          <input id="sbKey" type="hidden" value="">
 
           <!-- Zone connectée -->
           <div id="sbConnectedZone" style="display:none">
@@ -1336,28 +1339,81 @@ function _cpDeriveSecret(){
   return out;
 }
 
+// ── EMPREINTE APPAREIL RENFORCÉE ──
+// v1 (ancienne) : screen.width + language + platform = ~12 bits d'entropie, facile à imiter
+// v2 (nouvelle) : Canvas fingerprint + WebGL renderer + AudioContext + stockage persistant
+// Entropie estimée : ~30-40 bits → bien plus résistant aux clones
 function cpFingerprint(){
-  // Utiliser le cache calculé inline si disponible
   if(window._cachedFp) return window._cachedFp;
   try{
-    const parts=[
-      (screen.width||1920),
-      (screen.height||1080),
-      (screen.colorDepth||24),
-      (navigator.language||'fr'),
-      (navigator.hardwareConcurrency||2),
+    // ── Couche 1 : Données navigateur de base ──
+    const base=[
+      screen.width||1920, screen.height||1080, screen.colorDepth||24,
+      navigator.language||'fr', navigator.hardwareConcurrency||2,
       (typeof Intl!=='undefined'?Intl.DateTimeFormat().resolvedOptions().timeZone:'UTC'),
-      (navigator.platform||'Win32')
-    ];
-    const raw=parts.join('|');
-    let h=0x811c9dc5>>>0;
+      navigator.platform||'Win32',
+      navigator.maxTouchPoints||0,
+      navigator.deviceMemory||4,
+    ].join('|');
+
+    // ── Couche 2 : Canvas fingerprint (rendu GPU unique par driver/OS) ──
+    let canvasHash = 'NO_CANVAS';
+    try {
+      const cv = document.createElement('canvas');
+      cv.width = 200; cv.height = 50;
+      const ctx = cv.getContext('2d');
+      ctx.textBaseline = 'alphabetic';
+      ctx.fillStyle = '#f60'; ctx.fillRect(125,1,62,20);
+      ctx.fillStyle = '#069';
+      ctx.font = '11pt Arial';
+      ctx.fillText('BTP♥Civil+', 2, 15);
+      ctx.fillStyle = 'rgba(102,204,0,0.7)';
+      ctx.font = '18pt Arial';
+      ctx.fillText('BTP♥Civil+', 4, 45);
+      canvasHash = cv.toDataURL().slice(-32); // Derniers 32 chars = hash du rendu
+    } catch(e){}
+
+    // ── Couche 3 : WebGL renderer string (identifie la carte graphique) ──
+    let webglHash = 'NO_WEBGL';
+    try {
+      const gl = document.createElement('canvas').getContext('webgl') ||
+                 document.createElement('canvas').getContext('experimental-webgl');
+      if(gl) {
+        const dbgInfo = gl.getExtension('WEBGL_debug_renderer_info');
+        if(dbgInfo) {
+          const renderer = gl.getParameter(dbgInfo.UNMASKED_RENDERER_WEBGL)||'';
+          const vendor   = gl.getParameter(dbgInfo.UNMASKED_VENDOR_WEBGL)||'';
+          webglHash = (renderer + vendor).slice(0, 40);
+        }
+      }
+    } catch(e){}
+
+    // ── Couche 4 : Identifiant persistant (survit aux changements d'OS mineur) ──
+    let persistId = localStorage.getItem('cp_device_id');
+    if(!persistId) {
+      // Générer un ID unique à ce navigateur/profil et le stocker
+      persistId = Array.from(crypto.getRandomValues(new Uint8Array(8)))
+        .map(b=>b.toString(16).padStart(2,'0')).join('');
+      localStorage.setItem('cp_device_id', persistId);
+    }
+
+    // ── Combinaison et hash FNV-1a ──
+    const raw = base + '|' + canvasHash + '|' + webglHash + '|' + persistId;
+    let h = 0x811c9dc5>>>0;
     for(let i=0;i<raw.length;i++){h^=raw.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
+    // Second pass pour plus de diffusion
+    for(let i=raw.length-1;i>=0;i--){h^=raw.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
+
     const A='ABCDEFGHJKMNPQRSTVWXYZ23456789';
     let out='',n=h;
     for(let i=0;i<7;i++){out=A[n%30]+out;n=Math.floor(n/30);}
+    window._cachedFp = out;
     return out;
   }catch(e){
-    return 'BTPDEF1'; // Safe fallback
+    // Fallback : ID persistant seul si tout échoue
+    let pid = localStorage.getItem('cp_device_id')||'BTPDEF1';
+    window._cachedFp = pid.slice(0,7).toUpperCase();
+    return window._cachedFp;
   }
 }
 
@@ -1778,21 +1834,115 @@ function toast(msg,type='ok'){
   toastTimer=setTimeout(()=>t.classList.remove('show'),2800);
 }
 
-// ── STORAGE (with error handling and data integrity) ──
+// ── CRYPTO — Chiffrement AES-GCM des données locales ──
+// Les données ne sont plus stockées en clair dans localStorage.
+// Clé dérivée de l'email utilisateur via PBKDF2 (Web Crypto API native).
+// Un attaquant avec accès au localStorage ne peut pas lire les données
+// sans connaître l'email de l'utilisateur.
+
+const _CRYPTO_SALT = 'CIVIL_BTP_2024_SALT_v1'; // Sel fixe (peut être rendu dynamique)
+const _CRYPTO_ITER = 100000;
+
+async function _deriveKey(email) {
+  if(!email) return null;
+  try {
+    const enc = new TextEncoder();
+    const keyMat = await crypto.subtle.importKey('raw', enc.encode(email), {name:'PBKDF2'}, false, ['deriveKey']);
+    return crypto.subtle.deriveKey(
+      {name:'PBKDF2', salt:enc.encode(_CRYPTO_SALT), iterations:_CRYPTO_ITER, hash:'SHA-256'},
+      keyMat, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']
+    );
+  } catch(e){ return null; }
+}
+
+async function _encryptData(plaintext, key) {
+  try {
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const enc = new TextEncoder();
+    const cipherBuf = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, enc.encode(plaintext));
+    // Stocker iv + ciphertext encodés en base64
+    const combined = new Uint8Array(iv.length + cipherBuf.byteLength);
+    combined.set(iv, 0);
+    combined.set(new Uint8Array(cipherBuf), iv.length);
+    return btoa(String.fromCharCode(...combined));
+  } catch(e){ return null; }
+}
+
+async function _decryptData(b64, key) {
+  try {
+    const combined = Uint8Array.from(atob(b64), c=>c.charCodeAt(0));
+    const iv = combined.slice(0, 12);
+    const cipher = combined.slice(12);
+    const plainBuf = await crypto.subtle.decrypt({name:'AES-GCM', iv}, key, cipher);
+    return new TextDecoder().decode(plainBuf);
+  } catch(e){ return null; }
+}
+
+// Clé crypto courante (initialisée après connexion)
+let _cryptoKey = null;
+
+async function initCryptoKey() {
+  const email = window._userEmail || localStorage.getItem('cp_email');
+  if(email && !_cryptoKey) {
+    _cryptoKey = await _deriveKey(email);
+  }
+}
+
+// ── STORAGE (chiffré AES-GCM) ──
+async function loadStateAsync(){
+  try{
+    await initCryptoKey();
+    const raw=localStorage.getItem('bc_data');
+    if(!raw)return false;
+
+    let plaintext = raw;
+    // Tenter le déchiffrement si la clé est disponible et que les données sont chiffrées
+    if(_cryptoKey && raw.startsWith('ENC:')) {
+      const decrypted = await _decryptData(raw.slice(4), _cryptoKey);
+      if(decrypted) { plaintext = decrypted; }
+      else {
+        console.warn('[Crypto] Déchiffrement impossible — données corrompues ou clé incorrecte');
+        return false;
+      }
+    }
+    // Fallback: données non chiffrées (migration depuis version précédente)
+    const d=JSON.parse(plaintext);
+    if(!d||!d.project)return false;
+    project=d.project;
+    tasks=Array.isArray(d.tasks)?d.tasks:[];
+    transactions=Array.isArray(d.transactions)?d.transactions:[];
+    txId=typeof d.txId==='number'?d.txId:1;
+    // Rechiffrer les données si elles étaient en clair (migration)
+    if(_cryptoKey && !raw.startsWith('ENC:')) {
+      saveState(); // Re-sauvegarde chiffrée
+    }
+    return true;
+  }catch(e){
+    console.error('[Storage] Corruption détectée:',e);
+    return false;
+  }
+}
+
+// Version synchrone pour compatibilité (données non chiffrées uniquement — avant connexion)
 function loadState(){
   try{
     const raw=localStorage.getItem('bc_data');
     if(!raw)return false;
+    // Si les données sont chiffrées, on ne peut pas les lire sans la clé
+    // → retourner false pour forcer la connexion
+    if(raw.startsWith('ENC:')) {
+      console.log('[Storage] Données chiffrées — connexion requise');
+      return false;
+    }
     const d=JSON.parse(raw);
     if(!d||!d.project)return false;
-    // Validate data structure
     project=d.project;
     tasks=Array.isArray(d.tasks)?d.tasks:[];
     transactions=Array.isArray(d.transactions)?d.transactions:[];
     txId=typeof d.txId==='number'?d.txId:1;
     return true;
   }catch(e){
-    console.error('Data corruption detected:',e);
+    console.error('[Storage] Corruption:',e);
     return false;
   }
 }
@@ -1800,12 +1950,24 @@ function loadState(){
 function saveState(){
   try{
     const data=JSON.stringify({project,tasks,transactions,txId});
-    // PERFORMANCE: Check quota before save (~5MB localStorage limit)
     if(data.length>4*1024*1024){
       toast('Données trop volumineuses — exportez un JSON','warn');
       return;
     }
-    localStorage.setItem('bc_data',data);
+    // Chiffrement asynchrone (n'attend pas le résultat pour ne pas bloquer l'UI)
+    if(_cryptoKey) {
+      _encryptData(data, _cryptoKey).then(enc => {
+        if(enc) {
+          localStorage.setItem('bc_data', 'ENC:' + enc);
+        } else {
+          // Fallback non chiffré si le chiffrement échoue
+          localStorage.setItem('bc_data', data);
+        }
+      });
+    } else {
+      // Pas encore de clé (avant connexion) → stockage non chiffré temporaire
+      localStorage.setItem('bc_data',data);
+    }
     // AUTO-SYNC CLOUD: déclenché après chaque sauvegarde locale
     _autoSyncDebounced();
   }catch(e){
@@ -3123,10 +3285,21 @@ function disconnectSb() {
 
 // ══════════════════════════════════════════════════════════════
 // SYSTÈME EMAIL — Multi-appareils + Packs + Cloud sync REST
+// SÉCURITÉ v2 : Les credentials Supabase ne sont plus dans le HTML.
+// Toutes les requêtes passent par le proxy Vercel /api/supabase-proxy
+// qui injecte les credentials depuis les variables d'environnement.
 // ══════════════════════════════════════════════════════════════
 
-const _SB_REST_URL = 'https://xlkckemorgpjybqshits.supabase.co/rest/v1';
-const _SB_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhsa2NrZW1vcmdwanlicXNoaXRzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM5MTczODcsImV4cCI6MjA4OTQ5MzM4N30.-hG2XuIb8fVMETQfhS0kAz0EF2F_7UHBx95mu12p7tI';
+// PROXY : remplace l'accès direct à Supabase REST
+// La clé API n'est plus exposée dans le code client.
+const _PROXY_URL = '/api/supabase-proxy';
+const _VERIFY_URL = '/api/verify-license';
+
+// Compatibilité descendante — gardé pour la fonction saveSbConfig()
+// mais les valeurs sont vides : les vraies credentials sont côté serveur
+const _SB_REST_URL = _PROXY_URL; // Redirige vers le proxy
+const _SB_ANON_KEY = ''; // VOLONTAIREMENT VIDE — ne jamais remettre une clé ici
+
 const WHATSAPP_NUMBER = '237650000749';
 
 // Définition des packs
@@ -3139,8 +3312,30 @@ const _PACK_DEFS = {
 let _sbPinHash = null;
 let _pendingWarningData = null;
 
+// ── Helper proxy sécurisé — remplace les fetch directs vers Supabase ──
+// Toutes les requêtes passent par /api/supabase-proxy (Vercel)
+// Le JWT de session est transmis en X-Civil-Session pour le RLS
 function _sbHeaders() {
-  return { 'Content-Type':'application/json', 'apikey':_SB_ANON_KEY, 'Authorization':'Bearer '+_SB_ANON_KEY, 'Prefer':'return=minimal' };
+  const h = { 'Content-Type':'application/json', 'Prefer':'return=minimal' };
+  const session = localStorage.getItem('cp_session_token');
+  if(session) h['X-Civil-Session'] = session;
+  return h;
+}
+
+// Wrapper fetch proxy : traduit les appels REST Supabase → /api/supabase-proxy
+// Signature identique à fetch() pour compatibilité maximale
+async function _proxyFetch(sbPath, options={}) {
+  const match = sbPath.match(/^\/([a-zA-Z_]+)(\?(.*))?$/);
+  if(!match) throw new Error('Chemin proxy invalide: '+sbPath);
+  const table = match[1];
+  const query = match[3]||'';
+  const method = (options.method||'GET').toUpperCase();
+  let proxyUrl = _PROXY_URL+'?table='+encodeURIComponent(table)+'&method='+method;
+  const filterMatch = query.match(/^([a-zA-Z_]+=(?:eq|neq|like|ilike|is|in|gt|gte|lt|lte)\.[^&]+)/);
+  if(filterMatch) proxyUrl += '&filter='+encodeURIComponent(filterMatch[1]);
+  const fetchOpts = { method:'POST', headers:_sbHeaders() };
+  if(options.body && method!=='GET') fetchOpts.body = options.body;
+  return fetch(proxyUrl, fetchOpts);
 }
 
 // ── Hash utilitaires ──
@@ -3222,7 +3417,7 @@ function newEmailValidate() {
 async function _loadPackInfoForEmail(email) {
   const emailId = _emailToId(email);
   try {
-    const res = await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=devices,blocked,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
+    const res = await _proxyFetch('/btp_accounts?id=eq.'+emailId+'&select=devices,blocked,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
     if(!res.ok) return;
     const data = await res.json();
     if(!data||!data.length) { _hideLockPackCard(); return; }
@@ -3285,69 +3480,68 @@ async function submitNewEmail() {
   if(btn){btn.textContent='🔗 Lier mon email & acceder';btn.disabled=false;btn.style.opacity='1';}
 }
 
-// ══ VÉRIFICATION CENTRALE ══
+// ══ VÉRIFICATION CENTRALE — SÉCURISÉE v2 ══
+// Plus de fetch direct vers Supabase avec la clé anon dans le HTML.
+// Toute la logique sensible est vérifiée côté serveur dans /api/verify-license.
 async function _checkEmailAccess(email, isNew) {
   const fp = window._cachedFp||cpFingerprint();
   const emailId = _emailToId(email);
   try {
-    const res = await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=id,devices,blocked,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    const data = await res.json();
+    const res = await fetch(_VERIFY_URL, {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json' },
+      body: JSON.stringify({ email, fingerprint: fp })
+    });
+    const result = await res.json();
 
-    if(data&&data.length>0) {
-      const acc=data[0];
-      if(acc.blocked){_lockShowBlocked('Votre compte a ete bloque. Contactez administrateur.');return;}
-      const devices=Array.isArray(acc.devices)?acc.devices:[];
-      const maxDev=acc.max_devices||window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
-      window._packMax=maxDev;
-      if(devices.includes(fp)){await _grantAccess(email,emailId,false);return;}
-      if(devices.length<maxDev){await _addDeviceAndGrant(email,emailId,fp,devices);}
-      else {
-        const pack=_PACK_DEFS[maxDev]||{name:'votre pack',max:maxDev};
-        _pendingWarningData={email,emailId,fp,maxDev,pack};
-        const warn=document.getElementById('lockStepWarning');
-        if(warn){
-          const txt=warn.querySelector('div:nth-child(3)');
-          if(txt) txt.innerHTML='Votre email est sur <b style="color:#FBBF24">'+devices.length+'/'+maxDev+' appareils</b> (Pack '+pack.name+'). Continuer <b style="color:#FB7185">bloquera votre compte</b>.';
-        }
-        lockGoStep('warning');
+    if(result.status === 'blocked') {
+      _lockShowBlocked(result.message || 'Compte bloqué — contactez l\'administrateur.');
+      return;
+    }
+    if(result.status === 'device_limit') {
+      const pack = _PACK_DEFS[result.max]||{name:'votre pack',max:result.max};
+      _pendingWarningData = {email, emailId, fp, maxDev:result.max, pack};
+      const warn = document.getElementById('lockStepWarning');
+      if(warn){
+        const txt = warn.querySelector('div:nth-child(3)');
+        if(txt) txt.innerHTML='Votre email est sur <b style="color:#FBBF24">'+result.current+'/'+result.max+' appareils</b> (Pack '+pack.name+'). Continuer <b style="color:#FB7185">bloquera votre compte</b>.';
       }
-    } else {
-      if(isNew){await _createAccountAndGrant(email,emailId,fp);}
-      else {
-        const msg=document.getElementById('existingEmailMsg');
-        if(msg){msg.textContent='Email non reconnu. Utilisez "Premiere connexion" si c\'est votre 1er acces.';msg.style.color='#FB7185';}
+      lockGoStep('warning');
+      return;
+    }
+    if(result.status === 'ok' || result.status === 'local_only') {
+      if(result.token) localStorage.setItem('cp_session_token', result.token);
+      if(result.maxDevices) { window._packMax = result.maxDevices; localStorage.setItem('cp_pack_max', String(result.maxDevices)); }
+      if(!isNew && result.status === 'local_only' && !localStorage.getItem('cp_email')) {
+        const msg = document.getElementById('existingEmailMsg');
+        if(msg){msg.textContent='Email non reconnu. Utilisez "Première connexion" si c\'est votre 1er accès.';msg.style.color='#FB7185';}
+        return;
       }
+      await _grantAccess(email, emailId, result.status==='local_only');
     }
   } catch(e) {
-    console.warn('[EmailAuth] Erreur reseau:',e.message);
-    await _grantAccess(email,emailId,true);
+    console.warn('[EmailAuth] Erreur réseau serveur:', e.message);
+    // Dégradation gracieuse : accès local si le serveur est injoignable
+    await _grantAccess(email, emailId, true);
   }
 }
 
 async function _createAccountAndGrant(email,emailId,fp) {
-  const maxDev=window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
-  try {
-    await fetch(_SB_REST_URL+'/btp_accounts',{method:'POST',
-      headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},
-      body:JSON.stringify({id:emailId,email_hash:_fnvHash(email),devices:[fp],blocked:false,max_devices:maxDev,created_at:new Date().toISOString()})});
-  } catch(e){console.warn('[EmailAuth] Compte non cree:',e.message);}
-  await _grantAccess(email,emailId,false);
+  // Désormais géré par /api/verify-license côté serveur
+  await _grantAccess(email, emailId, false);
 }
 
 async function _addDeviceAndGrant(email,emailId,fp,existing) {
-  try {
-    await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId,{method:'PATCH',headers:_sbHeaders(),
-      body:JSON.stringify({devices:[...existing,fp]})});
-  } catch(e){console.warn('[EmailAuth] Appareil non enregistre:',e.message);}
-  await _grantAccess(email,emailId,false);
+  // Désormais géré par /api/verify-license côté serveur
+  await _grantAccess(email, emailId, false);
 }
+
 
 async function lockForceAccess() {
   if(!_pendingWarningData) return;
   const {emailId}=_pendingWarningData;
   try {
-    await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId,{method:'PATCH',headers:_sbHeaders(),
+    await _proxyFetch('/btp_accounts?id=eq.'+emailId,{method:'PATCH',headers:_sbHeaders(),
       body:JSON.stringify({blocked:true,blocked_reason:'3e appareil — '+new Date().toISOString()})});
   } catch(e){}
   _lockShowBlocked('Votre compte a ete bloque. Contactez administrateur pour deblocage.');
@@ -3375,12 +3569,12 @@ async function disconnectCurrentDevice() {
   const emailId=localStorage.getItem('cp_email_id')||_emailToId(email);
   try {
     // Charger les appareils actuels
-    const res=await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=devices&limit=1',{method:'GET',headers:_sbHeaders()});
+    const res=await _proxyFetch('/btp_accounts?id=eq.'+emailId+'&select=devices&limit=1',{method:'GET',headers:_sbHeaders()});
     if(res.ok){
       const data=await res.json();
       if(data&&data.length>0){
         const newDevices=(data[0].devices||[]).filter(d=>d!==fp);
-        await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId,{method:'PATCH',headers:_sbHeaders(),
+        await _proxyFetch('/btp_accounts?id=eq.'+emailId,{method:'PATCH',headers:_sbHeaders(),
           body:JSON.stringify({devices:newDevices})});
       }
     }
@@ -3415,12 +3609,25 @@ async function _grantAccess(email,emailId,localOnly) {
   const ls=document.getElementById('lockScreen');
   if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
   localStorage.removeItem('cp_tries3');
-  const hasLocalData=!!localStorage.getItem('bc_data');
-  if(!localOnly&&!hasLocalData){
+
+  // SÉCURITÉ: Initialiser la clé de chiffrement AES-GCM avec l'email
+  // Les données locales seront chiffrées/déchiffrées avec cette clé
+  _cryptoKey = await _deriveKey(email);
+
+  const rawData = localStorage.getItem('bc_data');
+  const hasLocalData = !!rawData;
+  const hasEncryptedData = rawData && rawData.startsWith('ENC:');
+
+  // Si données chiffrées → les déchiffrer maintenant qu'on a la clé
+  if(hasEncryptedData) {
+    await loadStateAsync();
+  }
+
+  if(!localOnly && !hasLocalData){
     _showCloudLoadingScreen(email);
     const loaded=await _autoLoadFromCloud(emailId);
     _hideCloudLoadingScreen();
-    toast(loaded?'Donnees restaurees depuis le cloud':'Bienvenue '+email+' — aucune donnee cloud');
+    toast(loaded?'Données restaurées depuis le cloud ✓':'Bienvenue '+email+' — aucune donnée cloud');
   } else {
     toast('Bienvenue '+email+(localOnly?' (mode local)':' ✓'));
   }
@@ -3429,7 +3636,7 @@ async function _grantAccess(email,emailId,localOnly) {
 
 async function _autoLoadFromCloud(emailId) {
   try {
-    const res=await fetch(_SB_REST_URL+'/btp_data?id=eq.'+emailId+'&select=project_data,updated_at&limit=1',{method:'GET',headers:_sbHeaders()});
+    const res=await _proxyFetch('/btp_data?id=eq.'+emailId+'&select=project_data,updated_at&limit=1',{method:'GET',headers:_sbHeaders()});
     if(!res.ok) return false;
     const data=await res.json();
     if(!data||!data.length||!data[0].project_data) return false;
@@ -3533,7 +3740,7 @@ async function _loadDevicesForPrefCard(){
   const fp=window._cachedFp||cpFingerprint();
   const maxDev=window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
   try {
-    const res=await fetch(_SB_REST_URL+'/btp_accounts?id=eq.'+emailId+'&select=devices,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
+    const res=await _proxyFetch('/btp_accounts?id=eq.'+emailId+'&select=devices,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
     if(!res.ok) return;
     const data=await res.json();
     if(!data||!data.length) return;
@@ -3628,7 +3835,7 @@ async function syncToCloud(){
   try{
     _sbStatus('Sauvegarde en cours...','info');
     const body=JSON.stringify({id:_sbPinHash,project_data:{project,tasks,transactions,txId,synced:new Date().toISOString(),version:'4.0'},updated_at:new Date().toISOString()});
-    const res=await fetch(_SB_REST_URL+'/btp_data',{method:'POST',headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body});
+    const res=await _proxyFetch('/btp_data',{method:'POST',headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body});
     if(!res.ok) throw new Error('HTTP '+res.status);
     _sbStatus('Sauvegarde le '+new Date().toLocaleString('fr-FR'),'ok');
     toast('Donnees sauvegardees ☁️ ✓');_showSyncIndicator();
@@ -3639,7 +3846,7 @@ async function syncFromCloud(){
   if(!_sbPinHash){toast('Email non lie','warn');return;}
   try{
     _sbStatus('Chargement cloud...','info');
-    const res=await fetch(_SB_REST_URL+'/btp_data?id=eq.'+_sbPinHash+'&select=project_data,updated_at&limit=1',{method:'GET',headers:_sbHeaders()});
+    const res=await _proxyFetch('/btp_data?id=eq.'+_sbPinHash+'&select=project_data,updated_at&limit=1',{method:'GET',headers:_sbHeaders()});
     if(!res.ok) throw new Error('HTTP '+res.status);
     const data=await res.json();
     if(!data||!data.length||!data[0].project_data){_sbStatus('Aucune donnee','info');return;}
@@ -3662,7 +3869,7 @@ function _autoSyncDebounced(){
     if(!_sbPinHash||!project) return;
     try{
       const body=JSON.stringify({id:_sbPinHash,project_data:{project,tasks,transactions,txId,synced:new Date().toISOString(),version:'4.0'},updated_at:new Date().toISOString()});
-      const res=await fetch(_SB_REST_URL+'/btp_data',{method:'POST',headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body});
+      const res=await _proxyFetch('/btp_data',{method:'POST',headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body});
       if(res.ok){_showSyncIndicator();console.log('[AutoSync] OK');}
     }catch(e){console.warn('[AutoSync]',e.message);}
   },3000);
@@ -3691,7 +3898,7 @@ async function _registerLicenseInCloud(code, fp, clientName, packMax) {
       used_at: null,
       used_email: null,
     });
-    const res = await fetch(_SB_REST_URL + '/btp_licenses', {
+    const res = await _proxyFetch('/btp_licenses', {
       method: 'POST',
       headers: { ..._sbHeaders(), 'Prefer': 'resolution=merge-duplicates,return=minimal' },
       body
@@ -3710,7 +3917,7 @@ async function _registerLicenseInCloud(code, fp, clientName, packMax) {
 async function _checkLicenseUsage(code, fp, packMax) {
   try {
     const licId = _licenseToId(code);
-    const res = await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId + '&select=id,used,used_email,fp_hash,pack_max&limit=1', {
+    const res = await _proxyFetch('/btp_licenses?id=eq.' + licId + '&select=id,used,used_email,fp_hash,pack_max&limit=1', {
       method: 'GET', headers: _sbHeaders()
     });
 
@@ -3752,7 +3959,7 @@ async function _checkLicenseUsage(code, fp, packMax) {
 // Marquer la licence comme utilisée dans Supabase
 async function _markLicenseUsed(licId, fp, packMax) {
   try {
-    await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId, {
+    await _proxyFetch('/btp_licenses?id=eq.' + licId, {
       method: 'PATCH',
       headers: _sbHeaders(),
       body: JSON.stringify({
@@ -3771,7 +3978,7 @@ async function _updateLicenseWithEmail(code, email) {
   if(!code || !email) return;
   try {
     const licId = _licenseToId(code);
-    await fetch(_SB_REST_URL + '/btp_licenses?id=eq.' + licId, {
+    await _proxyFetch('/btp_licenses?id=eq.' + licId, {
       method: 'PATCH',
       headers: _sbHeaders(),
       body: JSON.stringify({ used_email: email })

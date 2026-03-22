@@ -1707,17 +1707,20 @@ function submitLockCode(){
     btn.disabled=true;
     _checkLicenseUsage(val, fp, packFromCode).then(result => {
       if(result.ok){
+        // Marquer IMMÉDIATEMENT comme utilisée localement (avant tout autre appel)
+        const licIdLocal = _licenseToId(val);
+        localStorage.setItem('cp_lic_used_' + licIdLocal, Date.now().toString());
+        // Stocker les infos d'activation
         localStorage.setItem('cp_pack_max', packFromCode);
         window._packMax = packFromCode;
         localStorage.setItem('cp_auth3',JSON.stringify({fp,code:val,ts:Date.now()}));
-        localStorage.setItem('cp_last_activated_code', val); // Pour lier email à licence
+        localStorage.setItem('cp_last_activated_code', val);
         localStorage.removeItem('cp_tries3');
         localStorage.removeItem('cp_lockout');
         btn.textContent='✓ Activé !';
         btn.style.background='var(--success)';
         inp.style.borderColor='rgba(13,148,136,.7)';
         setTimeout(()=>{
-          // Aller directement à la saisie email sans recharger
           lockGoStep('email');
           const sub2=document.getElementById('lockSub');
           if(sub2) sub2.textContent='Super ! Liez maintenant votre email pour accéder.';
@@ -3642,7 +3645,7 @@ async function _proxyFetch(sbPath, options={}) {
     const queryStr = match[3]||'';
     const method = (options.method||'GET').toUpperCase();
 
-    // Extraire le filtre (ex: id=eq.xxx)
+    // Extraire le filtre
     let filter = '';
     const fm = queryStr.match(/([a-zA-Z_]+=(?:eq|neq|gt|gte|lt|lte|like|ilike|is)\.[^&]+)/);
     if(fm) filter = fm[1];
@@ -3651,9 +3654,15 @@ async function _proxyFetch(sbPath, options={}) {
     let url = _PROXY_URL+'?table='+encodeURIComponent(table)+'&method='+method;
     if(filter) url += '&filter='+encodeURIComponent(filter);
 
+    // Transmettre le Prefer header si présent dans options.headers
+    const optHeaders = options.headers || {};
+    const preferVal = optHeaders['Prefer'] || optHeaders['prefer'] || '';
+    if(preferVal) url += '&prefer='+encodeURIComponent(preferVal);
+
     const headers = {'Content-Type':'application/json'};
     const tok = localStorage.getItem('cp_session_token');
     if(tok) headers['X-Civil-Session'] = tok;
+    if(preferVal) headers['X-Prefer'] = preferVal;
 
     const body = (options.body && ['PATCH','POST','PUT'].includes(method)) ? options.body : undefined;
 
@@ -3661,7 +3670,13 @@ async function _proxyFetch(sbPath, options={}) {
     return res;
   } catch(e) {
     console.warn('[proxy] Erreur:', e.message);
-    return {ok:true, json:async()=>[]};
+    // Retourner une réponse mock valide en cas d'erreur réseau
+    return {
+      ok: false,
+      status: 0,
+      json: async () => [],
+      text: async () => '[]'
+    };
   }
 }
 
@@ -4071,12 +4086,27 @@ function _updatePrefPackCard(){
 
 async function _loadDevicesForPrefCard(){
   const emailId=_sbPinHash||localStorage.getItem('cp_email_id');
-  if(!emailId) return;
+  const email=window._userEmail||localStorage.getItem('cp_email')||'';
   const fp=window._cachedFp||cpFingerprint();
   const maxDev=window._packMax||parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
+
+  // Afficher d'abord les infos locales (instantané)
+  const dc=document.getElementById('prefDevCount');
+  if(dc) dc.textContent='1 / '+maxDev+' (local)';
+  const db=document.getElementById('prefDevBar');
+  if(db){db.style.width=Math.round(100/maxDev)+'%';db.style.background='var(--accent)';}
+  const dl=document.getElementById('prefDevList');
+  if(dl) dl.innerHTML='<div style="font-size:11px;color:var(--text3)">📱 Cet appareil (connecté)</div>';
+
+  if(!emailId) return;
+
   try {
-    const res=await _proxyFetch('/btp_accounts?id=eq.'+emailId+'&select=devices,max_devices&limit=1',{method:'GET',headers:_sbHeaders()});
-    if(!res.ok) return;
+    const res=await _proxyFetch('/btp_accounts?id=eq.'+emailId+'&select=devices,max_devices&limit=1',{method:'GET'});
+    if(!res.ok){
+      // Proxy/Supabase indisponible → garder infos locales
+      console.warn('[PrefCard] Supabase indisponible, infos locales affichées');
+      return;
+    }
     const data=await res.json();
     if(!data||!data.length) return;
     const devices=data[0].devices||[];
@@ -4259,6 +4289,14 @@ async function _registerLicenseInCloud(code, fp, clientName, packMax) {
 async function _checkLicenseUsage(code, fp, packMax) {
   try {
     const licId = _licenseToId(code);
+
+    // ── VÉRIFICATION LOCALE EN PREMIER (avant tout appel réseau) ──
+    // Si la clé a déjà été activée sur CET appareil → refuser immédiatement
+    const localKey = 'cp_lic_used_' + licId;
+    if(localStorage.getItem(localKey)) {
+      return Promise.resolve({ ok: false, msg: 'Clé déjà activée sur cet appareil. Utilisez "J\'ai déjà un compte" pour vous reconnecter.' });
+    }
+
     const res = await _proxyFetch('/btp_licenses?id=eq.' + licId + '&select=id,used,used_email,fp_hash,pack_max&limit=1', {
       method: 'GET', headers: _sbHeaders()
     });

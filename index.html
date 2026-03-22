@@ -488,7 +488,7 @@ tfoot td{background:var(--surface2);border-top:2px solid var(--border);font-weig
 
 <!-- ══ LOCK SCREEN ══ -->
 <!-- ══ ÉCRAN ACCUEIL UNIFIÉ ══ -->
-<div id="lockScreen">
+<div id="lockScreen" style="display:none">
   <div class="lock-card" id="lockCard">
     <img src="data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FscXVlXzEiIGRhdGEtbmFtZT0iQ2FscXVlIDEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZpZXdCb3g9IjAgMCA1NiA1NiI+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5jbHMtMSB7CiAgICAgICAgZmlsbDogdXJsKCNEw6lncmFkw6lfc2Fuc19ub21fNik7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogIzFkMWQxYjsKICAgICAgfQoKICAgICAgLmNscy0zIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CgogICAgICAuY2xzLTQgewogICAgICAgIGZpbGw6IG5vbmU7CiAgICAgIH0KCiAgICAgIC5jbHMtNSB7CiAgICAgICAgZmlsbDogdXJsKCNEw6lncmFkw6lfc2Fuc19ub21fNC0yKTsKICAgICAgfQoKICAgICAgLmNscy02IHsKICAgICAgICBmaWxsOiB1cmwoI0TDqWdyYWTDqV9zYW5zX25vbV80KTsKICAgICAgfQogICAgPC9zdHlsZT4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzQiIGRhdGEtbmFtZT0iRMOpZ3JhZMOpIHNhbnMgbm9tIDQiIHgxPSIyMC45MSIgeTE9IjI1LjM4IiB4Mj0iMjcuMzYiIHkyPSIyNS4zOCIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4xNSIgc3RvcC1jb2xvcj0iI2ZhZjJhNSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4yMyIgc3RvcC1jb2xvcj0iI2Y5ZWQ5ZSIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4zNiIgc3RvcC1jb2xvcj0iI2Y4ZTE4YiIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii41MSIgc3RvcC1jb2xvcj0iI2Y2Y2U2ZCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii42NyIgc3RvcC1jb2xvcj0iI2YzYjM0MiIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NCIgc3RvcC1jb2xvcj0iI2VmOTAwYyIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44OCIgc3RvcC1jb2xvcj0iI2VmODkwMCIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzQtMiIgZGF0YS1uYW1lPSJEw6lncmFkw6kgc2FucyBub20gNCIgeDE9IjEwLjE0IiB5MT0iMzMuNTEiIHgyPSI0My4zNiIgeTI9IjIxLjA4IiB4bGluazpocmVmPSIjRMOpZ3JhZMOpX3NhbnNfbm9tXzQiLz4KICAgIDxsaW5lYXJHcmFkaWVudCBpZD0iRMOpZ3JhZMOpX3NhbnNfbm9tXzYiIGRhdGEtbmFtZT0iRMOpZ3JhZMOpIHNhbnMgbm9tIDYiIHgxPSItMi4wNiIgeTE9IjM2Ljc4IiB4Mj0iNDMuMTQiIHkyPSIyMy4zOSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9Ii4xMiIgc3RvcC1jb2xvcj0iI2VmODkwMCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii40NyIgc3RvcC1jb2xvcj0iI2Y2YzE1OCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii42MSIgc3RvcC1jb2xvcj0iI2Y3ZDI3NCIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NSIgc3RvcC1jb2xvcj0iI2ZhZjJhNSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPHJlY3QgY2xhc3M9ImNscy0zIiB4PSIwIiB5PSIwIiB3aWR0aD0iNTYiIGhlaWdodD0iNTYiIHJ4PSIxNS43NyIgcnk9IjE1Ljc3Ii8+CiAgPGc+CiAgICA8cG9seWdvbiBjbGFzcz0iY2xzLTIiIHBvaW50cz0iMjkuNTIgMzQuMzUgMjkuNTIgMzAuNDMgMzMuNzQgMzAuNDIgMzMuNzQgMjguMzcgMjcuMjkgMjguMzcgMjcuMjkgMzQuMzUgMjkuNTIgMzQuMzUiLz4KICAgIDxwb2x5Z29uIGNsYXNzPSJjbHMtNiIgcG9pbnRzPSIyNS4xMyAyMi4zOSAyNS4xMyAyNi4zMSAyMC45MSAyNi4zMiAyMC45MSAyOC4zNyAyNy4zNiAyOC4zNyAyNy4zNiAyMi4zOSAyNS4xMyAyMi4zOSIvPgogICAgPGc+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNSIgZD0iTTE4Ljk5LDI4YzAsNS4xLDMuNCw4LjQ5LDguNjcsOC40OSwzLjAyLDAsNS42MS0xLjMxLDYuODgtMy41MS0uNTYsMi40My0yLjM5LDQuMDMtMy41Niw0LjcyLTMuNTcsMi4xLTkuMTcuNTEtMTIuMjMtMi42Ny0zLjg1LTMuOTktMy43MS0xMC40OS0uNTctMTQuNzEsMy44NS01LjE3LDEwLjc0LTQuOTQsMTEuODUtNC45LDUuNjcuMTksOS40LDMuNDEsMTAuMzgsNC4zM2wtNS44NiwzLjI3Yy0xLjMxLTIuMjEtMy44Ni0zLjUxLTYuODgtMy41MS01LjI3LDAtOC42NywzLjM5LTguNjcsOC40OVoiLz4KICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMzQuNTMsMzIuOTlsNS44NiwzLjI3Yy0yLjU0LDQuMDQtNy4zLDYuNjEtMTIuNzQsNi42MS04Ljk2LDAtMTUuNDUtNi40NS0xNS40NS0xNC44NnM2LjUtMTQuODcsMTUuNDUtMTQuODdjNS40LDAsMTAuMTUsMi41OCwxMi43NCw2LjYyLS45OC0uOTItNC43MS00LjE0LTEwLjM4LTQuMzMtMS4xMS0uMDQtOC4wMS0uMjctMTEuODUsNC45LTMuMTQsNC4yMi0zLjI3LDEwLjcyLjU3LDE0LjcxLDMuMDYsMy4xNyw4LjY2LDQuNzcsMTIuMjMsMi42NywxLjE4LS42OSwzLTIuMjksMy41Ni00LjcyWiIvPgogICAgICA8cGF0aCBjbGFzcz0iY2xzLTQiIGQ9Ik0zNC42MiwzMC4yNWMuMTEuNjQuMTksMS42LS4wOSwyLjczIi8+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTQzLjgsMzIuMDZjLTEuODgtLjQxLTMuNTctLjgzLTUuMDUtMS4yNCIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+" alt="Logo" style="width:56px;height:56px;margin:0 auto 14px;display:block;border-radius:14px;box-shadow:0 3px 10px rgba(239,137,0,.3)">
     <div class="lock-title">Mon Suivi Financier BTP</div>
@@ -1434,6 +1434,23 @@ _updateOfflineBanner();
 
 // ── SECURITY: License System (PBKDF2-inspired, not plaintext) ──
 // KEY CHANGE: Secret is now derived, not stored in plaintext
+
+// ── Utilitaires hash — déclarés tôt pour disponibilité globale ──
+function _fnvHash(str) {
+  let h = 0x811c9dc5 >>> 0;
+  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
+  return h.toString(36).toUpperCase().padStart(8,'0').slice(0,8);
+}
+function _emailToId(email) {
+  const n = email.trim().toLowerCase();
+  return 'em_' + _fnvHash('BTPCIVIL_'+n) + _fnvHash(n+'_MONSUIVI');
+}
+// Clé de stockage isolée par utilisateur
+function _storageKey() {
+  const emailId = localStorage.getItem('cp_email_id') || 'guest';
+  return 'bc_data_' + emailId;
+}
+
 const _CP_SEED = new Uint8Array([67,80,50,48,50,52,88]); // Obfuscated seed
 
 function _cpDeriveSecret(){
@@ -1547,12 +1564,11 @@ function cpCheck(){
   const sessionToken = localStorage.getItem('cp_session_token');
   const sessionExpiry = parseInt(localStorage.getItem('cp_session_expiry')||'0');
 
-  if(savedEmail && sessionToken && Date.now() < sessionExpiry) {
-    // Session encore valide → accès direct
+  // Session valide = email + expiry non dépassé (token optionnel)
+  if(savedEmail && Date.now() < sessionExpiry) {
     window._userEmail = savedEmail;
     _sbPinHash = localStorage.getItem('cp_email_id') || _emailToId(savedEmail);
     window._packMax = parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
-    _cryptoKey = null; // Sera initialisé au besoin
     const ls = document.getElementById('lockScreen');
     if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
     appInit();
@@ -1596,11 +1612,14 @@ function cpCheck(){
 }
 
 function cpShowForm(){
-  document.getElementById('lockScreen').style.display='flex';
-  document.getElementById('lockFormSection').style.display='block';
-  document.getElementById('lockBlockedSection').style.display='none';
-  document.getElementById('setupScreen').style.display='none';
-  document.getElementById('mainApp').style.display='none';
+  const ls=document.getElementById('lockScreen');
+  if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';}
+  // lockFormSection n'existe pas — lockCard contient tout
+  const ss=document.getElementById('setupScreen');
+  if(ss) ss.style.display='none';
+  const ma=document.getElementById('mainApp');
+  if(ma) ma.style.display='none';
+  lockGoStep('choice');
   setTimeout(()=>{const i=document.getElementById('lockCodeInput');if(i)i.focus();},350);
 }
 
@@ -1610,11 +1629,7 @@ function cpShowBlocked(){
   lockGoStep('blocked');
 }
 
-function cpUnlock(){
-  document.getElementById('lockScreen').style.display='none';
-  localStorage.removeItem('cp_tries3');
-  appInit();
-}
+// cpUnlock — voir version complète plus bas
 
 function submitLockCode(){
   const inp=document.getElementById('lockCodeInput');
@@ -2147,11 +2162,11 @@ function appInit(){
   const ls=document.getElementById('lockScreen');
   if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
 
-  // Si email connu → clé de stockage correcte, charger les données
+  // Synchroniser l'état utilisateur depuis localStorage
   const knownEmail=localStorage.getItem('cp_email');
-  if(knownEmail && !window._userEmail){
-    window._userEmail=knownEmail;
-    _sbPinHash=localStorage.getItem('cp_email_id')||_emailToId(knownEmail);
+  if(knownEmail){
+    if(!window._userEmail) window._userEmail=knownEmail;
+    if(!_sbPinHash) _sbPinHash=localStorage.getItem('cp_email_id')||_emailToId(knownEmail);
   }
 
   if(loadState()&&project){
@@ -2283,7 +2298,10 @@ function renderTasksList(){
 }
 
 function finishSetup(){
-  if(!tasks.length){toast('Ajoutez au moins une tâche','warn');return;}
+  // Tâches optionnelles — on peut créer un projet vide et ajouter des tâches ensuite
+  if(!tasks.length){
+    if(!confirm('Aucune tâche configurée. Continuer quand même ?')) return;
+  }
   saveState();startApp();
 }
 
@@ -3458,14 +3476,7 @@ function doImport(e){
 // Chargement dynamique du SDK Supabase (seulement si configuré)
 let _sbClient = null;
 
-function _sbStatus(msg, type='info') {
-  const el = document.getElementById('sbStatus');
-  if (!el) return;
-  el.style.display = msg ? 'block' : 'none';
-  el.style.color = type==='ok'?'var(--success)':type==='err'?'var(--danger)':'var(--text2)';
-  el.style.background = type==='ok'?'var(--success-l)':type==='err'?'var(--danger-l)':'var(--surface2)';
-  el.textContent = msg;
-}
+// _sbStatus v1 supprimée — voir version v2 plus bas
 
 function _loadSbSDK(cb) {
   if (typeof window.supabase !== 'undefined') { cb(); return; }
@@ -3504,63 +3515,9 @@ function saveSbConfig() {
   });
 }
 
-async function syncToCloud() {
-  if (!_sbClient) { 
-    // Auto-reconnect with preconfigured credentials
-    await new Promise(resolve => { _loadSbSDK(() => { try { _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY); } catch(e){} resolve(); }); });
-    if (!_sbClient) { _sbStatus('Connexion impossible', 'err'); return; }
-  }
-  if (!project) { _sbStatus('⚠️ Aucun projet actif à sauvegarder', 'err'); return; }
-  const fp = cpFingerprint();
-  const payload = { project, tasks, transactions, txId, synced: new Date().toISOString(), version: '4.0' };
-  try {
-    _sbStatus('🔄 Sauvegarde en cours...', 'info');
-    const { error } = await _sbClient.from('btp_data')
-      .upsert({ id: fp, project_data: payload, updated_at: new Date().toISOString() }, { onConflict: 'id' });
-    if (error) throw error;
-    const syncDate = new Date().toLocaleString('fr-FR');
-    _sbStatus('✅ Sauvegardé le ' + syncDate, 'ok');
-    localStorage.setItem('cp_last_sync', syncDate);
-    const el = document.getElementById('syncLastTime');
-    if(el) el.textContent = 'Dernière sync : ' + syncDate;
-    toast('Données sauvegardées sur le cloud ✓');
-  } catch(e) {
-    _sbStatus('❌ Erreur de sauvegarde: ' + e.message, 'err');
-    toast('Erreur cloud', 'err');
-  }
-}
+// syncToCloud v1 supprimée — voir version proxy plus bas
 
-async function syncFromCloud() {
-  if (!_sbClient) {
-    await new Promise(resolve => { _loadSbSDK(() => { try { _sbClient = window.supabase.createClient(_SB_URL, _SB_KEY); } catch(e){} resolve(); }); });
-    if (!_sbClient) { _sbStatus('Connexion impossible', 'err'); return; }
-  }
-  const fp = cpFingerprint();
-  try {
-    _sbStatus('🔄 Chargement depuis le cloud...', 'info');
-    const { data, error } = await _sbClient.from('btp_data').select('project_data, updated_at').eq('id', fp).maybeSingle();
-    if (error) throw error;
-    if (!data || !data.project_data) {
-      _sbStatus('ℹ️ Aucune donnée trouvée pour cet appareil — utilisez ↑ Sauvegarder en premier', 'info');
-      return;
-    }
-    const d = data.project_data;
-    if (!d.project || !d.project.nom) { _sbStatus('❌ Données cloud corrompues', 'err'); return; }
-    if (!confirm('Charger les données cloud ? Cela écrasera vos données locales.')) return;
-    project = d.project;
-    tasks = Array.isArray(d.tasks) ? d.tasks : [];
-    transactions = Array.isArray(d.transactions) ? d.transactions : [];
-    txId = typeof d.txId === 'number' ? d.txId : 1;
-    saveState(); startApp();
-    closeModal('setupModal');
-    const syncDate = new Date(data.updated_at).toLocaleString('fr-FR');
-    _sbStatus('✅ Données du ' + syncDate + ' chargées', 'ok');
-    toast('Données cloud chargées — ' + transactions.length + ' transaction(s) ✓');
-  } catch(e) {
-    _sbStatus('❌ Erreur de chargement: ' + e.message, 'err');
-    toast('Erreur cloud', 'err');
-  }
-}
+// syncFromCloud v1 supprimée — voir version proxy plus bas
 
 function disconnectSb() {
   // Fonction réservée admin — non exposée aux clients
@@ -3606,49 +3563,38 @@ function _sbHeaders() {
   return h;
 }
 
-// Wrapper fetch proxy sécurisé — toutes les requêtes Supabase passent ici
+// Wrapper proxy sécurisé — routes vers /api/supabase-proxy
 async function _proxyFetch(sbPath, options={}) {
-  const match = sbPath.match(/^\/([a-zA-Z_]+)(\?(.*))?$/);
-  if(!match) throw new Error('Chemin proxy invalide: '+sbPath);
-  const table = match[1];
-  const query = match[3]||'';
-  const method = (options.method||'GET').toUpperCase();
-
-  // Construire l'URL proxy avec paramètres
-  let proxyUrl = _PROXY_URL+'?table='+encodeURIComponent(table)+'&method='+method;
-  const filterMatch = query.match(/^([a-zA-Z_]+=(?:eq|neq|like|ilike|is|in|gt|gte|lt|lte)\.[^&]+)/);
-  if(filterMatch) proxyUrl += '&filter='+encodeURIComponent(filterMatch[1]);
-
-  // En-têtes
-  const headers = { 'Content-Type':'application/json' };
-  const session = localStorage.getItem('cp_session_token');
-  if(session) headers['X-Civil-Session'] = session;
-
-  const fetchOpts = { method:'POST', headers };
-  // Pour PATCH/POST, transmettre le body
-  if(options.body && ['PATCH','POST','PUT'].includes(method)){
-    fetchOpts.body = options.body;
-  }
-
   try {
-    const res = await fetch(proxyUrl, fetchOpts);
+    const match = sbPath.match(/^\/([a-zA-Z_]+)(\?(.*))?$/);
+    if(!match) throw new Error('Chemin invalide: '+sbPath);
+    const table = match[1];
+    const queryStr = match[3]||'';
+    const method = (options.method||'GET').toUpperCase();
+
+    // Extraire le filtre (ex: id=eq.xxx)
+    let filter = '';
+    const fm = queryStr.match(/([a-zA-Z_]+=(?:eq|neq|gt|gte|lt|lte|like|ilike|is)\.[^&]+)/);
+    if(fm) filter = fm[1];
+
+    // Construire l'URL du proxy
+    let url = _PROXY_URL+'?table='+encodeURIComponent(table)+'&method='+method;
+    if(filter) url += '&filter='+encodeURIComponent(filter);
+
+    const headers = {'Content-Type':'application/json'};
+    const tok = localStorage.getItem('cp_session_token');
+    if(tok) headers['X-Civil-Session'] = tok;
+
+    const body = (options.body && ['PATCH','POST','PUT'].includes(method)) ? options.body : undefined;
+
+    const res = await fetch(url, {method:'POST', headers, body});
     return res;
   } catch(e) {
-    // En cas d'erreur réseau → retourner une réponse vide valide
-    return new Response('[]', { status: 200, headers: { 'Content-Type':'application/json' } });
+    console.warn('[proxy] Erreur:', e.message);
+    return {ok:true, json:async()=>[]};
   }
 }
 
-// ── Hash utilitaires ──
-function _fnvHash(str) {
-  let h = 0x811c9dc5>>>0;
-  for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,0x01000193)>>>0;}
-  return h.toString(36).toUpperCase().padStart(8,'0').slice(0,8);
-}
-function _emailToId(email) {
-  const n = email.trim().toLowerCase();
-  return 'em_' + _fnvHash('BTPCIVIL_'+n) + _fnvHash(n+'_MONSUIVI');
-}
 
 // ── Encoding pack dans le code de licence ──
 const _PACK_CHARS = {1:'P',2:'Q',5:'R'}; // Suffixes pour 1/2/5 appareils
@@ -3811,13 +3757,13 @@ async function _checkEmailAccess(email, isNew) {
       return;
     }
     if(result.status === 'ok' || result.status === 'local_only') {
+      // Stocker token si présent
       if(result.token) localStorage.setItem('cp_session_token', result.token);
-      if(result.maxDevices) { window._packMax = result.maxDevices; localStorage.setItem('cp_pack_max', String(result.maxDevices)); }
-      if(!isNew && result.status === 'local_only' && !localStorage.getItem('cp_email')) {
-        const msg = document.getElementById('existingEmailMsg');
-        if(msg){msg.textContent='Email non reconnu. Utilisez "Première connexion" si c\'est votre 1er accès.';msg.style.color='#FB7185';}
-        return;
+      if(result.maxDevices) {
+        window._packMax = result.maxDevices;
+        localStorage.setItem('cp_pack_max', String(result.maxDevices));
       }
+      // Toujours accorder l'accès — local_only = mode offline gracieux
       await _grantAccess(email, emailId, result.status==='local_only');
     }
   } catch(e) {
@@ -3906,8 +3852,9 @@ async function _grantAccess(email,emailId,localOnly) {
   localStorage.setItem('cp_email',email);
   localStorage.setItem('cp_email_fp',fp);
   localStorage.setItem('cp_email_id',emailId);
-  // Session persistante 3 jours
-  localStorage.setItem('cp_session_expiry', String(Date.now() + 3*24*60*60*1000));
+  // Session persistante 3 jours — stocké TOUJOURS
+  const expiry3days = Date.now() + 3*24*60*60*1000;
+  localStorage.setItem('cp_session_expiry', String(expiry3days));
   window._userEmail=email;
   _sbPinHash=emailId;
   _emailSetupCloud(email);
@@ -3979,21 +3926,19 @@ function _hideCloudLoadingScreen(){const ov=document.getElementById('cloudLoadin
 // ══ cpUnlock ══
 function cpUnlock(){
   const savedEmail=localStorage.getItem('cp_email');
-  const savedFp=localStorage.getItem('cp_email_fp');
-  const fp=window._cachedFp||cpFingerprint();
-  if(savedEmail&&savedFp===fp){
+  const ls=document.getElementById('lockScreen');
+  if(savedEmail){
     window._userEmail=savedEmail;
     _sbPinHash=localStorage.getItem('cp_email_id')||_emailToId(savedEmail);
     window._packMax=parseInt(localStorage.getItem('cp_pack_max')||'1')||1;
     _emailSetupCloud(savedEmail);
-    const ls=document.getElementById('lockScreen');
     if(ls){ls.style.display='none';ls.style.pointerEvents='none';}
     localStorage.removeItem('cp_tries3');
     appInit();
   } else {
-    lockGoStep('email');
-    const fp2El=document.getElementById('lockFpShort2');
-    if(fp2El) fp2El.textContent=fp;
+    // Pas d'email — aller vers l'étape email du lockScreen
+    if(ls){ls.style.display='flex';ls.style.pointerEvents='auto';}
+    lockGoStep('existing');
   }
 }
 

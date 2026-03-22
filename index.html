@@ -1711,10 +1711,7 @@ function submitLockCode(){
     btn.disabled=true;
     _checkLicenseUsage(val, fp, packFromCode).then(result => {
       if(result.ok){
-        // Marquer IMMÉDIATEMENT comme utilisée localement (avant tout autre appel)
-        const licIdLocal = _licenseToId(val);
-        localStorage.setItem('cp_lic_used_' + licIdLocal, Date.now().toString());
-        // Stocker les infos d'activation
+        // _checkLicenseUsage a déjà marqué dans Supabase ET localement
         localStorage.setItem('cp_pack_max', packFromCode);
         window._packMax = packFromCode;
         localStorage.setItem('cp_auth3',JSON.stringify({fp,code:val,ts:Date.now()}));
@@ -4000,6 +3997,10 @@ async function _grantAccess(email,emailId,localOnly) {
     await loadStateAsync();
   }
 
+  // ── Créer/màj le compte dans btp_accounts avec le bon pack ──
+  const packMaxVal = window._packMax || parseInt(localStorage.getItem('cp_pack_max')||'1') || 1;
+  _ensureAccountExists(emailId, packMaxVal);
+
   if(!localOnly && !hasLocalData){
     _showCloudLoadingScreen(email);
     const loaded = await _autoLoadFromCloud(emailId);
@@ -4010,14 +4011,33 @@ async function _grantAccess(email,emailId,localOnly) {
       toast('Bienvenue '+email+' — démarrez votre premier projet !');
     }
   } else if(hasLocalData && !project) {
-    // Données locales présentes mais non déchiffrées encore
     await loadStateAsync();
     toast('Bienvenue '+email+' ✓');
   } else {
     toast('Bienvenue '+email+(localOnly?' (mode local)':' ✓'));
   }
-  // Toujours appeler appInit — il gère l'affichage correct
   appInit();
+}
+
+// Créer ou mettre à jour le compte dans btp_accounts avec le bon pack
+async function _ensureAccountExists(emailId, packMax) {
+  try {
+    const fp = window._cachedFp || cpFingerprint();
+    const body = JSON.stringify({
+      id: emailId,
+      max_devices: packMax,
+      devices: [_fnvHash(fp)],
+      updated_at: new Date().toISOString()
+    });
+    await _proxyFetch('/btp_accounts', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body
+    });
+    console.log('[Account] Compte mis à jour — pack:', packMax, 'appareils');
+  } catch(e) {
+    console.warn('[Account] Erreur création compte:', e.message);
+  }
 }
 
 async function _autoLoadFromCloud(emailId) {
@@ -4235,16 +4255,46 @@ function _getSelectedPack(){
 
 // ── Cloud sync ──
 async function syncToCloud(){
-  if(!_sbPinHash){toast('Email non lie','warn');return;}
+  const email = window._userEmail || localStorage.getItem('cp_email');
+  const emailId = _sbPinHash || localStorage.getItem('cp_email_id');
+  if(!emailId || !email){
+    _sbStatus('Connectez-vous d\'abord pour synchroniser','err');
+    toast('Email requis pour la sync','warn');
+    return;
+  }
   if(!project){_sbStatus('Aucun projet actif','err');return;}
   try{
-    _sbStatus('Sauvegarde en cours...','info');
-    const body=JSON.stringify({id:_sbPinHash,project_data:{project,tasks,transactions,txId,synced:new Date().toISOString(),version:'4.0'},updated_at:new Date().toISOString()});
-    const res=await _proxyFetch('/btp_data',{method:'POST',headers:{..._sbHeaders(),'Prefer':'resolution=merge-duplicates,return=minimal'},body});
-    if(!res.ok) throw new Error('HTTP '+res.status);
-    _sbStatus('Sauvegarde le '+new Date().toLocaleString('fr-FR'),'ok');
-    toast('Donnees sauvegardees ☁️ ✓');_showSyncIndicator();
-  }catch(e){_sbStatus('Erreur: '+e.message,'err');toast('Erreur sauvegarde','err');}
+    _sbStatus('⏳ Sauvegarde en cours...','info');
+    const payload = {
+      id: emailId,
+      project_data: {project, tasks, transactions, txId,
+        synced: new Date().toISOString(), version: '4.0',
+        email: email
+      },
+      updated_at: new Date().toISOString()
+    };
+    const body = JSON.stringify(payload);
+    const res = await _proxyFetch('/btp_data', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates,return=minimal' },
+      body
+    });
+    if(!res.ok) {
+      const errText = await res.text().catch(()=>'');
+      throw new Error('HTTP ' + res.status + (errText ? ' — ' + errText.slice(0,100) : ''));
+    }
+    const syncTime = new Date().toLocaleString('fr-FR');
+    localStorage.setItem('cp_last_sync', syncTime);
+    _sbStatus('✅ Sauvegardé le ' + syncTime, 'ok');
+    const el = document.getElementById('syncLastTime');
+    if(el) el.textContent = 'Dernière sync : ' + syncTime;
+    toast('Données sauvegardées ☁️ ✓');
+    _showSyncIndicator && _showSyncIndicator();
+  } catch(e) {
+    console.error('[Sync] Erreur:', e.message);
+    _sbStatus('❌ Erreur: ' + e.message, 'err');
+    toast('Échec sauvegarde: ' + e.message.slice(0,50), 'err');
+  }
 }
 
 async function syncFromCloud(){
@@ -4327,85 +4377,72 @@ async function _registerLicenseInCloud(code, fp, clientName, packMax) {
 
 // Vérifier si une licence est valide et non utilisée
 async function _checkLicenseUsage(code, fp, packMax) {
+  const licId = _licenseToId(code);
+
+  // ── Vérification locale stricte ──
+  // Si déjà activée sur CET appareil/navigateur → bloquer
+  const localKey = 'cp_lic_used_' + licId;
+  if(localStorage.getItem(localKey)) {
+    return { ok: false, msg: 'Clé déjà activée sur cet appareil. Utilisez "J\'ai déjà un compte".' };
+  }
+
+  // ── Vérification cloud (OBLIGATOIRE — pas de fallback ok:true) ──
   try {
-    const licId = _licenseToId(code);
-
-    // ── VÉRIFICATION LOCALE EN PREMIER (avant tout appel réseau) ──
-    // Si la clé a déjà été activée sur CET appareil → refuser immédiatement
-    const localKey = 'cp_lic_used_' + licId;
-    if(localStorage.getItem(localKey)) {
-      return Promise.resolve({ ok: false, msg: 'Clé déjà activée sur cet appareil. Utilisez "J\'ai déjà un compte" pour vous reconnecter.' });
-    }
-
     const res = await _proxyFetch('/btp_licenses?id=eq.' + licId + '&select=id,used,used_email,fp_hash,pack_max&limit=1', {
-      method: 'GET', headers: _sbHeaders()
+      method: 'GET'
     });
 
     if(!res.ok) {
-      // Supabase indisponible → autoriser (fallback local)
-      console.warn('[License] Supabase indisponible');
-      return { ok: true };
+      // Supabase inaccessible → REFUSER pour sécurité
+      return { ok: false, msg: 'Vérification impossible (hors-ligne). Connectez-vous à internet pour activer.' };
     }
 
     const data = await res.json();
 
     if(!data || data.length === 0) {
-      // Licence pas encore enregistrée dans Supabase
-      // Vérifier si déjà utilisée localement
-      const localUsed = localStorage.getItem('cp_lic_used_' + licId);
-      if(localUsed) {
-        return { ok: false, msg: 'Clé déjà activée sur cet appareil. Utilisez "J\'ai déjà un compte".' };
-      }
-      // Première utilisation → créer l'entrée dans Supabase
-      await _registerLicenseInCloud(code, fp, '', packMax);
-      await _markLicenseUsed(licId, fp, packMax);
-      localStorage.setItem('cp_lic_used_' + licId, '1');
-      return { ok: true };
+      // Clé inconnue de Supabase → l'admin doit d'abord créer la licence
+      return { ok: false, msg: 'Clé non reconnue. Vérifiez la clé ou contactez l\'administrateur.' };
     }
 
     const lic = data[0];
 
-    // Licence déjà utilisée ?
     if(lic.used) {
-      const msg = lic.used_email
-        ? 'Clé déjà utilisée par ' + lic.used_email.substring(0,4) + '***. Contactez administrateur.'
-        : 'Cle deja utilisee. Demandez une nouvelle cle a l\'administrateur.';
-      return { ok: false, msg };
+      const who = lic.used_email
+        ? 'Déjà utilisée par ' + lic.used_email.substring(0,4) + '***.'
+        : 'Déjà utilisée.';
+      return { ok: false, msg: who + ' Contactez l\'administrateur.' };
     }
 
-    // Marquer comme utilisée immédiatement (cloud + local)
-    await _markLicenseUsed(licId, fp, packMax);
-    localStorage.setItem('cp_lic_used_' + licId, '1');
+    // ✅ Clé valide et disponible — marquer immédiatement
+    const markRes = await _markLicenseUsed(licId, fp, packMax);
+    if(!markRes) {
+      return { ok: false, msg: 'Erreur lors de l\'activation. Réessayez.' };
+    }
+
+    // Stocker localement comme double protection
+    localStorage.setItem(localKey, Date.now().toString());
     return { ok: true };
 
   } catch(e) {
-    console.warn('[License] Erreur verification:', e.message);
-    // En cas d'erreur réseau → vérifier localement
-    const licId2 = _licenseToId(code);
-    const localUsed2 = localStorage.getItem('cp_lic_used_' + licId2);
-    if(localUsed2) {
-      return { ok: false, msg: 'Clé déjà activée sur cet appareil. Utilisez "J\'ai déjà un compte".' };
-    }
-    // Jamais utilisée localement → autoriser + marquer
-    localStorage.setItem('cp_lic_used_' + licId2, '1');
-    return { ok: true };
+    console.warn('[License] Erreur:', e.message);
+    return { ok: false, msg: 'Erreur réseau. Vérifiez votre connexion et réessayez.' };
   }
 }
-
 // Marquer la licence comme utilisée dans Supabase
 async function _markLicenseUsed(licId, fp, packMax) {
   try {
-    await _proxyFetch('/btp_licenses?id=eq.' + licId, {
+    const res = await _proxyFetch('/btp_licenses?id=eq.' + licId, {
       method: 'PATCH',
-      headers: _sbHeaders(),
       body: JSON.stringify({
         used: true,
         used_at: new Date().toISOString(),
         used_fp_hash: _fnvHash(fp),
       })
     });
+    return res && res.ok;
   } catch(e) {
     console.warn('[License] Erreur marquage:', e.message);
+    return false;
   }
 }
 
